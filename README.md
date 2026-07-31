@@ -8,7 +8,7 @@ Agent, automatic parameter selection, machine learning, leverage, shorting, or l
 
 ## Current development stage
 
-Phases 1 through 4 establish:
+Phases 1 through 5 establish:
 
 - validated application settings;
 - versioned data-contract definitions;
@@ -21,9 +21,13 @@ Phases 1 through 4 establish:
 - pure daily factor calculations, factor dataset publication, and deterministic reuse;
 - weekly/monthly rebalance calendars, next-session execution mapping, stable rankings,
   Top 2 and strict SMA200-filtered target portfolios;
-- unit and PostgreSQL integration tests for the deterministic core, data, factor, and signal pipelines.
+- adjusted-open execution, overnight weight drift, single-sided turnover, 2/5/10 bps costs,
+  daily gross/net NAV and end-of-day positions;
+- same-frequency four-ETF equal-weight and SPY buy-and-hold benchmarks;
+- versioned, fingerprinted, atomically published backtest runs with deterministic reuse;
+- unit and PostgreSQL integration tests for the deterministic core and phases 1 through 5.
 
-Trade simulation, costs, daily holdings, and NAV are intentionally deferred to phase 5 and later.
+Factor diagnostics and performance metrics are intentionally deferred to phase 6.
 
 ## Local setup
 
@@ -42,6 +46,7 @@ After PostgreSQL is running and migrations are current:
 style-rotation-data-update --start 1999-01-01 --end 2026-07-30
 style-rotation-factor-update
 style-rotation-signal-update
+style-rotation-backtest-update
 ```
 
 The end date is inclusive at the application boundary. The pipeline pins provider request
@@ -58,6 +63,11 @@ Top 2 selection, and target weights belong to the signal layer.
 `style-rotation-signal-update` uses the latest published factor dataset unless all three upstream
 version identifiers are supplied. It publishes target weights only; it does not assume trades have
 filled or calculate turnover, costs, holdings, returns, or NAV.
+
+`style-rotation-backtest-update` uses the latest published signal dataset unless all four upstream
+version identifiers are supplied. The formal matrix contains 24 variants, two frequencies, two
+strategy templates, and three cost scenarios (288 runs). `--variant-key` may be repeated for a
+scoped development or verification run. Completed fingerprints are reused without recalculation.
 
 ## Design rule
 

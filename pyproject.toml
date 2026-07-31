@@ -31,6 +31,7 @@ dev = [
 style-rotation-data-update = "style_rotation.cli.data_update:main"
 style-rotation-factor-update = "style_rotation.cli.factor_update:main"
 style-rotation-signal-update = "style_rotation.cli.signal_update:main"
+style-rotation-backtest-update = "style_rotation.cli.backtest_update:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
