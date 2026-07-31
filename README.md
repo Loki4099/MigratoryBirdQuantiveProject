@@ -8,7 +8,7 @@ Agent, automatic parameter selection, machine learning, leverage, shorting, or l
 
 ## Current development stage
 
-Phases 1 through 3 establish:
+Phases 1 through 4 establish:
 
 - validated application settings;
 - versioned data-contract definitions;
@@ -19,9 +19,11 @@ Phases 1 through 3 establish:
 - immutable raw snapshots, adjusted-price cleaning, reserve daily returns, and data-quality gates;
 - a frozen registry of 11 factor definitions and 24 independent parameter variants;
 - pure daily factor calculations, factor dataset publication, and deterministic reuse;
-- unit and PostgreSQL integration tests for the deterministic core, data, and factor pipelines.
+- weekly/monthly rebalance calendars, next-session execution mapping, stable rankings,
+  Top 2 and strict SMA200-filtered target portfolios;
+- unit and PostgreSQL integration tests for the deterministic core, data, factor, and signal pipelines.
 
-Ranking, portfolio construction, and backtesting are intentionally deferred to phase 4 and later.
+Trade simulation, costs, daily holdings, and NAV are intentionally deferred to phase 5 and later.
 
 ## Local setup
 
@@ -39,6 +41,7 @@ After PostgreSQL is running and migrations are current:
 ```powershell
 style-rotation-data-update --start 1999-01-01 --end 2026-07-30
 style-rotation-factor-update
+style-rotation-signal-update
 ```
 
 The end date is inclusive at the application boundary. The pipeline pins provider request
@@ -50,7 +53,11 @@ and hashes because historical adjusted values may be revised by the provider.
 
 `style-rotation-factor-update` uses the latest published clean dataset unless both explicit
 version identifiers are supplied. It stores unranked factor values only; direction normalization,
-Top 2 selection, and target weights belong to the next layer.
+Top 2 selection, and target weights belong to the signal layer.
+
+`style-rotation-signal-update` uses the latest published factor dataset unless all three upstream
+version identifiers are supplied. It publishes target weights only; it does not assume trades have
+filled or calculate turnover, costs, holdings, returns, or NAV.
 
 ## Design rule
 
