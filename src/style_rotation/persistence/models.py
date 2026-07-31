@@ -761,6 +761,244 @@ class BenchmarkDailyNav(Base):
     )
 
 
+class MetricVersion(CreatedAtMixin, Base):
+    __tablename__ = "metric_versions"
+
+    metric_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    version_key: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    methodology_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    code_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    dependency_lock_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    git_commit: Mapped[str] = mapped_column(String(64), nullable=False)
+    python_version: Mapped[str] = mapped_column(String(30), nullable=False)
+    configuration: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+
+
+class FactorDiagnosticSet(CreatedAtMixin, Base):
+    __tablename__ = "factor_diagnostic_sets"
+
+    diagnostic_set_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    metric_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("metric_versions.metric_version_id"), nullable=False
+    )
+    data_version_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    cleaning_version_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    factor_version_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    strategy_version_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    factor_variant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    rebalance_frequency: Mapped[str] = mapped_column(String(20), nullable=False)
+    diagnostic_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    period_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    valid_ic_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    undefined_ic_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    mean_rank_ic: Mapped[Decimal | None] = mapped_column(Numeric(30, 18))
+    positive_ic_ratio: Mapped[Decimal | None] = mapped_column(Numeric(30, 18))
+    mean_top_bottom_return_spread: Mapped[Decimal] = mapped_column(
+        Numeric(30, 18), nullable=False
+    )
+    ic_summary_reason_code: Mapped[str | None] = mapped_column(String(100))
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="publishing")
+    published_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            [
+                "data_version_id",
+                "cleaning_version_id",
+                "factor_version_id",
+                "strategy_version_id",
+            ],
+            [
+                "signal_datasets.data_version_id",
+                "signal_datasets.cleaning_version_id",
+                "signal_datasets.factor_version_id",
+                "signal_datasets.strategy_version_id",
+            ],
+            ondelete="CASCADE",
+        ),
+        ForeignKeyConstraint(
+            ["factor_version_id", "factor_variant_id"],
+            ["factor_variants.factor_version_id", "factor_variants.factor_variant_id"],
+        ),
+        UniqueConstraint(
+            "diagnostic_fingerprint", name="uq_factor_diagnostic_sets_fingerprint"
+        ),
+        UniqueConstraint(
+            "metric_version_id",
+            "data_version_id",
+            "cleaning_version_id",
+            "factor_version_id",
+            "strategy_version_id",
+            "factor_variant_id",
+            "rebalance_frequency",
+            name="uq_factor_diagnostic_set_identity",
+        ),
+        UniqueConstraint(
+            "diagnostic_set_id",
+            "metric_version_id",
+            name="uq_factor_diagnostic_set_version_identity",
+        ),
+        CheckConstraint("rebalance_frequency IN ('weekly','monthly')", name="valid_frequency"),
+        CheckConstraint("period_count > 0", name="positive_period_count"),
+        CheckConstraint(
+            "period_count = valid_ic_count + undefined_ic_count", name="valid_ic_counts"
+        ),
+        CheckConstraint(
+            "mean_rank_ic IS NULL OR mean_rank_ic BETWEEN -1 AND 1", name="valid_mean_rank_ic"
+        ),
+        CheckConstraint(
+            "positive_ic_ratio IS NULL OR positive_ic_ratio BETWEEN 0 AND 1",
+            name="valid_positive_ic_ratio",
+        ),
+        CheckConstraint(
+            "(mean_rank_ic IS NULL AND positive_ic_ratio IS NULL "
+            "AND ic_summary_reason_code IS NOT NULL) OR "
+            "(mean_rank_ic IS NOT NULL AND positive_ic_ratio IS NOT NULL "
+            "AND ic_summary_reason_code IS NULL)",
+            name="valid_ic_summary_state",
+        ),
+        CheckConstraint(
+            "status IN ('publishing','published')", name="valid_publication_status"
+        ),
+        Index(
+            "ix_factor_diagnostic_sets_lookup",
+            "factor_variant_id",
+            "rebalance_frequency",
+            "metric_version_id",
+        ),
+    )
+
+
+class FactorDiagnosticPeriod(Base):
+    __tablename__ = "factor_diagnostic_periods"
+
+    diagnostic_set_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("factor_diagnostic_sets.diagnostic_set_id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    signal_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    execution_date: Mapped[date] = mapped_column(Date, nullable=False)
+    next_execution_date: Mapped[date] = mapped_column(Date, nullable=False)
+    rank_ic: Mapped[Decimal | None] = mapped_column(Numeric(30, 18))
+    rank_ic_reason_code: Mapped[str | None] = mapped_column(String(100))
+    top_bottom_return_spread: Mapped[Decimal] = mapped_column(Numeric(30, 18), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint("signal_date < execution_date", name="signal_before_execution"),
+        CheckConstraint(
+            "execution_date < next_execution_date", name="execution_before_next_execution"
+        ),
+        CheckConstraint("rank_ic IS NULL OR rank_ic BETWEEN -1 AND 1", name="valid_rank_ic"),
+        CheckConstraint(
+            "(rank_ic IS NULL AND rank_ic_reason_code IS NOT NULL) OR "
+            "(rank_ic IS NOT NULL AND rank_ic_reason_code IS NULL)",
+            name="valid_rank_ic_state",
+        ),
+    )
+
+
+class MetricPublication(CreatedAtMixin, Base):
+    __tablename__ = "metric_publications"
+
+    metric_publication_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("backtest_runs.run_id", ondelete="CASCADE"), nullable=False
+    )
+    metric_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("metric_versions.metric_version_id"), nullable=False
+    )
+    diagnostic_set_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), nullable=False
+    )
+    metric_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    input_manifest_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    metric_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="publishing")
+    published_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["diagnostic_set_id", "metric_version_id"],
+            [
+                "factor_diagnostic_sets.diagnostic_set_id",
+                "factor_diagnostic_sets.metric_version_id",
+            ],
+        ),
+        UniqueConstraint("metric_fingerprint", name="uq_metric_publications_fingerprint"),
+        UniqueConstraint("run_id", "metric_version_id", name="uq_metric_publication_run_version"),
+        CheckConstraint("metric_count > 0", name="positive_metric_count"),
+        CheckConstraint(
+            "status IN ('publishing','published')", name="valid_publication_status"
+        ),
+        Index("ix_metric_publications_run_status", "run_id", "status"),
+    )
+
+
+class PerformanceMetric(Base):
+    __tablename__ = "performance_metrics"
+
+    metric_publication_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("metric_publications.metric_publication_id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    series_type: Mapped[str] = mapped_column(String(50), primary_key=True)
+    return_basis: Mapped[str] = mapped_column(String(30), primary_key=True)
+    metric_key: Mapped[str] = mapped_column(String(100), primary_key=True)
+    metric_value: Mapped[Decimal | None] = mapped_column(Numeric(38, 18))
+    value_status: Mapped[str] = mapped_column(String(20), nullable=False)
+    reason_code: Mapped[str | None] = mapped_column(String(100))
+    observation_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    unit: Mapped[str] = mapped_column(String(50), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint(
+            "series_type IN ('strategy','four_etf_equal_weight','spy_buy_hold',"
+            "'strategy_vs_four_etf_equal_weight')",
+            name="valid_series_type",
+        ),
+        CheckConstraint(
+            "return_basis IN ('gross','net','cost_independent')", name="valid_return_basis"
+        ),
+        CheckConstraint(
+            "value_status IN ('defined','undefined','not_applicable')", name="valid_value_status"
+        ),
+        CheckConstraint(
+            "(value_status = 'defined' AND metric_value IS NOT NULL AND reason_code IS NULL) OR "
+            "(value_status IN ('undefined','not_applicable') AND metric_value IS NULL "
+            "AND reason_code IS NOT NULL)",
+            name="valid_metric_value_state",
+        ),
+        CheckConstraint("observation_count >= 0", name="nonnegative_observation_count"),
+        CheckConstraint(
+            "metric_value IS NULL OR metric_value NOT IN "
+            "('NaN'::numeric, 'Infinity'::numeric, '-Infinity'::numeric)",
+            name="finite_metric_value",
+        ),
+        Index(
+            "ix_performance_metrics_leaderboard",
+            "series_type",
+            "return_basis",
+            "metric_key",
+            "value_status",
+            "metric_value",
+        ),
+    )
+
+
 class RunEvent(CreatedAtMixin, Base):
     __tablename__ = "run_events"
 
