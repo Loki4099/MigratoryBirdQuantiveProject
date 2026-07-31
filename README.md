@@ -8,7 +8,7 @@ Agent, automatic parameter selection, machine learning, leverage, shorting, or l
 
 ## Current development stage
 
-Phases 1 and 2 establish:
+Phases 1 through 3 establish:
 
 - validated application settings;
 - versioned data-contract definitions;
@@ -17,9 +17,11 @@ Phases 1 and 2 establish:
 - experiment, run, event, and archive lifecycles;
 - Yahoo Finance OHLCV/action ingestion and FRED DGS3MO ingestion;
 - immutable raw snapshots, adjusted-price cleaning, reserve daily returns, and data-quality gates;
-- unit and PostgreSQL integration tests for the deterministic core and data pipeline.
+- a frozen registry of 11 factor definitions and 24 independent parameter variants;
+- pure daily factor calculations, factor dataset publication, and deterministic reuse;
+- unit and PostgreSQL integration tests for the deterministic core, data, and factor pipelines.
 
-Factor calculations and backtesting are intentionally deferred to phase 3 and later.
+Ranking, portfolio construction, and backtesting are intentionally deferred to phase 4 and later.
 
 ## Local setup
 
@@ -36,6 +38,7 @@ After PostgreSQL is running and migrations are current:
 
 ```powershell
 style-rotation-data-update --start 1999-01-01 --end 2026-07-30
+style-rotation-factor-update
 ```
 
 The end date is inclusive at the application boundary. The pipeline pins provider request
@@ -44,6 +47,10 @@ gate, and creates a new `data_version` whenever source content changes.
 
 Yahoo Finance data is intended for personal research use. The project stores source metadata
 and hashes because historical adjusted values may be revised by the provider.
+
+`style-rotation-factor-update` uses the latest published clean dataset unless both explicit
+version identifiers are supplied. It stores unranked factor values only; direction normalization,
+Top 2 selection, and target weights belong to the next layer.
 
 ## Design rule
 

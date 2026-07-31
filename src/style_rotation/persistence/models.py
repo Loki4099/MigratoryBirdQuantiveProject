@@ -250,6 +250,126 @@ class FactorVersion(CreatedAtMixin, Base):
     code_hash: Mapped[str] = mapped_column(String(64), nullable=False)
 
 
+class FactorDefinition(CreatedAtMixin, Base):
+    __tablename__ = "factor_definitions"
+
+    factor_definition_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    factor_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("factor_versions.factor_version_id", ondelete="CASCADE")
+    )
+    definition_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    family: Mapped[str] = mapped_column(String(50), nullable=False)
+    name: Mapped[str] = mapped_column(String(150), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    formula: Mapped[str] = mapped_column(Text, nullable=False)
+    required_fields: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+    direction: Mapped[str] = mapped_column(String(30), nullable=False)
+    implementation_key: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "factor_version_id", "definition_key", name="uq_factor_definition_version_key"
+        ),
+        CheckConstraint(
+            "direction IN ('higher_is_better','lower_is_better')",
+            name="valid_direction",
+        ),
+    )
+
+
+class FactorVariant(CreatedAtMixin, Base):
+    __tablename__ = "factor_variants"
+
+    factor_variant_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    factor_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("factor_versions.factor_version_id", ondelete="CASCADE")
+    )
+    factor_definition_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("factor_definitions.factor_definition_id", ondelete="CASCADE"),
+    )
+    variant_key: Mapped[str] = mapped_column(String(150), nullable=False)
+    parameters: Mapped[dict[str, int]] = mapped_column(JSONB, nullable=False)
+    minimum_observations: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("factor_version_id", "variant_key", name="uq_factor_variant_version_key"),
+        UniqueConstraint(
+            "factor_version_id",
+            "factor_variant_id",
+            name="uq_factor_variant_version_identity",
+        ),
+        CheckConstraint("minimum_observations > 0", name="positive_minimum_observations"),
+    )
+
+
+class FactorValue(Base):
+    __tablename__ = "factor_values"
+
+    data_version_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    cleaning_version_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    factor_version_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    factor_variant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    asset_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    trade_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    raw_value: Mapped[Decimal] = mapped_column(Numeric(30, 14), nullable=False)
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["data_version_id", "cleaning_version_id", "asset_id", "trade_date"],
+            [
+                "clean_market_prices.data_version_id",
+                "clean_market_prices.cleaning_version_id",
+                "clean_market_prices.asset_id",
+                "clean_market_prices.trade_date",
+            ],
+            ondelete="CASCADE",
+        ),
+        ForeignKeyConstraint(
+            ["factor_version_id", "factor_variant_id"],
+            ["factor_variants.factor_version_id", "factor_variants.factor_variant_id"],
+        ),
+        Index(
+            "ix_factor_values_variant_asset_date",
+            "factor_variant_id",
+            "asset_id",
+            "trade_date",
+        ),
+    )
+
+
+class FactorDataset(CreatedAtMixin, Base):
+    __tablename__ = "factor_datasets"
+
+    data_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("data_versions.data_version_id"), primary_key=True
+    )
+    cleaning_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("cleaning_versions.cleaning_version_id"), primary_key=True
+    )
+    factor_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("factor_versions.factor_version_id"), primary_key=True
+    )
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    common_valid_start: Mapped[date] = mapped_column(Date, nullable=False)
+    coverage_end: Mapped[date] = mapped_column(Date, nullable=False)
+    row_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="published")
+    published_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        CheckConstraint("common_valid_start <= coverage_end", name="valid_coverage"),
+        CheckConstraint("row_count > 0", name="positive_row_count"),
+        CheckConstraint("status = 'published'", name="published_only"),
+    )
+
+
 class StrategyVersion(CreatedAtMixin, Base):
     __tablename__ = "strategy_versions"
 
