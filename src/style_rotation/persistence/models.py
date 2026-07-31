@@ -642,6 +642,125 @@ class BacktestRun(CreatedAtMixin, Base):
     )
 
 
+class RebalanceExecution(Base):
+    __tablename__ = "rebalance_executions"
+
+    run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("backtest_runs.run_id", ondelete="CASCADE"), primary_key=True
+    )
+    execution_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    signal_date: Mapped[date] = mapped_column(Date, nullable=False)
+    turnover: Mapped[Decimal] = mapped_column(Numeric(20, 14), nullable=False)
+    transaction_cost_fraction: Mapped[Decimal] = mapped_column(Numeric(20, 14), nullable=False)
+    transaction_cost_amount: Mapped[Decimal] = mapped_column(Numeric(30, 14), nullable=False)
+    gross_pretrade_nav: Mapped[Decimal] = mapped_column(Numeric(30, 14), nullable=False)
+    net_pretrade_nav: Mapped[Decimal] = mapped_column(Numeric(30, 14), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint("signal_date < execution_date", name="signal_before_execution"),
+        CheckConstraint("turnover >= 0", name="nonnegative_turnover"),
+        CheckConstraint("transaction_cost_fraction >= 0", name="nonnegative_cost_fraction"),
+    )
+
+
+class Trade(Base):
+    __tablename__ = "trades"
+
+    trade_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("backtest_runs.run_id", ondelete="CASCADE"), nullable=False
+    )
+    execution_date: Mapped[date] = mapped_column(Date, nullable=False)
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("assets.asset_id"), nullable=False
+    )
+    side: Mapped[str] = mapped_column(String(10), nullable=False)
+    execution_price: Mapped[Decimal] = mapped_column(Numeric(20, 8), nullable=False)
+    pretrade_weight: Mapped[Decimal] = mapped_column(Numeric(20, 14), nullable=False)
+    target_weight: Mapped[Decimal] = mapped_column(Numeric(20, 14), nullable=False)
+    weight_change: Mapped[Decimal] = mapped_column(Numeric(20, 14), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint("side IN ('buy','sell')", name="valid_side"),
+        CheckConstraint("execution_price > 0", name="positive_execution_price"),
+        UniqueConstraint("run_id", "execution_date", "asset_id", name="uq_trade_run_date_asset"),
+        Index("ix_trades_run_date", "run_id", "execution_date"),
+    )
+
+
+class DailyPosition(Base):
+    __tablename__ = "daily_positions"
+
+    run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("backtest_runs.run_id", ondelete="CASCADE"), primary_key=True
+    )
+    nav_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    sleeve: Mapped[str] = mapped_column(String(20), primary_key=True)
+    asset_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("assets.asset_id")
+    )
+    close_weight: Mapped[Decimal] = mapped_column(Numeric(20, 14), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint("close_weight >= 0 AND close_weight <= 1", name="valid_weight"),
+        CheckConstraint(
+            "(sleeve = 'RESERVE' AND asset_id IS NULL) OR "
+            "(sleeve <> 'RESERVE' AND asset_id IS NOT NULL)",
+            name="valid_sleeve_asset",
+        ),
+        Index("ix_daily_positions_run_date", "run_id", "nav_date"),
+    )
+
+
+class DailyNav(Base):
+    __tablename__ = "daily_nav"
+
+    run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("backtest_runs.run_id", ondelete="CASCADE"), primary_key=True
+    )
+    nav_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    gross_daily_return: Mapped[Decimal] = mapped_column(Numeric(30, 14), nullable=False)
+    net_daily_return: Mapped[Decimal] = mapped_column(Numeric(30, 14), nullable=False)
+    gross_nav: Mapped[Decimal] = mapped_column(Numeric(30, 14), nullable=False)
+    net_nav: Mapped[Decimal] = mapped_column(Numeric(30, 14), nullable=False)
+    turnover: Mapped[Decimal] = mapped_column(Numeric(20, 14), nullable=False)
+    transaction_cost_fraction: Mapped[Decimal] = mapped_column(Numeric(20, 14), nullable=False)
+    transaction_cost_amount: Mapped[Decimal] = mapped_column(Numeric(30, 14), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint("gross_nav > 0 AND net_nav > 0", name="positive_nav"),
+        CheckConstraint("turnover >= 0", name="nonnegative_turnover"),
+        Index("ix_daily_nav_date", "nav_date"),
+    )
+
+
+class BenchmarkDailyNav(Base):
+    __tablename__ = "benchmark_daily_nav"
+
+    run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("backtest_runs.run_id", ondelete="CASCADE"), primary_key=True
+    )
+    nav_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    benchmark_type: Mapped[str] = mapped_column(String(30), primary_key=True)
+    gross_daily_return: Mapped[Decimal] = mapped_column(Numeric(30, 14), nullable=False)
+    net_daily_return: Mapped[Decimal] = mapped_column(Numeric(30, 14), nullable=False)
+    gross_nav: Mapped[Decimal] = mapped_column(Numeric(30, 14), nullable=False)
+    net_nav: Mapped[Decimal] = mapped_column(Numeric(30, 14), nullable=False)
+    turnover: Mapped[Decimal] = mapped_column(Numeric(20, 14), nullable=False)
+    transaction_cost_fraction: Mapped[Decimal] = mapped_column(Numeric(20, 14), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint(
+            "benchmark_type IN ('four_etf_equal_weight','spy_buy_hold')",
+            name="valid_benchmark_type",
+        ),
+        CheckConstraint("gross_nav > 0 AND net_nav > 0", name="positive_nav"),
+        Index("ix_benchmark_daily_nav_date", "nav_date"),
+    )
+
+
 class RunEvent(CreatedAtMixin, Base):
     __tablename__ = "run_events"
 
