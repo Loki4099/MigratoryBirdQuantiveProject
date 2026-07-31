@@ -47,3 +47,8 @@ class DataQualitySeverity(StrEnum):
     INFO = "info"
     WARNING = "warning"
     ERROR = "error"
+
+
+class FactorDirection(StrEnum):
+    HIGHER_IS_BETTER = "higher_is_better"
+    LOWER_IS_BETTER = "lower_is_better"
