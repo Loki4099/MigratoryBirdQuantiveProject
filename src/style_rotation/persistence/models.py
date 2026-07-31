@@ -381,6 +381,141 @@ class StrategyVersion(CreatedAtMixin, Base):
     configuration: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
 
 
+class SignalDataset(CreatedAtMixin, Base):
+    __tablename__ = "signal_datasets"
+
+    data_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("data_versions.data_version_id"), primary_key=True
+    )
+    cleaning_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("cleaning_versions.cleaning_version_id"), primary_key=True
+    )
+    factor_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("factor_versions.factor_version_id"), primary_key=True
+    )
+    strategy_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("strategy_versions.strategy_version_id"), primary_key=True
+    )
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    first_signal_date: Mapped[date] = mapped_column(Date, nullable=False)
+    first_execution_date: Mapped[date] = mapped_column(Date, nullable=False)
+    coverage_end: Mapped[date] = mapped_column(Date, nullable=False)
+    event_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    position_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="published")
+    published_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        CheckConstraint("first_signal_date < first_execution_date", name="signal_before_execution"),
+        CheckConstraint("first_execution_date <= coverage_end", name="execution_in_coverage"),
+        CheckConstraint("event_count > 0", name="positive_event_count"),
+        CheckConstraint("position_count = event_count * 4", name="four_positions_per_event"),
+        CheckConstraint("status = 'published'", name="published_only"),
+    )
+
+
+class RebalanceEvent(Base):
+    __tablename__ = "rebalance_events"
+
+    rebalance_event_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    data_version_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    cleaning_version_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    factor_version_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    strategy_version_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    factor_variant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    rebalance_frequency: Mapped[str] = mapped_column(String(20), nullable=False)
+    strategy_template: Mapped[str] = mapped_column(String(30), nullable=False)
+    signal_date: Mapped[date] = mapped_column(Date, nullable=False)
+    execution_date: Mapped[date] = mapped_column(Date, nullable=False)
+    eligible_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    tie_flag: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    reserve_target_weight: Mapped[Decimal] = mapped_column(Numeric(12, 10), nullable=False)
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            [
+                "data_version_id",
+                "cleaning_version_id",
+                "factor_version_id",
+                "strategy_version_id",
+            ],
+            [
+                "signal_datasets.data_version_id",
+                "signal_datasets.cleaning_version_id",
+                "signal_datasets.factor_version_id",
+                "signal_datasets.strategy_version_id",
+            ],
+            ondelete="CASCADE",
+        ),
+        ForeignKeyConstraint(
+            ["factor_version_id", "factor_variant_id"],
+            ["factor_variants.factor_version_id", "factor_variants.factor_variant_id"],
+        ),
+        UniqueConstraint(
+            "data_version_id",
+            "cleaning_version_id",
+            "factor_version_id",
+            "strategy_version_id",
+            "factor_variant_id",
+            "rebalance_frequency",
+            "strategy_template",
+            "signal_date",
+            name="uq_rebalance_event_identity",
+        ),
+        CheckConstraint("signal_date < execution_date", name="signal_before_execution"),
+        CheckConstraint("eligible_count BETWEEN 0 AND 4", name="valid_eligible_count"),
+        CheckConstraint(
+            "reserve_target_weight >= 0 AND reserve_target_weight <= 1",
+            name="valid_reserve_weight",
+        ),
+        CheckConstraint("rebalance_frequency IN ('weekly','monthly')", name="valid_frequency"),
+        CheckConstraint(
+            "strategy_template IN ('cross_sectional','trend_filtered')",
+            name="valid_template",
+        ),
+        Index(
+            "ix_rebalance_events_variant_frequency_date",
+            "factor_variant_id",
+            "rebalance_frequency",
+            "signal_date",
+        ),
+    )
+
+
+class TargetPosition(Base):
+    __tablename__ = "target_positions"
+
+    rebalance_event_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("rebalance_events.rebalance_event_id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("assets.asset_id"), primary_key=True
+    )
+    raw_factor_value: Mapped[Decimal] = mapped_column(Numeric(30, 14), nullable=False)
+    oriented_factor_value: Mapped[Decimal] = mapped_column(Numeric(30, 14), nullable=False)
+    rank: Mapped[int | None] = mapped_column(Integer)
+    trend_eligible: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    tie_flag: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    selected: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    target_weight: Mapped[Decimal] = mapped_column(Numeric(12, 10), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint("rank IS NULL OR rank BETWEEN 1 AND 4", name="valid_rank"),
+        CheckConstraint("target_weight >= 0 AND target_weight <= 0.5", name="valid_weight"),
+        CheckConstraint(
+            "(selected AND target_weight = 0.5) OR (NOT selected AND target_weight = 0)",
+            name="selection_matches_weight",
+        ),
+        Index("ix_target_positions_asset_event", "asset_id", "rebalance_event_id"),
+    )
+
+
 class EngineVersion(CreatedAtMixin, Base):
     __tablename__ = "engine_versions"
 

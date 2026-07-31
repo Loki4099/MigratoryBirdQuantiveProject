@@ -30,6 +30,7 @@ dev = [
 [project.scripts]
 style-rotation-data-update = "style_rotation.cli.data_update:main"
 style-rotation-factor-update = "style_rotation.cli.factor_update:main"
+style-rotation-signal-update = "style_rotation.cli.signal_update:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
