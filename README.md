@@ -8,7 +8,7 @@ Agent, automatic parameter selection, machine learning, leverage, shorting, or l
 
 ## Current development stage
 
-Phases 1 through 5 establish:
+Phases 1 through 6 establish:
 
 - validated application settings;
 - versioned data-contract definitions;
@@ -25,9 +25,12 @@ Phases 1 through 5 establish:
   daily gross/net NAV and end-of-day positions;
 - same-frequency four-ETF equal-weight and SPY buy-and-hold benchmarks;
 - versioned, fingerprinted, atomically published backtest runs with deterministic reuse;
-- unit and PostgreSQL integration tests for the deterministic core and phases 1 through 5.
+- shared Rank IC and Top 2-Bottom 2 factor diagnostics for each factor/frequency pair;
+- gross/net return, risk, risk-adjusted, relative benchmark, turnover, cost, and reserve metrics;
+- versioned metric methodology, explicit undefined reason codes, input manifests, and reuse;
+- unit and PostgreSQL integration tests for the deterministic core and phases 1 through 6.
 
-Factor diagnostics and performance metrics are intentionally deferred to phase 6.
+The read-only API and front-end are intentionally deferred to phase 7.
 
 ## Local setup
 
@@ -47,6 +50,7 @@ style-rotation-data-update --start 1999-01-01 --end 2026-07-30
 style-rotation-factor-update
 style-rotation-signal-update
 style-rotation-backtest-update
+style-rotation-metrics-update
 ```
 
 The end date is inclusive at the application boundary. The pipeline pins provider request
@@ -68,6 +72,11 @@ filled or calculate turnover, costs, holdings, returns, or NAV.
 version identifiers are supplied. The formal matrix contains 24 variants, two frequencies, two
 strategy templates, and three cost scenarios (288 runs). `--variant-key` may be repeated for a
 scoped development or verification run. Completed fingerprints are reused without recalculation.
+
+`style-rotation-metrics-update` selects the latest clean, complete 288-run matrix by default. It
+publishes 48 shared factor/frequency diagnostic sets and one performance publication per run.
+Metric formulas, code, dependencies, Git commit, units, sample counts, and undefined reasons are
+versioned; a repeated completed metric version is reused without recalculation.
 
 ## Design rule
 
