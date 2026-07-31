@@ -45,7 +45,11 @@ class BacktestRepository:
         with self._session_factory.begin() as session:
             for contract in contracts:
                 existing = session.scalar(
-                    select(DataContract).where(DataContract.contract_hash == contract.contract_hash)
+                    select(DataContract).where(
+                        DataContract.layer == contract.layer.value,
+                        DataContract.name == contract.name,
+                        DataContract.schema_version == contract.schema_version,
+                    )
                 )
                 if existing is None:
                     session.add(
@@ -56,6 +60,10 @@ class BacktestRepository:
                             contract_hash=contract.contract_hash,
                             contract_body=canonicalize(contract),
                         )
+                    )
+                elif existing.contract_hash != contract.contract_hash:
+                    raise ValueError(
+                        "Contract identity exists with different content; increment schema_version"
                     )
 
     def latest_signal_dataset_ids(

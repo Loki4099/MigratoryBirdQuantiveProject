@@ -68,7 +68,7 @@ REBALANCE_EXECUTIONS_CONTRACT = DataContractSpec(
 TRADES_CONTRACT = DataContractSpec(
     layer=ContractLayer.BACKTEST,
     name="trades",
-    schema_version="0.1.0",
+    schema_version="0.1.1",
     primary_key=("trade_id",),
     fields=(
         FieldSpec("trade_id", "uuid", False, "Deterministic run-date-asset trade ID"),
