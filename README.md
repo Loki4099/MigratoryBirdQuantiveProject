@@ -8,7 +8,7 @@ Agent, automatic parameter selection, machine learning, leverage, shorting, or l
 
 ## Current development stage
 
-Phases 1 through 6 establish:
+Phases 1 through 7 establish:
 
 - validated application settings;
 - versioned data-contract definitions;
@@ -28,9 +28,10 @@ Phases 1 through 6 establish:
 - shared Rank IC and Top 2-Bottom 2 factor diagnostics for each factor/frequency pair;
 - gross/net return, risk, risk-adjusted, relative benchmark, turnover, cost, and reserve metrics;
 - versioned metric methodology, explicit undefined reason codes, input manifests, and reuse;
-- unit and PostgreSQL integration tests for the deterministic core and phases 1 through 6.
-
-The read-only API and front-end are intentionally deferred to phase 7.
+- unit and PostgreSQL integration tests for the deterministic core and phases 1 through 6;
+- a local read-only FastAPI, formal-result status checks, factor leaderboard, factor detail,
+  and comparison pages;
+- a single sequential command for updating all deterministic pipeline layers.
 
 ## Local setup
 
@@ -51,6 +52,12 @@ style-rotation-factor-update
 style-rotation-signal-update
 style-rotation-backtest-update
 style-rotation-metrics-update
+```
+
+The same five steps can be run sequentially with:
+
+```powershell
+style-rotation-pipeline-update --start 1999-01-01 --end 2026-07-30
 ```
 
 The end date is inclusive at the application boundary. The pipeline pins provider request
@@ -77,6 +84,19 @@ scoped development or verification run. Completed fingerprints are reused withou
 publishes 48 shared factor/frequency diagnostic sets and one performance publication per run.
 Metric formulas, code, dependencies, Git commit, units, sample counts, and undefined reasons are
 versioned; a repeated completed metric version is reused without recalculation.
+
+## Local research interface
+
+Start the read-only application after PostgreSQL contains a complete formal metric publication:
+
+```powershell
+style-rotation-web
+```
+
+Open `http://127.0.0.1:8000`. The application selects the latest metric version containing all
+288 published runs and uses database read-only transactions. It does not trigger calculations or
+write results. The leaderboard is a multi-metric research view rather than a single-metric
+"best factor" selector. API documentation is available at `http://127.0.0.1:8000/docs`.
 
 ## Design rule
 
