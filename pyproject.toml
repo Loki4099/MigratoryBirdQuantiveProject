@@ -10,12 +10,14 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
   "alembic>=1.16,<2",
+  "fastapi>=0.116,<1",
   "httpx>=0.28,<1",
   "pandas>=3.0.3,<4",
   "psycopg[binary]>=3.2,<4",
   "pydantic>=2.11,<3",
   "pydantic-settings>=2.10,<3",
   "sqlalchemy>=2.0.41,<3",
+  "uvicorn>=0.35,<1",
   "yfinance>=1.5.1,<2",
 ]
 
@@ -33,9 +35,14 @@ style-rotation-factor-update = "style_rotation.cli.factor_update:main"
 style-rotation-signal-update = "style_rotation.cli.signal_update:main"
 style-rotation-backtest-update = "style_rotation.cli.backtest_update:main"
 style-rotation-metrics-update = "style_rotation.cli.metrics_update:main"
+style-rotation-pipeline-update = "style_rotation.cli.pipeline_update:main"
+style-rotation-web = "style_rotation.cli.web:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"style_rotation.web" = ["static/*"]
 
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers"
