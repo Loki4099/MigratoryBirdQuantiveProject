@@ -33,7 +33,7 @@ CORE_METRICS = {
     "annualized_volatility",
     "sharpe_ratio",
     "sortino_ratio",
-    "maximum_drawdown",
+    "max_drawdown",
     "calmar_ratio",
     "tracking_error",
     "information_ratio",
@@ -79,7 +79,10 @@ class ResearchRepository:
 
     @staticmethod
     def _metric_label(metric: PerformanceMetric) -> str:
-        return f"{metric.series_type}.{metric.return_basis}.{metric.metric_key}"
+        metric_key = (
+            "maximum_drawdown" if metric.metric_key == "max_drawdown" else metric.metric_key
+        )
+        return f"{metric.series_type}.{metric.return_basis}.{metric_key}"
 
     def _context(self, session: Session, version: MetricVersion) -> dict[str, Any]:
         rows = session.execute(
