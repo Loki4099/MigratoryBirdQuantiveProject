@@ -16,3 +16,8 @@ def test_data_contracts_distinguish_tradable_reference_and_calendar_series() -> 
     assert by_key["xnys_calendar"].subject_type == "calendar"
     assert by_key["us_etf_daily_market"].version.request_template["auto_adjust"] is False
     assert "available_at" in by_key["dgs3mo_daily"].version.availability_semantics
+    assert by_key["dgs3mo_daily"].version.parser_version == "fred_csv_v1"
+    assert by_key["dgs3mo_daily"].version.request_template == {
+        "series_id": "DGS3MO",
+        "format": "csv",
+    }

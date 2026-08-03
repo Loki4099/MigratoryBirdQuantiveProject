@@ -6,6 +6,7 @@ import sys
 import uuid
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
+from datetime import date
 from pathlib import Path
 from typing import NoReturn
 
@@ -14,6 +15,12 @@ from style_rotation.architecture import DOMAIN_BOUNDARIES
 from style_rotation.catalog.bootstrap import publish_catalogs
 from style_rotation.catalog.scope import publish_research_scope
 from style_rotation.config.settings import get_settings
+from style_rotation.data.acquisition import SourceAcquisitionService
+from style_rotation.data.calendar import CalendarPublicationService, XNYSCalendarGenerator
+from style_rotation.data.providers.snapshots import (
+    FredCsvSnapshotAdapter,
+    YahooYFinanceSnapshotAdapter,
+)
 from style_rotation.data.service import publish_data_contracts
 from style_rotation.lineage.service import ArtifactService
 from style_rotation.persistence.database import database_status, reset_database, upgrade_database
@@ -112,6 +119,52 @@ def _bootstrap_data_contracts(catalog_file: str) -> int:
     return 0
 
 
+def _parse_date(value: str) -> date:
+    try:
+        return date.fromisoformat(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("expected an ISO date (YYYY-MM-DD)") from error
+
+
+def _data_fetch(
+    start: date,
+    end_inclusive: date,
+    symbols: tuple[str, ...],
+    skip_market: bool,
+    skip_rate: bool,
+) -> int:
+    if skip_market and skip_rate:
+        raise ValueError("Cannot skip both market and rate acquisition")
+    settings = get_settings()
+    engine = create_postgres_engine(settings.database_url)
+    service = SourceAcquisitionService(
+        engine,
+        YahooYFinanceSnapshotAdapter(settings.yahoo_timeout_seconds),
+        FredCsvSnapshotAdapter(settings.fred_csv_url, settings.fred_timeout_seconds),
+    )
+    results = service.acquire(
+        symbols=symbols,
+        start=start,
+        end_inclusive=end_inclusive,
+        include_market=not skip_market,
+        include_rate=not skip_rate,
+    )
+    print(json.dumps([item.to_dict() for item in results], indent=2, ensure_ascii=False))
+    return 0
+
+
+def _data_calendar(start: date, end_inclusive: date, version_number: int) -> int:
+    generated = XNYSCalendarGenerator().generate(start, end_inclusive)
+    published = CalendarPublicationService(
+        create_postgres_engine(get_settings().database_url)
+    ).publish(generated, version_number=version_number)
+    payload = asdict(published)
+    payload["artifact_id"] = str(published.artifact_id)
+    payload["session_count"] = len(generated.sessions)
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
+
+
 def _artifact_list() -> int:
     print(json.dumps(_artifact_service().list_artifacts(), indent=2, ensure_ascii=False))
     return 0
@@ -192,6 +245,39 @@ def build_parser() -> argparse.ArgumentParser:
         handler=lambda args: _bootstrap_data_contracts(args.catalog_file)
     )
 
+    data_parser = subparsers.add_parser("data", help="Acquire immutable source evidence")
+    data_subparsers = data_parser.add_subparsers(dest="data_command", required=True)
+    fetch_parser = data_subparsers.add_parser(
+        "fetch", help="Fetch and publish raw market/rate source snapshots"
+    )
+    fetch_parser.add_argument("--start", required=True, type=_parse_date)
+    fetch_parser.add_argument("--end", required=True, type=_parse_date, dest="end_inclusive")
+    fetch_parser.add_argument(
+        "--symbols", nargs="+", default=["IWF", "IWD", "IWO", "IWN", "SPY"]
+    )
+    fetch_parser.add_argument("--skip-market", action="store_true")
+    fetch_parser.add_argument("--skip-rate", action="store_true")
+    fetch_parser.set_defaults(
+        handler=lambda args: _data_fetch(
+            args.start,
+            args.end_inclusive,
+            tuple(args.symbols),
+            args.skip_market,
+            args.skip_rate,
+        )
+    )
+    calendar_parser = data_subparsers.add_parser(
+        "calendar", help="Generate and publish a frozen XNYS calendar"
+    )
+    calendar_parser.add_argument("--start", required=True, type=_parse_date)
+    calendar_parser.add_argument("--end", required=True, type=_parse_date, dest="end_inclusive")
+    calendar_parser.add_argument("--version", type=int, default=1, dest="version_number")
+    calendar_parser.set_defaults(
+        handler=lambda args: _data_calendar(
+            args.start, args.end_inclusive, args.version_number
+        )
+    )
+
     artifact_parser = subparsers.add_parser("artifact", help="Inspect artifact identity/status")
     artifact_subparsers = artifact_parser.add_subparsers(dest="artifact_command", required=True)
     artifact_list_parser = artifact_subparsers.add_parser("list", help="List artifacts")
@@ -223,7 +309,7 @@ def build_parser() -> argparse.ArgumentParser:
     api_parser.set_defaults(handler=lambda args: _run_api(args.host, args.port))
 
     for command in PLANNED_COMMANDS:
-        if command.key in {"bootstrap", "artifact", "lineage", "api"}:
+        if command.key in {"bootstrap", "data", "artifact", "lineage", "api"}:
             continue
         command_parser = subparsers.add_parser(command.key, help=command.summary)
         command_parser.set_defaults(handler=lambda _args, item=command: _planned(item))

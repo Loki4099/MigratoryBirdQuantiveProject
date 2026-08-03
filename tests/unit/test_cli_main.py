@@ -1,6 +1,7 @@
 import json
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
+from datetime import date
 from io import StringIO
 from unittest.mock import patch
 
@@ -40,6 +41,21 @@ class UnifiedCliTests(unittest.TestCase):
         ):
             run()
         self.assertEqual(error.getvalue().strip(), "error: unsafe target")
+
+    def test_data_commands_parse_iso_dates(self) -> None:
+        with patch("style_rotation.cli.main._data_calendar", return_value=0) as command:
+            result = main(
+                [
+                    "data",
+                    "calendar",
+                    "--start",
+                    "2026-01-01",
+                    "--end",
+                    "2026-12-31",
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with(date(2026, 1, 1), date(2026, 12, 31), 1)
 
 
 if __name__ == "__main__":

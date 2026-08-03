@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     api_host: str = "127.0.0.1"
     api_port: int = 8000
     yahoo_timeout_seconds: float = 30.0
+    fred_timeout_seconds: float = 30.0
     fred_csv_url: str = "https://fred.stlouisfed.org/graph/fredgraph.csv"
 
 

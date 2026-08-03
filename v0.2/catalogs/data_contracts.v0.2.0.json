@@ -61,7 +61,7 @@
         "timestamp_semantics": "observation_date",
         "availability_semantics": "available_at is stored independently from observation_date",
         "parser_version": "fred_csv_v1",
-        "request_template": {"series_id": "DGS3MO", "file_type": "json"},
+        "request_template": {"series_id": "DGS3MO", "format": "csv"},
         "field_mapping": {"date": "observation_date", "value": "annual_rate_percent"}
       }
     },

@@ -72,9 +72,14 @@ Publish the catalogs idempotently and inspect their immutable lineage:
 style-rotation bootstrap catalogs
 style-rotation bootstrap scope
 style-rotation bootstrap data-contracts
+style-rotation data calendar --start 2000-01-01 --end 2026-12-31
+style-rotation data fetch --start 2000-01-01 --end 2026-08-03
 style-rotation artifact list
 style-rotation lineage show <artifact-uuid>
 ```
+
+`data fetch` performs real network requests and publishes immutable source snapshots. It does not
+yet parse or approve canonical research data; that quality-gated step is delivered in M2B3.
 
 Build the React application and run the combined local service:
 

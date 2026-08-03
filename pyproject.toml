@@ -10,6 +10,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
   "alembic>=1.16,<2",
+  "exchange-calendars>=4.11,<5",
   "fastapi>=0.116,<1",
   "httpx>=0.28,<1",
   "pandas>=3.0.3,<4",
@@ -60,5 +61,5 @@ strict = true
 packages = ["style_rotation"]
 
 [[tool.mypy.overrides]]
-module = ["pandas", "yfinance"]
+module = ["exchange_calendars", "pandas", "yfinance"]
 ignore_missing_imports = true
