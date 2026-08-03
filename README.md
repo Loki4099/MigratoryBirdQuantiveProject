@@ -4,7 +4,7 @@ Versioned research platform for explainable US style rotation across IWF, IWD, I
 
 ## Status
 
-v0.2 is being rebuilt in short, independently verified milestones. M0 through M3 are complete. The platform now has immutable publication, an asset/data catalog, source evidence, typed canonical data, reserve accrual, frozen data bundles, eligibility diagnostics, versioned deterministic factor calculation, immutable distribution/correlation diagnostics, read-only APIs, and bilingual Assets/Data/Factors pages. Signal, model, strategy, and experiment implementations follow in later milestones.
+v0.2 is being rebuilt in short, independently verified milestones. M0 through M3 and the M4A signal-definition foundation are complete. The platform now has immutable publication, an asset/data catalog, source evidence, typed canonical data, reserve accrual, frozen data bundles, eligibility diagnostics, deterministic factor calculation and diagnostics, plus 51 typed signal definitions with explicit transformations and factor lineage. Signal datasets/diagnostics, models, strategies, and experiments follow in later milestones.
 
 The authoritative plan is [v0.2/正式开发方案.md](v0.2/正式开发方案.md). Detailed decisions and database rationale are stored in [v0.2/设计决策记录.md](v0.2/设计决策记录.md) and [v0.2/数据库设计.md](v0.2/数据库设计.md).
 
@@ -85,6 +85,7 @@ style-rotation factor bootstrap-engine --git-commit <hex-commit> --dependency-lo
 style-rotation factor publish --factor-catalog-artifact-id <uuid> --bundle-artifact-id <uuid> --eligibility-artifact-id <uuid> --engine-artifact-id <uuid>
 style-rotation factor bootstrap-diagnostic-engine --git-commit <hex-commit> --dependency-lock-file requirements.lock --version 1
 style-rotation factor diagnose --factor-catalog-artifact-id <uuid> --bundle-artifact-id <uuid> --eligibility-artifact-id <uuid> --factor-engine-artifact-id <uuid> --diagnostic-engine-artifact-id <uuid>
+style-rotation signal bootstrap --catalog-file v0.2/catalogs/signals.v0.2.0.json
 style-rotation artifact list
 style-rotation lineage show <artifact-uuid>
 ```

@@ -148,7 +148,7 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     engine_spec = build_factor_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260803_09_v02_factor_diag",
+        "20260803_10_v02_signal_core",
     )
     factor_engine = publish_factor_engine(engine, engine_spec)
     assert publish_factor_engine(engine, engine_spec).reused is True
@@ -203,7 +203,7 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     diagnostic_spec = build_factor_diagnostic_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260803_09_v02_factor_diag",
+        "20260803_10_v02_signal_core",
     )
     diagnostic_engine = publish_factor_diagnostic_engine(engine, diagnostic_spec)
     diagnostic_service = FactorDiagnosticPublicationService(engine)

@@ -62,8 +62,8 @@ def test_empty_database_migrates_to_one_clean_v02_head() -> None:
     psycopg_url = _reset()
     assert DATABASE_URL is not None
     status = database_status(DATABASE_URL)
-    assert status.current_revision == "20260803_09_v02_factor_diag"
-    assert status.head_revisions == ("20260803_09_v02_factor_diag",)
+    assert status.current_revision == "20260803_10_v02_signal_core"
+    assert status.head_revisions == ("20260803_10_v02_signal_core",)
     assert status.present_schemas == SCHEMA_NAMES
     assert status.missing_schemas == ()
 
@@ -263,5 +263,5 @@ def test_migration_can_downgrade_to_base_and_upgrade_again() -> None:
 
     upgrade_database(DATABASE_URL)
     upgraded = database_status(DATABASE_URL)
-    assert upgraded.current_revision == "20260803_09_v02_factor_diag"
+    assert upgraded.current_revision == "20260803_10_v02_signal_core"
     assert upgraded.missing_schemas == ()

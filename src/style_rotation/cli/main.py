@@ -41,6 +41,7 @@ from style_rotation.factor.service import publish_factor_catalog
 from style_rotation.lineage.service import ArtifactService
 from style_rotation.persistence.database import database_status, reset_database, upgrade_database
 from style_rotation.persistence.session import create_postgres_engine
+from style_rotation.signal.service import publish_signal_catalog
 
 
 @dataclass(frozen=True, slots=True)
@@ -295,6 +296,14 @@ def _factor_diagnose(
         uuid.UUID(eligibility_artifact_id),
         uuid.UUID(factor_engine_artifact_id),
         uuid.UUID(diagnostic_engine_artifact_id),
+    )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _signal_bootstrap(catalog_file: str) -> int:
+    result = publish_signal_catalog(
+        create_postgres_engine(get_settings().database_url), Path(catalog_file)
     )
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0
@@ -653,8 +662,20 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
 
+    signal_parser = subparsers.add_parser(
+        "signal", help="Materialize versioned signal definitions and transformations"
+    )
+    signal_subparsers = signal_parser.add_subparsers(dest="signal_command", required=True)
+    signal_bootstrap_parser = signal_subparsers.add_parser(
+        "bootstrap", help="Materialize the published M0 signal catalog"
+    )
+    signal_bootstrap_parser.add_argument(
+        "--catalog-file", default="v0.2/catalogs/signals.v0.2.0.json"
+    )
+    signal_bootstrap_parser.set_defaults(handler=lambda args: _signal_bootstrap(args.catalog_file))
+
     for command in PLANNED_COMMANDS:
-        if command.key in {"bootstrap", "data", "factor", "artifact", "lineage", "api"}:
+        if command.key in {"bootstrap", "data", "factor", "signal", "artifact", "lineage", "api"}:
             continue
         command_parser = subparsers.add_parser(command.key, help=command.summary)
         command_parser.set_defaults(handler=lambda _args, item=command: _planned(item))
