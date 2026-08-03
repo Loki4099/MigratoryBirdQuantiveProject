@@ -29,7 +29,13 @@ from style_rotation.data.providers.snapshots import (
 )
 from style_rotation.data.publication import CanonicalDataPublicationService
 from style_rotation.data.service import publish_data_contracts
-from style_rotation.factor.engine import build_factor_engine_spec, publish_factor_engine
+from style_rotation.factor.diagnostic_publication import FactorDiagnosticPublicationService
+from style_rotation.factor.engine import (
+    build_factor_diagnostic_engine_spec,
+    build_factor_engine_spec,
+    publish_factor_diagnostic_engine,
+    publish_factor_engine,
+)
 from style_rotation.factor.publication import FactorDatasetPublicationService
 from style_rotation.factor.service import publish_factor_catalog
 from style_rotation.lineage.service import ArtifactService
@@ -252,6 +258,45 @@ def _factor_publish(
         uuid.UUID(engine_artifact_id),
     )
     print(json.dumps([item.to_dict() for item in results], indent=2, ensure_ascii=False))
+    return 0
+
+
+def _factor_bootstrap_diagnostic_engine(
+    git_commit: str, dependency_lock_file: str, version_number: int
+) -> int:
+    settings = get_settings()
+    engine = create_postgres_engine(settings.database_url)
+    status = database_status(settings.database_url)
+    if status.current_revision is None:
+        raise ValueError("Database must be migrated before publishing a diagnostic engine")
+    spec = build_factor_diagnostic_engine_spec(
+        git_commit,
+        Path(dependency_lock_file),
+        status.current_revision,
+        version_number=version_number,
+    )
+    result = publish_factor_diagnostic_engine(engine, spec)
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _factor_diagnose(
+    factor_catalog_artifact_id: str,
+    bundle_artifact_id: str,
+    eligibility_artifact_id: str,
+    factor_engine_artifact_id: str,
+    diagnostic_engine_artifact_id: str,
+) -> int:
+    result = FactorDiagnosticPublicationService(
+        create_postgres_engine(get_settings().database_url)
+    ).publish(
+        uuid.UUID(factor_catalog_artifact_id),
+        uuid.UUID(bundle_artifact_id),
+        uuid.UUID(eligibility_artifact_id),
+        uuid.UUID(factor_engine_artifact_id),
+        uuid.UUID(diagnostic_engine_artifact_id),
+    )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0
 
 
@@ -575,6 +620,36 @@ def build_parser() -> argparse.ArgumentParser:
             args.bundle_artifact_id,
             args.eligibility_artifact_id,
             args.engine_artifact_id,
+        )
+    )
+    factor_diagnostic_engine_parser = factor_subparsers.add_parser(
+        "bootstrap-diagnostic-engine", help="Publish the factor diagnostic engine version"
+    )
+    factor_diagnostic_engine_parser.add_argument("--git-commit", required=True)
+    factor_diagnostic_engine_parser.add_argument(
+        "--dependency-lock-file", default="requirements.lock"
+    )
+    factor_diagnostic_engine_parser.add_argument("--version", type=int, default=1)
+    factor_diagnostic_engine_parser.set_defaults(
+        handler=lambda args: _factor_bootstrap_diagnostic_engine(
+            args.git_commit, args.dependency_lock_file, args.version
+        )
+    )
+    factor_diagnose_parser = factor_subparsers.add_parser(
+        "diagnose", help="Publish factor-layer distribution and correlation diagnostics"
+    )
+    factor_diagnose_parser.add_argument("--factor-catalog-artifact-id", required=True)
+    factor_diagnose_parser.add_argument("--bundle-artifact-id", required=True)
+    factor_diagnose_parser.add_argument("--eligibility-artifact-id", required=True)
+    factor_diagnose_parser.add_argument("--factor-engine-artifact-id", required=True)
+    factor_diagnose_parser.add_argument("--diagnostic-engine-artifact-id", required=True)
+    factor_diagnose_parser.set_defaults(
+        handler=lambda args: _factor_diagnose(
+            args.factor_catalog_artifact_id,
+            args.bundle_artifact_id,
+            args.eligibility_artifact_id,
+            args.factor_engine_artifact_id,
+            args.diagnostic_engine_artifact_id,
         )
     )
 

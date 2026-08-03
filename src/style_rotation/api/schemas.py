@@ -250,3 +250,72 @@ class DataOverviewResponse(ApiModel):
     datasets: list[DatasetPublicationItem]
     bundle: DataBundleItem | None
     eligibility: EligibilitySnapshotItem | None
+
+
+class FactorDiagnosticIssueItem(ApiModel):
+    variant_key: str
+    severity: Literal["info", "warning", "error"]
+    issue_code: str
+    message: str
+    details: dict[str, Any]
+
+
+class FactorDatasetDiagnosticItem(ApiModel):
+    factor_dataset_artifact_id: UUID
+    factor_key: str
+    measurement_family: str
+    formula: str
+    output_unit: str
+    variant_key: str
+    parameters: dict[str, Any]
+    preset_type: str
+    coverage_start: date
+    coverage_end: date
+    row_count: int
+    observation_count: int
+    asset_count: int
+    missing_count: int
+    mean: float
+    standard_deviation: float
+    minimum: float
+    p05: float
+    p25: float
+    median: float
+    p75: float
+    p95: float
+    maximum: float
+    zero_variance: bool
+    quality: QualitySummary
+
+
+class FactorCorrelationItem(ApiModel):
+    left_variant_key: str
+    right_variant_key: str
+    left_factor_key: str
+    right_factor_key: str
+    observation_count: int
+    spearman_correlation: float | None
+    same_definition: bool
+    high_correlation: bool
+
+
+class FactorOverviewResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    diagnostic_artifact_id: UUID
+    factor_catalog_artifact_id: UUID
+    universe_artifact_id: UUID
+    data_bundle_artifact_id: UUID
+    eligibility_artifact_id: UUID
+    factor_engine_artifact_id: UUID
+    diagnostic_engine_artifact_id: UUID
+    coverage_start: date
+    coverage_end: date
+    dataset_count: int
+    asset_count: int
+    observation_count: int
+    pair_count: int
+    high_correlation_threshold: float
+    datasets: list[FactorDatasetDiagnosticItem]
+    correlations: list[FactorCorrelationItem]
+    issues: list[FactorDiagnosticIssueItem]

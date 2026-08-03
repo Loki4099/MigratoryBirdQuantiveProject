@@ -100,6 +100,28 @@ class UnifiedCliTests(unittest.TestCase):
         self.assertEqual(result, 0)
         command.assert_called_once_with(*ids)
 
+    def test_factor_diagnose_requires_calculation_and_diagnostic_engines(self) -> None:
+        ids = [f"00000000-0000-0000-0000-00000000000{index}" for index in range(1, 6)]
+        with patch("style_rotation.cli.main._factor_diagnose", return_value=0) as command:
+            result = main(
+                [
+                    "factor",
+                    "diagnose",
+                    "--factor-catalog-artifact-id",
+                    ids[0],
+                    "--bundle-artifact-id",
+                    ids[1],
+                    "--eligibility-artifact-id",
+                    ids[2],
+                    "--factor-engine-artifact-id",
+                    ids[3],
+                    "--diagnostic-engine-artifact-id",
+                    ids[4],
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with(*ids)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -26,6 +26,8 @@ from style_rotation.api.schemas import (
     DatasetPublicationItem,
     DependencySummary,
     DomainCapability,
+    FactorDatasetDiagnosticItem,
+    FactorOverviewResponse,
     HealthResponse,
     LineageManifestResponse,
     QualityState,
@@ -65,6 +67,7 @@ class ArtifactReader(Protocol):
     def asset_catalog(self) -> dict[str, Any]: ...
     def data_requirements(self) -> dict[str, Any]: ...
     def data_overview(self) -> dict[str, Any]: ...
+    def factor_overview(self) -> dict[str, Any]: ...
 
 
 def _context() -> ApiContext:
@@ -150,7 +153,7 @@ def create_app(
 
     @app.get("/api/v2/capabilities", response_model=CapabilitiesResponse, tags=["system"])
     def capabilities() -> CapabilitiesResponse:
-        available = {"catalog", "data", "lineage", "ops"}
+        available = {"catalog", "data", "factor", "lineage", "ops"}
         return CapabilitiesResponse(
             context=_context(),
             quality=QualitySummary(state="ok"),
@@ -170,6 +173,7 @@ def create_app(
                 "assets",
                 "data_requirements",
                 "data_overview",
+                "factor_overview",
                 "artifacts",
                 "lineage",
             ],
@@ -262,6 +266,55 @@ def create_app(
             datasets=[DatasetPublicationItem.model_validate(item) for item in dataset_payloads],
             bundle=result["bundle"],
             eligibility=eligibility,
+        )
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
+
+    @app.get(
+        "/api/v2/factors/overview",
+        response_model=FactorOverviewResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["factor"],
+    )
+    def factor_overview(
+        response: Response,
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> FactorOverviewResponse | Response:
+        result = reader.factor_overview()
+        issue_severities: dict[str, set[str]] = {}
+        for issue in result["issues"]:
+            issue_severities.setdefault(str(issue["variant_key"]), set()).add(
+                str(issue["severity"])
+            )
+        datasets: list[FactorDatasetDiagnosticItem] = []
+        has_error = False
+        has_warning = False
+        for dataset in result["datasets"]:
+            severities = issue_severities.get(str(dataset["variant_key"]), set())
+            if "error" in severities:
+                quality = QualitySummary(state="error", codes=["factor.diagnostic_error"])
+                has_error = True
+            elif "warning" in severities:
+                quality = QualitySummary(state="warning", codes=["factor.diagnostic_warning"])
+                has_warning = True
+            else:
+                quality = QualitySummary(state="ok")
+            datasets.append(
+                FactorDatasetDiagnosticItem.model_validate({**dataset, "quality": quality})
+            )
+        if has_error:
+            overall_quality = QualitySummary(state="error", codes=["factor.diagnostic_error"])
+        elif has_warning:
+            overall_quality = QualitySummary(state="warning", codes=["factor.diagnostic_warning"])
+        else:
+            overall_quality = QualitySummary(state="ok")
+        payload = FactorOverviewResponse.model_validate(
+            {
+                "context": _context(),
+                "quality": overall_quality,
+                **result,
+                "datasets": datasets,
+            }
         )
         cached = _etag_response(payload, response, if_none_match)
         return cached or payload

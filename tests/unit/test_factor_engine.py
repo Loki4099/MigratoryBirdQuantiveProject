@@ -5,7 +5,11 @@ from pathlib import Path
 import pytest
 
 from style_rotation.factor.calculator import IMPLEMENTATIONS
-from style_rotation.factor.engine import FactorEngineSpec, build_factor_engine_spec
+from style_rotation.factor.engine import (
+    FactorEngineSpec,
+    build_factor_diagnostic_engine_spec,
+    build_factor_engine_spec,
+)
 
 
 def test_factor_engine_spec_fingerprints_code_configuration_and_lock(tmp_path: Path) -> None:
@@ -21,6 +25,8 @@ def test_factor_engine_spec_fingerprints_code_configuration_and_lock(tmp_path: P
     assert len(first.configuration_hash) == 64
     assert set(first.numerical_environment["packages"]) == {"numpy", "pandas", "scipy"}
     assert len(IMPLEMENTATIONS) == 12
+    diagnostics = build_factor_diagnostic_engine_spec("a" * 40, lock, "revision-1")
+    assert diagnostics.configuration_hash != first.configuration_hash
 
     lock.write_bytes(b"numpy==2.0\n")
     changed = build_factor_engine_spec("a" * 40, lock, "revision-1")

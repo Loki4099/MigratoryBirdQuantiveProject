@@ -27,7 +27,7 @@ export function DashboardPage() {
         <article className="stat-card"><span>{t("dashboard.systemHealth")}</span><QualityBadge state="ok" /><strong>{health.data?.database_revision}</strong></article>
         <article className="stat-card"><span>{t("dashboard.publishedObjects")}</span><strong className="stat-number">{artifacts.data?.total ?? 0}</strong><small>{t("dashboard.traceHint")}</small></article>
         <article className="stat-card"><span>{t("dashboard.currentScope")}</span><strong className="stat-number">{available} / {capabilities.data?.domains.length ?? 0}</strong><small>{t("common.available")}</small></article>
-        <article className="stat-card accent"><span>{t("dashboard.nextMilestone")}</span><strong>{t("dashboard.nextValue")}</strong><small>M2</small></article>
+        <article className="stat-card accent"><span>{t("dashboard.nextMilestone")}</span><strong>{t("dashboard.nextValue")}</strong><small>M4</small></article>
       </section>
       <section className="foundation-strip">
         <div><span>01</span><strong>Canonical identity</strong><small>canonical-json-v2</small></div>

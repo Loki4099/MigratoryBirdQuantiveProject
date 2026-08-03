@@ -8,6 +8,7 @@ import { ArtifactDetailPage } from "./pages/ArtifactDetailPage";
 import { ArtifactsPage } from "./pages/ArtifactsPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DataPage } from "./pages/DataPage";
+import { FactorsPage } from "./pages/FactorsPage";
 import { PlannedPage } from "./pages/PlannedPage";
 
 export const queryClient = new QueryClient({
@@ -21,7 +22,7 @@ export function AppRoutes() {
         <Route index element={<DashboardPage />} />
         <Route path="assets" element={<AssetsPage />} />
         <Route path="data" element={<DataPage />} />
-        <Route path="factors" element={<PlannedPage titleKey="nav.factors" milestone="M3" />} />
+        <Route path="factors" element={<FactorsPage />} />
         <Route path="signals" element={<PlannedPage titleKey="nav.signals" milestone="M4" />} />
         <Route path="models" element={<PlannedPage titleKey="nav.models" milestone="M5" />} />
         <Route path="strategies" element={<PlannedPage titleKey="nav.strategies" milestone="M6" />} />

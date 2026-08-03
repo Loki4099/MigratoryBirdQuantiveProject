@@ -7,8 +7,11 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import text
 
+from style_rotation.api.app import create_app
+from style_rotation.api.query import ArtifactQueryService
 from style_rotation.catalog.bootstrap import publish_catalogs
 from style_rotation.catalog.eligibility import EligibilityPublicationService
 from style_rotation.catalog.scope import publish_research_scope
@@ -20,7 +23,13 @@ from style_rotation.data.bundle import (
 from style_rotation.data.calendar import CalendarPublicationService, XNYSCalendarGenerator
 from style_rotation.data.publication import CanonicalDataPublicationService
 from style_rotation.data.service import SnapshotInput, SourceSnapshotService, publish_data_contracts
-from style_rotation.factor.engine import build_factor_engine_spec, publish_factor_engine
+from style_rotation.factor.diagnostic_publication import FactorDiagnosticPublicationService
+from style_rotation.factor.engine import (
+    build_factor_diagnostic_engine_spec,
+    build_factor_engine_spec,
+    publish_factor_diagnostic_engine,
+    publish_factor_engine,
+)
 from style_rotation.factor.publication import FactorDatasetPublicationService
 from style_rotation.factor.service import publish_factor_catalog
 from style_rotation.lineage.service import ArtifactService
@@ -139,7 +148,7 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     engine_spec = build_factor_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260803_08_v02_factor_engine",
+        "20260803_09_v02_factor_diag",
     )
     factor_engine = publish_factor_engine(engine, engine_spec)
     assert publish_factor_engine(engine, engine_spec).reused is True
@@ -190,6 +199,58 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     assert counts == (28, 1120, 140)
     expected = (100 + 252 * 0.05 + (252 % 13) * 0.03) / 100 - 1
     assert math.isclose(sample, expected, rel_tol=0, abs_tol=1e-12)
+
+    diagnostic_spec = build_factor_diagnostic_engine_spec(
+        "a" * 40,
+        PROJECT_ROOT / "requirements.lock",
+        "20260803_09_v02_factor_diag",
+    )
+    diagnostic_engine = publish_factor_diagnostic_engine(engine, diagnostic_spec)
+    diagnostic_service = FactorDiagnosticPublicationService(engine)
+    diagnostics = diagnostic_service.publish(
+        factor_catalog.release_artifact_id,
+        bundle.artifact_id,
+        eligibility.artifact_id,
+        factor_engine.artifact_id,
+        diagnostic_engine.artifact_id,
+    )
+    diagnostic_reuse = diagnostic_service.publish(
+        factor_catalog.release_artifact_id,
+        bundle.artifact_id,
+        eligibility.artifact_id,
+        factor_engine.artifact_id,
+        diagnostic_engine.artifact_id,
+    )
+    assert diagnostics.dataset_count == 28
+    assert diagnostics.pair_count == 378
+    assert diagnostic_reuse.reused is True
+    assert diagnostic_reuse.artifact_id == diagnostics.artifact_id
+    with engine.connect() as connection:
+        diagnostic_counts = connection.execute(
+            text(
+                "SELECT (SELECT count(*) FROM factor.factor_diagnostic_set), "
+                "(SELECT count(*) FROM factor.factor_dataset_summary), "
+                "(SELECT count(*) FROM factor.factor_pair_correlation), "
+                "(SELECT count(*) FROM lineage.artifact_dependency "
+                "WHERE artifact_id = :artifact_id)"
+            ),
+            {"artifact_id": diagnostics.artifact_id},
+        ).one()
+    assert diagnostic_counts == (1, 28, 378, 34)
+    overview = TestClient(create_app(ArtifactQueryService(engine))).get("/api/v2/factors/overview")
+    assert overview.status_code == 200
+    overview_payload = overview.json()
+    assert overview_payload["dataset_count"] == 28
+    assert overview_payload["pair_count"] == 378
+    assert len(overview_payload["datasets"]) == 28
+    assert len(overview_payload["correlations"]) == 378
+    assert "sharpe" not in overview.text.lower()
+
+    with (
+        pytest.raises(Exception, match="only change while their artifact is draft"),
+        engine.begin() as connection,
+    ):
+        connection.execute(text("UPDATE factor.factor_dataset_summary SET mean = 0"))
 
     with (
         pytest.raises(Exception, match="only change while their artifact is draft"),

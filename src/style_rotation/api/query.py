@@ -396,6 +396,159 @@ class ArtifactQueryService:
                 "eligibility": eligibility,
             }
 
+    def factor_overview(self) -> dict[str, Any]:
+        """Return the latest published factor-layer diagnostic context."""
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            diagnostic = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT diagnostic.factor_diagnostic_set_id,
+                           diagnostic.artifact_id AS diagnostic_artifact_id,
+                           diagnostic.factor_catalog_artifact_id,
+                           universe.artifact_id AS universe_artifact_id,
+                           bundle.artifact_id AS data_bundle_artifact_id,
+                           eligibility.artifact_id AS eligibility_artifact_id,
+                           factor_engine.artifact_id AS factor_engine_artifact_id,
+                           diagnostic_engine.artifact_id AS diagnostic_engine_artifact_id,
+                           diagnostic.coverage_start, diagnostic.coverage_end,
+                           diagnostic.dataset_count, diagnostic.asset_count,
+                           diagnostic.observation_count, diagnostic.pair_count,
+                           diagnostic.high_correlation_threshold
+                    FROM factor.factor_diagnostic_set diagnostic
+                    JOIN lineage.artifact artifact
+                      ON artifact.artifact_id = diagnostic.artifact_id
+                    JOIN catalog.universe_version universe
+                      ON universe.universe_version_id = diagnostic.universe_version_id
+                    JOIN data.data_bundle_version bundle
+                      ON bundle.data_bundle_version_id = diagnostic.data_bundle_version_id
+                    JOIN catalog.eligibility_snapshot eligibility
+                      ON eligibility.eligibility_snapshot_id = diagnostic.eligibility_snapshot_id
+                    JOIN ops.engine_version factor_engine
+                      ON factor_engine.engine_version_id = diagnostic.factor_engine_version_id
+                    JOIN ops.engine_version diagnostic_engine
+                      ON diagnostic_engine.engine_version_id =
+                         diagnostic.diagnostic_engine_version_id
+                    WHERE artifact.status = 'published'
+                    ORDER BY diagnostic.created_at DESC LIMIT 1
+                    """
+                    )
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if diagnostic is None:
+                raise LookupError("Published factor diagnostics not found")
+            diagnostic_set_id = diagnostic["factor_diagnostic_set_id"]
+            datasets = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT dataset.artifact_id AS factor_dataset_artifact_id,
+                           definition.factor_key, definition.measurement_family,
+                           version.formula, version.output_unit, variant.variant_key,
+                           variant.parameters, variant.preset_type,
+                           dataset.coverage_start, dataset.coverage_end, dataset.row_count,
+                           summary.observation_count, summary.asset_count,
+                           summary.missing_count, summary.mean,
+                           summary.standard_deviation, summary.minimum, summary.p05,
+                           summary.p25, summary.median, summary.p75, summary.p95,
+                           summary.maximum, summary.zero_variance
+                    FROM factor.factor_dataset_summary summary
+                    JOIN factor.factor_dataset dataset
+                      ON dataset.factor_dataset_id = summary.factor_dataset_id
+                    JOIN factor.factor_variant variant
+                      ON variant.factor_variant_id = dataset.factor_variant_id
+                    JOIN factor.factor_definition_version version
+                      ON version.factor_definition_version_id =
+                         variant.factor_definition_version_id
+                    JOIN factor.factor_definition definition
+                      ON definition.factor_definition_id = version.factor_definition_id
+                    WHERE summary.factor_diagnostic_set_id = :set_id
+                    ORDER BY definition.measurement_family, definition.factor_key,
+                             variant.variant_key
+                    """
+                    ),
+                    {"set_id": diagnostic_set_id},
+                )
+                .mappings()
+                .all()
+            )
+            correlations = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT left_variant.variant_key AS left_variant_key,
+                           right_variant.variant_key AS right_variant_key,
+                           left_definition.factor_key AS left_factor_key,
+                           right_definition.factor_key AS right_factor_key,
+                           correlation.observation_count,
+                           correlation.spearman_correlation,
+                           correlation.same_definition, correlation.high_correlation
+                    FROM factor.factor_pair_correlation correlation
+                    JOIN factor.factor_dataset left_dataset
+                      ON left_dataset.factor_dataset_id =
+                         correlation.left_factor_dataset_id
+                    JOIN factor.factor_variant left_variant
+                      ON left_variant.factor_variant_id = left_dataset.factor_variant_id
+                    JOIN factor.factor_definition_version left_version
+                      ON left_version.factor_definition_version_id =
+                         left_variant.factor_definition_version_id
+                    JOIN factor.factor_definition left_definition
+                      ON left_definition.factor_definition_id =
+                         left_version.factor_definition_id
+                    JOIN factor.factor_dataset right_dataset
+                      ON right_dataset.factor_dataset_id =
+                         correlation.right_factor_dataset_id
+                    JOIN factor.factor_variant right_variant
+                      ON right_variant.factor_variant_id = right_dataset.factor_variant_id
+                    JOIN factor.factor_definition_version right_version
+                      ON right_version.factor_definition_version_id =
+                         right_variant.factor_definition_version_id
+                    JOIN factor.factor_definition right_definition
+                      ON right_definition.factor_definition_id =
+                         right_version.factor_definition_id
+                    WHERE correlation.factor_diagnostic_set_id = :set_id
+                    ORDER BY correlation.high_correlation DESC,
+                             abs(correlation.spearman_correlation) DESC NULLS LAST,
+                             left_variant.variant_key, right_variant.variant_key
+                    """
+                    ),
+                    {"set_id": diagnostic_set_id},
+                )
+                .mappings()
+                .all()
+            )
+            issues = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT variant.variant_key, issue.severity, issue.issue_code,
+                           issue.message, issue.details
+                    FROM factor.factor_diagnostic_issue issue
+                    JOIN factor.factor_dataset dataset
+                      ON dataset.factor_dataset_id = issue.factor_dataset_id
+                    JOIN factor.factor_variant variant
+                      ON variant.factor_variant_id = dataset.factor_variant_id
+                    WHERE issue.factor_diagnostic_set_id = :set_id
+                    ORDER BY CASE issue.severity WHEN 'error' THEN 0
+                                  WHEN 'warning' THEN 1 ELSE 2 END,
+                             variant.variant_key, issue.issue_code
+                    """
+                    ),
+                    {"set_id": diagnostic_set_id},
+                )
+                .mappings()
+                .all()
+            )
+        result = dict(diagnostic)
+        result.pop("factor_diagnostic_set_id")
+        result["datasets"] = [dict(row) for row in datasets]
+        result["correlations"] = [dict(row) for row in correlations]
+        result["issues"] = [dict(row) for row in issues]
+        return result
+
     @staticmethod
     def _latest_bundle(connection: Any) -> dict[str, Any] | None:
         row = (

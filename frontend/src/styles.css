@@ -138,6 +138,33 @@ h2 { font-size: 17px; }
 .source-list strong, .source-list span { display: block; }
 .source-list div span, .source-list article > span { color: var(--muted); margin-top: 3px; }
 .source-list code { color: var(--green); overflow-wrap: anywhere; }
+.factor-scope-strip { grid-template-columns: 1.7fr repeat(3, 1fr); }
+.factor-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-top: 0; }
+.factor-card { background: var(--paper); padding: 21px; min-width: 0; }
+.factor-card-title { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+.factor-card-title span, .factor-card-title strong { display: block; }
+.factor-card-title span { color: var(--muted); font-size: 8px; text-transform: uppercase; letter-spacing: .09em; }
+.factor-card-title strong { margin-top: 5px; font: 600 12px Consolas, monospace; overflow-wrap: anywhere; }
+.factor-card > p { color: var(--muted); font-size: 9px; line-height: 1.55; min-height: 28px; margin: 15px 0 17px; }
+.distribution-track { position: relative; height: 6px; border-radius: 5px; background: #e1e5de; margin: 7px 0 16px; }
+.distribution-track i { position: absolute; height: 100%; border-radius: 5px; background: #76aa99; }
+.distribution-track b { position: absolute; width: 2px; height: 12px; top: -3px; background: var(--amber); transform: translateX(-1px); }
+.factor-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+.factor-stat-grid span { color: var(--muted); font-size: 8px; }
+.factor-stat-grid strong { color: var(--ink); display: block; margin-top: 4px; font: 500 10px Consolas, monospace; }
+.factor-parameters { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 15px; }
+.factor-parameters code { font-size: 8px; padding: 4px 6px; border-radius: 3px; background: #e9eee9; color: var(--green); }
+.factor-diagnostic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.correlation-list { border-bottom: 1px solid var(--line); }
+.correlation-list article { min-height: 47px; display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: center; border-bottom: 1px solid var(--line); padding: 9px 10px; }
+.correlation-list article:last-child { border: 0; }
+.correlation-list strong, .correlation-list span { display: block; font: 500 8px Consolas, monospace; overflow-wrap: anywhere; }
+.correlation-list span { color: var(--muted); margin-top: 4px; }
+.correlation-list code { font-size: 10px; color: var(--green); }
+.correlation-list code.correlation-high { color: #8a5d1b; font-weight: 700; }
+.factor-empty-note { color: var(--muted); font-size: 10px; padding: 18px 10px; border-bottom: 1px solid var(--line); }
+.factor-issue-list p { padding: 13px 10px; margin: 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 9px; }
+.factor-issue-list strong { display: block; color: var(--ink); margin-bottom: 5px; }
 .arrow-link { color: var(--green); text-decoration: none; font-weight: 700; text-align: right; }
 .back-link { display: inline-block; margin-bottom: 30px; color: var(--green); font-size: 11px; text-decoration: none; }
 .detail-heading p:not(.eyebrow) { font-family: Consolas, monospace; font-size: 10px; }
@@ -179,7 +206,7 @@ h2 { font-size: 17px; }
   .app-shell { grid-template-columns: 190px 1fr; }
   .sidebar { padding-inline: 12px; }
   .stat-grid, .asset-grid { grid-template-columns: 1fr 1fr; }
-  .data-detail-grid { grid-template-columns: 1fr; gap: 0; }
+  .data-detail-grid, .factor-diagnostic-grid { grid-template-columns: 1fr; gap: 0; }
   .artifact-list-head { display: none; }
   .artifact-row { grid-template-columns: 1.4fr 1fr .5fr; }
   .artifact-row > :nth-child(4), .artifact-row > :nth-child(5) { justify-self: start; }
@@ -192,7 +219,7 @@ h2 { font-size: 17px; }
   .brand-lockup { padding-bottom: 0; border: 0; }
   .topbar { padding-inline: 18px; }
   main { padding: 30px 18px 55px; }
-  .stat-grid, .foundation-strip, .detail-grid, .dependency-grid, .asset-grid, .scope-strip, .dataset-metrics { grid-template-columns: 1fr; }
+  .stat-grid, .foundation-strip, .detail-grid, .dependency-grid, .asset-grid, .scope-strip, .dataset-metrics, .factor-grid, .factor-stat-grid { grid-template-columns: 1fr; }
   .source-list article { grid-template-columns: 1fr; gap: 6px; }
   .requirement-list article { grid-template-columns: 1fr; gap: 7px; }
   .foundation-strip > div, .dependency-grid article { border-right: 0; border-bottom: 1px solid var(--line); }

@@ -8,6 +8,7 @@ export type LineageManifestResponse = components["schemas"]["LineageManifestResp
 export type AssetCatalogResponse = components["schemas"]["AssetCatalogResponse"];
 export type DataRequirementResponse = components["schemas"]["DataRequirementResponse"];
 export type DataOverviewResponse = components["schemas"]["DataOverviewResponse"];
+export type FactorOverviewResponse = components["schemas"]["FactorOverviewResponse"];
 
 export class ApiClientError extends Error {
   constructor(
@@ -40,6 +41,7 @@ export const api = {
   dataRequirements: () =>
     getJson<DataRequirementResponse>("/api/v2/catalog/data-requirements"),
   dataOverview: () => getJson<DataOverviewResponse>("/api/v2/data/overview"),
+  factorOverview: () => getJson<FactorOverviewResponse>("/api/v2/factors/overview"),
   artifacts: (statuses = ["published"]) => {
     const search = new URLSearchParams();
     statuses.forEach((status) => search.append("status", status));

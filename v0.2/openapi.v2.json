@@ -1089,6 +1089,359 @@
         "title": "EligibilitySnapshotItem",
         "type": "object"
       },
+      "FactorCorrelationItem": {
+        "additionalProperties": false,
+        "properties": {
+          "high_correlation": {
+            "title": "High Correlation",
+            "type": "boolean"
+          },
+          "left_factor_key": {
+            "title": "Left Factor Key",
+            "type": "string"
+          },
+          "left_variant_key": {
+            "title": "Left Variant Key",
+            "type": "string"
+          },
+          "observation_count": {
+            "title": "Observation Count",
+            "type": "integer"
+          },
+          "right_factor_key": {
+            "title": "Right Factor Key",
+            "type": "string"
+          },
+          "right_variant_key": {
+            "title": "Right Variant Key",
+            "type": "string"
+          },
+          "same_definition": {
+            "title": "Same Definition",
+            "type": "boolean"
+          },
+          "spearman_correlation": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spearman Correlation"
+          }
+        },
+        "required": [
+          "left_variant_key",
+          "right_variant_key",
+          "left_factor_key",
+          "right_factor_key",
+          "observation_count",
+          "spearman_correlation",
+          "same_definition",
+          "high_correlation"
+        ],
+        "title": "FactorCorrelationItem",
+        "type": "object"
+      },
+      "FactorDatasetDiagnosticItem": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_count": {
+            "title": "Asset Count",
+            "type": "integer"
+          },
+          "coverage_end": {
+            "format": "date",
+            "title": "Coverage End",
+            "type": "string"
+          },
+          "coverage_start": {
+            "format": "date",
+            "title": "Coverage Start",
+            "type": "string"
+          },
+          "factor_dataset_artifact_id": {
+            "format": "uuid",
+            "title": "Factor Dataset Artifact Id",
+            "type": "string"
+          },
+          "factor_key": {
+            "title": "Factor Key",
+            "type": "string"
+          },
+          "formula": {
+            "title": "Formula",
+            "type": "string"
+          },
+          "maximum": {
+            "title": "Maximum",
+            "type": "number"
+          },
+          "mean": {
+            "title": "Mean",
+            "type": "number"
+          },
+          "measurement_family": {
+            "title": "Measurement Family",
+            "type": "string"
+          },
+          "median": {
+            "title": "Median",
+            "type": "number"
+          },
+          "minimum": {
+            "title": "Minimum",
+            "type": "number"
+          },
+          "missing_count": {
+            "title": "Missing Count",
+            "type": "integer"
+          },
+          "observation_count": {
+            "title": "Observation Count",
+            "type": "integer"
+          },
+          "output_unit": {
+            "title": "Output Unit",
+            "type": "string"
+          },
+          "p05": {
+            "title": "P05",
+            "type": "number"
+          },
+          "p25": {
+            "title": "P25",
+            "type": "number"
+          },
+          "p75": {
+            "title": "P75",
+            "type": "number"
+          },
+          "p95": {
+            "title": "P95",
+            "type": "number"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "title": "Parameters",
+            "type": "object"
+          },
+          "preset_type": {
+            "title": "Preset Type",
+            "type": "string"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "row_count": {
+            "title": "Row Count",
+            "type": "integer"
+          },
+          "standard_deviation": {
+            "title": "Standard Deviation",
+            "type": "number"
+          },
+          "variant_key": {
+            "title": "Variant Key",
+            "type": "string"
+          },
+          "zero_variance": {
+            "title": "Zero Variance",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "factor_dataset_artifact_id",
+          "factor_key",
+          "measurement_family",
+          "formula",
+          "output_unit",
+          "variant_key",
+          "parameters",
+          "preset_type",
+          "coverage_start",
+          "coverage_end",
+          "row_count",
+          "observation_count",
+          "asset_count",
+          "missing_count",
+          "mean",
+          "standard_deviation",
+          "minimum",
+          "p05",
+          "p25",
+          "median",
+          "p75",
+          "p95",
+          "maximum",
+          "zero_variance",
+          "quality"
+        ],
+        "title": "FactorDatasetDiagnosticItem",
+        "type": "object"
+      },
+      "FactorDiagnosticIssueItem": {
+        "additionalProperties": false,
+        "properties": {
+          "details": {
+            "additionalProperties": true,
+            "title": "Details",
+            "type": "object"
+          },
+          "issue_code": {
+            "title": "Issue Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "info",
+              "warning",
+              "error"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "variant_key": {
+            "title": "Variant Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "variant_key",
+          "severity",
+          "issue_code",
+          "message",
+          "details"
+        ],
+        "title": "FactorDiagnosticIssueItem",
+        "type": "object"
+      },
+      "FactorOverviewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_count": {
+            "title": "Asset Count",
+            "type": "integer"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "correlations": {
+            "items": {
+              "$ref": "#/components/schemas/FactorCorrelationItem"
+            },
+            "title": "Correlations",
+            "type": "array"
+          },
+          "coverage_end": {
+            "format": "date",
+            "title": "Coverage End",
+            "type": "string"
+          },
+          "coverage_start": {
+            "format": "date",
+            "title": "Coverage Start",
+            "type": "string"
+          },
+          "data_bundle_artifact_id": {
+            "format": "uuid",
+            "title": "Data Bundle Artifact Id",
+            "type": "string"
+          },
+          "dataset_count": {
+            "title": "Dataset Count",
+            "type": "integer"
+          },
+          "datasets": {
+            "items": {
+              "$ref": "#/components/schemas/FactorDatasetDiagnosticItem"
+            },
+            "title": "Datasets",
+            "type": "array"
+          },
+          "diagnostic_artifact_id": {
+            "format": "uuid",
+            "title": "Diagnostic Artifact Id",
+            "type": "string"
+          },
+          "diagnostic_engine_artifact_id": {
+            "format": "uuid",
+            "title": "Diagnostic Engine Artifact Id",
+            "type": "string"
+          },
+          "eligibility_artifact_id": {
+            "format": "uuid",
+            "title": "Eligibility Artifact Id",
+            "type": "string"
+          },
+          "factor_catalog_artifact_id": {
+            "format": "uuid",
+            "title": "Factor Catalog Artifact Id",
+            "type": "string"
+          },
+          "factor_engine_artifact_id": {
+            "format": "uuid",
+            "title": "Factor Engine Artifact Id",
+            "type": "string"
+          },
+          "high_correlation_threshold": {
+            "title": "High Correlation Threshold",
+            "type": "number"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/FactorDiagnosticIssueItem"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "observation_count": {
+            "title": "Observation Count",
+            "type": "integer"
+          },
+          "pair_count": {
+            "title": "Pair Count",
+            "type": "integer"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "universe_artifact_id": {
+            "format": "uuid",
+            "title": "Universe Artifact Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "diagnostic_artifact_id",
+          "factor_catalog_artifact_id",
+          "universe_artifact_id",
+          "data_bundle_artifact_id",
+          "eligibility_artifact_id",
+          "factor_engine_artifact_id",
+          "diagnostic_engine_artifact_id",
+          "coverage_start",
+          "coverage_end",
+          "dataset_count",
+          "asset_count",
+          "observation_count",
+          "pair_count",
+          "high_correlation_threshold",
+          "datasets",
+          "correlations",
+          "issues"
+        ],
+        "title": "FactorOverviewResponse",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1723,6 +2076,58 @@
         "summary": "Data Overview",
         "tags": [
           "data"
+        ]
+      }
+    },
+    "/api/v2/factors/overview": {
+      "get": {
+        "operationId": "factor_overview_api_v2_factors_overview_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "if-none-match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-None-Match"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactorOverviewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Not modified"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Factor Overview",
+        "tags": [
+          "factor"
         ]
       }
     },

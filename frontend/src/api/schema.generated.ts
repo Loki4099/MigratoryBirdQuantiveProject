@@ -123,6 +123,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/factors/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Factor Overview */
+        get: operations["factor_overview_api_v2_factors_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/health": {
         parameters: {
             query?: never;
@@ -559,6 +576,172 @@ export interface components {
             /** Warmup Observations */
             warmup_observations: number;
         };
+        /** FactorCorrelationItem */
+        FactorCorrelationItem: {
+            /** High Correlation */
+            high_correlation: boolean;
+            /** Left Factor Key */
+            left_factor_key: string;
+            /** Left Variant Key */
+            left_variant_key: string;
+            /** Observation Count */
+            observation_count: number;
+            /** Right Factor Key */
+            right_factor_key: string;
+            /** Right Variant Key */
+            right_variant_key: string;
+            /** Same Definition */
+            same_definition: boolean;
+            /** Spearman Correlation */
+            spearman_correlation: number | null;
+        };
+        /** FactorDatasetDiagnosticItem */
+        FactorDatasetDiagnosticItem: {
+            /** Asset Count */
+            asset_count: number;
+            /**
+             * Coverage End
+             * Format: date
+             */
+            coverage_end: string;
+            /**
+             * Coverage Start
+             * Format: date
+             */
+            coverage_start: string;
+            /**
+             * Factor Dataset Artifact Id
+             * Format: uuid
+             */
+            factor_dataset_artifact_id: string;
+            /** Factor Key */
+            factor_key: string;
+            /** Formula */
+            formula: string;
+            /** Maximum */
+            maximum: number;
+            /** Mean */
+            mean: number;
+            /** Measurement Family */
+            measurement_family: string;
+            /** Median */
+            median: number;
+            /** Minimum */
+            minimum: number;
+            /** Missing Count */
+            missing_count: number;
+            /** Observation Count */
+            observation_count: number;
+            /** Output Unit */
+            output_unit: string;
+            /** P05 */
+            p05: number;
+            /** P25 */
+            p25: number;
+            /** P75 */
+            p75: number;
+            /** P95 */
+            p95: number;
+            /** Parameters */
+            parameters: {
+                [key: string]: unknown;
+            };
+            /** Preset Type */
+            preset_type: string;
+            quality: components["schemas"]["QualitySummary"];
+            /** Row Count */
+            row_count: number;
+            /** Standard Deviation */
+            standard_deviation: number;
+            /** Variant Key */
+            variant_key: string;
+            /** Zero Variance */
+            zero_variance: boolean;
+        };
+        /** FactorDiagnosticIssueItem */
+        FactorDiagnosticIssueItem: {
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+            /** Issue Code */
+            issue_code: string;
+            /** Message */
+            message: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "info" | "warning" | "error";
+            /** Variant Key */
+            variant_key: string;
+        };
+        /** FactorOverviewResponse */
+        FactorOverviewResponse: {
+            /** Asset Count */
+            asset_count: number;
+            context: components["schemas"]["ApiContext"];
+            /** Correlations */
+            correlations: components["schemas"]["FactorCorrelationItem"][];
+            /**
+             * Coverage End
+             * Format: date
+             */
+            coverage_end: string;
+            /**
+             * Coverage Start
+             * Format: date
+             */
+            coverage_start: string;
+            /**
+             * Data Bundle Artifact Id
+             * Format: uuid
+             */
+            data_bundle_artifact_id: string;
+            /** Dataset Count */
+            dataset_count: number;
+            /** Datasets */
+            datasets: components["schemas"]["FactorDatasetDiagnosticItem"][];
+            /**
+             * Diagnostic Artifact Id
+             * Format: uuid
+             */
+            diagnostic_artifact_id: string;
+            /**
+             * Diagnostic Engine Artifact Id
+             * Format: uuid
+             */
+            diagnostic_engine_artifact_id: string;
+            /**
+             * Eligibility Artifact Id
+             * Format: uuid
+             */
+            eligibility_artifact_id: string;
+            /**
+             * Factor Catalog Artifact Id
+             * Format: uuid
+             */
+            factor_catalog_artifact_id: string;
+            /**
+             * Factor Engine Artifact Id
+             * Format: uuid
+             */
+            factor_engine_artifact_id: string;
+            /** High Correlation Threshold */
+            high_correlation_threshold: number;
+            /** Issues */
+            issues: components["schemas"]["FactorDiagnosticIssueItem"][];
+            /** Observation Count */
+            observation_count: number;
+            /** Pair Count */
+            pair_count: number;
+            quality: components["schemas"]["QualitySummary"];
+            /**
+             * Universe Artifact Id
+             * Format: uuid
+             */
+            universe_artifact_id: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -889,6 +1072,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DataOverviewResponse"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    factor_overview_api_v2_factors_overview_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "if-none-match"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FactorOverviewResponse"];
                 };
             };
             /** @description Not modified */

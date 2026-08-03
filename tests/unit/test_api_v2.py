@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -70,6 +70,55 @@ class FakeArtifactReader:
 
     def data_overview(self) -> dict[str, Any]:
         return {"sources": [], "datasets": [], "bundle": None, "eligibility": None}
+
+    def factor_overview(self) -> dict[str, Any]:
+        identifiers = [uuid.uuid4() for _ in range(7)]
+        return {
+            "diagnostic_artifact_id": identifiers[0],
+            "factor_catalog_artifact_id": identifiers[1],
+            "universe_artifact_id": identifiers[2],
+            "data_bundle_artifact_id": identifiers[3],
+            "eligibility_artifact_id": identifiers[4],
+            "factor_engine_artifact_id": identifiers[5],
+            "diagnostic_engine_artifact_id": identifiers[6],
+            "coverage_start": date(2026, 1, 1),
+            "coverage_end": date(2026, 1, 31),
+            "dataset_count": 1,
+            "asset_count": 5,
+            "observation_count": 100,
+            "pair_count": 0,
+            "high_correlation_threshold": 0.85,
+            "datasets": [
+                {
+                    "factor_dataset_artifact_id": uuid.uuid4(),
+                    "factor_key": "total_return",
+                    "measurement_family": "return",
+                    "formula": "close[t] / close[t-window] - 1",
+                    "output_unit": "ratio",
+                    "variant_key": "total_return__w20",
+                    "parameters": {"window": 20},
+                    "preset_type": "canonical",
+                    "coverage_start": date(2026, 1, 1),
+                    "coverage_end": date(2026, 1, 31),
+                    "row_count": 100,
+                    "observation_count": 100,
+                    "asset_count": 5,
+                    "missing_count": 0,
+                    "mean": 0.01,
+                    "standard_deviation": 0.02,
+                    "minimum": -0.04,
+                    "p05": -0.03,
+                    "p25": -0.01,
+                    "median": 0.01,
+                    "p75": 0.03,
+                    "p95": 0.05,
+                    "maximum": 0.06,
+                    "zero_variance": False,
+                }
+            ],
+            "correlations": [],
+            "issues": [],
+        }
 
 
 def _client() -> tuple[TestClient, FakeArtifactReader]:
@@ -152,6 +201,23 @@ def test_data_overview_reports_an_incomplete_published_chain() -> None:
     capabilities = client.get("/api/v2/capabilities").json()
     data_domain = next(item for item in capabilities["domains"] if item["key"] == "data")
     assert data_domain["availability"] == "available"
+
+
+def test_factor_overview_reports_factor_properties_without_strategy_metrics() -> None:
+    client, _reader = _client()
+    response = client.get("/api/v2/factors/overview")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["quality"]["state"] == "ok"
+    assert payload["datasets"][0]["variant_key"] == "total_return__w20"
+    assert payload["datasets"][0]["median"] == 0.01
+    assert "sharpe" not in response.text.lower()
+    factor_domain = next(
+        item
+        for item in client.get("/api/v2/capabilities").json()["domains"]
+        if item["key"] == "factor"
+    )
+    assert factor_domain["availability"] == "available"
 
 
 def test_committed_openapi_contract_matches_application() -> None:

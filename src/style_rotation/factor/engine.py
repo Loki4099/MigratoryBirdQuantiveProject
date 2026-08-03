@@ -66,8 +66,6 @@ def build_factor_engine_spec(
     *,
     version_number: int = 1,
 ) -> FactorEngineSpec:
-    if not dependency_lock_path.is_file():
-        raise ValueError(f"Dependency lock file not found: {dependency_lock_path}")
     configuration = {
         "calculator": "factor-calculator-v1",
         "implementation_keys": sorted(IMPLEMENTATIONS),
@@ -75,6 +73,49 @@ def build_factor_engine_spec(
         "float_encoding": "ieee754-binary64-big-endian",
         "reduction_order": "asset_key_then_session_date",
     }
+    return _build_spec(
+        git_commit,
+        dependency_lock_path,
+        schema_revision,
+        configuration,
+        version_number,
+    )
+
+
+def build_factor_diagnostic_engine_spec(
+    git_commit: str,
+    dependency_lock_path: Path,
+    schema_revision: str,
+    *,
+    version_number: int = 1,
+) -> FactorEngineSpec:
+    configuration = {
+        "calculator": "factor-diagnostics-v1",
+        "distribution": "linear-interpolated-percentiles",
+        "standard_deviation": "sample-ddof-1",
+        "correlation": "pooled-asset-date-spearman-average-ties",
+        "parameter_stability": "same-definition-spearman",
+        "high_correlation_threshold": 0.85,
+        "reduction_order": "variant_key_then_asset_id_then_observation_date",
+    }
+    return _build_spec(
+        git_commit,
+        dependency_lock_path,
+        schema_revision,
+        configuration,
+        version_number,
+    )
+
+
+def _build_spec(
+    git_commit: str,
+    dependency_lock_path: Path,
+    schema_revision: str,
+    configuration: dict[str, Any],
+    version_number: int,
+) -> FactorEngineSpec:
+    if not dependency_lock_path.is_file():
+        raise ValueError(f"Dependency lock file not found: {dependency_lock_path}")
     return FactorEngineSpec(
         version_number,
         __version__,
@@ -87,17 +128,46 @@ def build_factor_engine_spec(
 
 
 def publish_factor_engine(engine: Engine, spec: FactorEngineSpec) -> FactorEnginePublication:
+    return _publish_engine(
+        engine,
+        spec,
+        engine_key="factor_engine",
+        name="Deterministic Factor Engine",
+        engine_type="factor",
+    )
+
+
+def publish_factor_diagnostic_engine(
+    engine: Engine, spec: FactorEngineSpec
+) -> FactorEnginePublication:
+    return _publish_engine(
+        engine,
+        spec,
+        engine_key="factor_diagnostic_engine",
+        name="Deterministic Factor Diagnostic Engine",
+        engine_type="factor_diagnostics",
+    )
+
+
+def _publish_engine(
+    engine: Engine,
+    spec: FactorEngineSpec,
+    *,
+    engine_key: str,
+    name: str,
+    engine_type: str,
+) -> FactorEnginePublication:
     semantic = asdict(spec)
     with engine.begin() as connection:
-        definition_id = _ensure_definition(connection)
+        definition_id = _ensure_definition(connection, engine_key, name, engine_type)
         service = ArtifactService(cast(Engine, _BoundConnection(connection)))
         result = service.publish(
             artifact_type="engine_version",
-            artifact_key="factor_engine",
+            artifact_key=engine_key,
             version_number=spec.version_number,
             semantic_payload=semantic,
             content_payload=semantic,
-            reason=f"publish factor engine v{spec.version_number}",
+            reason=f"publish {engine_key} v{spec.version_number}",
             draft_writer=partial(
                 _write_version,
                 definition_id=definition_id,
@@ -115,20 +185,23 @@ def publish_factor_engine(engine: Engine, spec: FactorEngineSpec) -> FactorEngin
     return FactorEnginePublication(engine_version_id, result.artifact_id, result.reused)
 
 
-def _ensure_definition(connection: Connection) -> uuid.UUID:
+def _ensure_definition(
+    connection: Connection, engine_key: str, name: str, engine_type: str
+) -> uuid.UUID:
     row = (
         connection.execute(
             text(
                 "SELECT engine_definition_id, name, engine_type FROM ops.engine_definition "
-                "WHERE engine_key = 'factor_engine'"
-            )
+                "WHERE engine_key = :engine_key"
+            ),
+            {"engine_key": engine_key},
         )
         .mappings()
         .one_or_none()
     )
     if row is not None:
-        if row["name"] != "Deterministic Factor Engine" or row["engine_type"] != "factor":
-            raise ValueError("Existing factor engine definition has incompatible semantics")
+        if row["name"] != name or row["engine_type"] != engine_type:
+            raise ValueError(f"Existing {engine_key} definition has incompatible semantics")
         engine_definition_id = row["engine_definition_id"]
     else:
         engine_definition_id = uuid.uuid4()
@@ -136,9 +209,14 @@ def _ensure_definition(connection: Connection) -> uuid.UUID:
             text(
                 "INSERT INTO ops.engine_definition "
                 "(engine_definition_id, engine_key, name, engine_type) VALUES "
-                "(:id, 'factor_engine', 'Deterministic Factor Engine', 'factor')"
+                "(:id, :engine_key, :name, :engine_type)"
             ),
-            {"id": engine_definition_id},
+            {
+                "id": engine_definition_id,
+                "engine_key": engine_key,
+                "name": name,
+                "engine_type": engine_type,
+            },
         )
     if not isinstance(engine_definition_id, uuid.UUID):
         raise RuntimeError("Factor engine definition id must be a UUID")
