@@ -4,7 +4,7 @@ Versioned research platform for explainable US style rotation across IWF, IWD, I
 
 ## Status
 
-v0.2 is being rebuilt in short, independently verified milestones. M0 through M3 and the M4A signal-definition foundation are complete. The platform now has immutable publication, an asset/data catalog, source evidence, typed canonical data, reserve accrual, frozen data bundles, eligibility diagnostics, deterministic factor calculation and diagnostics, plus 51 typed signal definitions with explicit transformations and factor lineage. Signal datasets/diagnostics, models, strategies, and experiments follow in later milestones.
+v0.2 is being rebuilt in short, independently verified milestones. M0 through M3 and M4A–M4B are complete. The platform now has immutable publication, typed market data, deterministic factor calculation/diagnostics, and 51 versioned Signal definitions whose continuous scores, threshold states, and crossover events publish as immutable candidate-asset datasets. Signal evaluation diagnostics/UI, models, strategies, and experiments follow in later milestones.
 
 The authoritative plan is [v0.2/正式开发方案.md](v0.2/正式开发方案.md). Detailed decisions and database rationale are stored in [v0.2/设计决策记录.md](v0.2/设计决策记录.md) and [v0.2/数据库设计.md](v0.2/数据库设计.md).
 
@@ -86,6 +86,8 @@ style-rotation factor publish --factor-catalog-artifact-id <uuid> --bundle-artif
 style-rotation factor bootstrap-diagnostic-engine --git-commit <hex-commit> --dependency-lock-file requirements.lock --version 1
 style-rotation factor diagnose --factor-catalog-artifact-id <uuid> --bundle-artifact-id <uuid> --eligibility-artifact-id <uuid> --factor-engine-artifact-id <uuid> --diagnostic-engine-artifact-id <uuid>
 style-rotation signal bootstrap --catalog-file v0.2/catalogs/signals.v0.2.0.json
+style-rotation signal bootstrap-engine --git-commit <hex-commit> --dependency-lock-file requirements.lock --version 1
+style-rotation signal publish --signal-catalog-artifact-id <uuid> --factor-catalog-artifact-id <uuid> --bundle-artifact-id <uuid> --eligibility-artifact-id <uuid> --factor-engine-artifact-id <uuid> --signal-engine-artifact-id <uuid>
 style-rotation artifact list
 style-rotation lineage show <artifact-uuid>
 ```

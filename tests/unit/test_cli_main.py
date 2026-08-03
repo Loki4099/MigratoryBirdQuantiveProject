@@ -69,6 +69,47 @@ class UnifiedCliTests(unittest.TestCase):
         self.assertEqual(result, 0)
         command.assert_called_once_with("signal.json")
 
+    def test_signal_engine_command_requires_explicit_commit(self) -> None:
+        with patch("style_rotation.cli.main._signal_bootstrap_engine", return_value=0) as command:
+            result = main(
+                [
+                    "signal",
+                    "bootstrap-engine",
+                    "--git-commit",
+                    "abcdef0",
+                    "--dependency-lock-file",
+                    "lock.txt",
+                    "--version",
+                    "2",
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with("abcdef0", "lock.txt", 2)
+
+    def test_signal_publish_requires_exact_upstream_context(self) -> None:
+        ids = [f"00000000-0000-0000-0000-00000000000{index}" for index in range(1, 7)]
+        with patch("style_rotation.cli.main._signal_publish", return_value=0) as command:
+            result = main(
+                [
+                    "signal",
+                    "publish",
+                    "--signal-catalog-artifact-id",
+                    ids[0],
+                    "--factor-catalog-artifact-id",
+                    ids[1],
+                    "--bundle-artifact-id",
+                    ids[2],
+                    "--eligibility-artifact-id",
+                    ids[3],
+                    "--factor-engine-artifact-id",
+                    ids[4],
+                    "--signal-engine-artifact-id",
+                    ids[5],
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with(*ids)
+
     def test_factor_engine_command_requires_explicit_commit(self) -> None:
         with patch("style_rotation.cli.main._factor_bootstrap_engine", return_value=0) as command:
             result = main(

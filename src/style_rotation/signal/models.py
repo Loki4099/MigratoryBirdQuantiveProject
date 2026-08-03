@@ -1,9 +1,22 @@
 from __future__ import annotations
 
 import uuid
+from datetime import date
+from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import Boolean, CheckConstraint, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    CheckConstraint,
+    Date,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -68,3 +81,102 @@ class SignalVersion(CreatedAtMixin, Base):
     calculation_frequency: Mapped[str] = mapped_column(String(30), nullable=False)
     time_semantics: Mapped[str] = mapped_column(String(160), nullable=False)
     evaluation_horizon_policy: Mapped[str] = mapped_column(String(100), nullable=False)
+
+
+class SignalDataset(CreatedAtMixin, Base):
+    __tablename__ = "signal_dataset"
+    __table_args__ = (
+        UniqueConstraint(
+            "signal_version_id",
+            "factor_dataset_id",
+            "engine_version_id",
+            name="uq_signal_dataset_exact_inputs",
+        ),
+        CheckConstraint("coverage_start <= coverage_end", name="coverage_ordered"),
+        CheckConstraint("row_count >= 1", name="row_count_positive"),
+        {"schema": "signal"},
+    )
+
+    signal_dataset_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    artifact_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("lineage.artifact.artifact_id", ondelete="RESTRICT"),
+        nullable=False,
+        unique=True,
+    )
+    signal_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("signal.signal_version.signal_version_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    factor_dataset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("factor.factor_dataset.factor_dataset_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    universe_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("catalog.universe_version.universe_version_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    data_bundle_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.data_bundle_version.data_bundle_version_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    eligibility_snapshot_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("catalog.eligibility_snapshot.eligibility_snapshot_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    engine_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("ops.engine_version.engine_version_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    coverage_start: Mapped[date] = mapped_column(Date, nullable=False)
+    coverage_end: Mapped[date] = mapped_column(Date, nullable=False)
+    row_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
+
+
+class SignalValue(Base):
+    __tablename__ = "signal_value"
+    __table_args__ = ({"schema": "signal"},)
+
+    signal_dataset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("signal.signal_dataset.signal_dataset_id", ondelete="RESTRICT"),
+        primary_key=True,
+    )
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("catalog.asset.asset_id", ondelete="RESTRICT"),
+        primary_key=True,
+    )
+    observation_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    score: Mapped[Decimal] = mapped_column(Numeric(24, 18), nullable=False)
+    state: Mapped[str | None] = mapped_column(String(20))
+    event: Mapped[bool | None] = mapped_column(Boolean)
+
+
+class SignalQualityIssue(CreatedAtMixin, Base):
+    __tablename__ = "signal_quality_issue"
+    __table_args__ = (
+        CheckConstraint("severity IN ('info', 'warning', 'error')", name="severity_allowed"),
+        {"schema": "signal"},
+    )
+
+    signal_quality_issue_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    signal_dataset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("signal.signal_dataset.signal_dataset_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    asset_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("catalog.asset.asset_id", ondelete="RESTRICT")
+    )
+    observation_date: Mapped[date | None] = mapped_column(Date)
+    severity: Mapped[str] = mapped_column(String(20), nullable=False)
+    issue_code: Mapped[str] = mapped_column(String(120), nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    details: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
