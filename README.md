@@ -1,104 +1,100 @@
-# Style Rotation Factor Engine v0.1
+# Style Rotation Research Platform v0.2
 
-Deterministic factor research and backtesting platform for IWF, IWD, IWO and IWN,
-with a rebalanced equal-weight benchmark, SPY market reference, and DGS3MO reserve return.
+Versioned research platform for explainable US style rotation across IWF, IWD, IWO, and IWN, with SPY as the product benchmark and a DGS3MO-based synthetic reserve sleeve.
 
-The frozen research protocol is stored in `v0.1/`. Formal calculations do not use an LLM,
-Agent, automatic parameter selection, machine learning, leverage, shorting, or live trading.
+## Status
 
-## Current development stage
+v0.2 is being rebuilt in short, independently verified milestones. M0, M1A, and M1B are complete. The clean PostgreSQL schema foundation and safe database CLI are available; immutable publication, market-data, factor, signal, model, strategy, and experiment implementations follow in later milestones.
 
-Phases 1 through 7 establish:
+The authoritative plan is [v0.2/正式开发方案.md](v0.2/正式开发方案.md). Detailed decisions and database rationale are stored in [v0.2/设计决策记录.md](v0.2/设计决策记录.md) and [v0.2/数据库设计.md](v0.2/数据库设计.md).
 
-- validated application settings;
-- versioned data-contract definitions;
-- deterministic configuration fingerprints;
-- PostgreSQL metadata models and migrations;
-- experiment, run, event, and archive lifecycles;
-- Yahoo Finance OHLCV/action ingestion and FRED DGS3MO ingestion;
-- immutable raw snapshots, adjusted-price cleaning, reserve daily returns, and data-quality gates;
-- a frozen registry of 11 factor definitions and 24 independent parameter variants;
-- pure daily factor calculations, factor dataset publication, and deterministic reuse;
-- weekly/monthly rebalance calendars, next-session execution mapping, stable rankings,
-  Top 2 and strict SMA200-filtered target portfolios;
-- adjusted-open execution, overnight weight drift, single-sided turnover, 2/5/10 bps costs,
-  daily gross/net NAV and end-of-day positions;
-- same-frequency four-ETF equal-weight and SPY buy-and-hold benchmarks;
-- versioned, fingerprinted, atomically published backtest runs with deterministic reuse;
-- shared Rank IC and Top 2-Bottom 2 factor diagnostics for each factor/frequency pair;
-- gross/net return, risk, risk-adjusted, relative benchmark, turnover, cost, and reserve metrics;
-- versioned metric methodology, explicit undefined reason codes, input manifests, and reuse;
-- unit and PostgreSQL integration tests for the deterministic core and phases 1 through 6;
-- a local read-only FastAPI, formal-result status checks, factor leaderboard, factor detail,
-  and comparison pages;
-- a single sequential command for updating all deterministic pipeline layers.
+v0.1 is not migrated or reproduced by v0.2. Its implementation remains available through Git history and its documentation remains under `v0.1/`.
+
+## Research chain
+
+```text
+Catalog / Data
+→ Factor
+→ Signal
+→ Model
+→ Strategy Product
+→ Experiment Result
+```
+
+Definitions express reusable mathematical or financial logic. Published datasets and experiment specifications bind that logic to assets, data snapshots, dates, execution, costs, and benchmarks.
 
 ## Local setup
 
-1. Copy `.env.example` to `.env` and change secrets outside local development.
-2. Start PostgreSQL with `docker compose up -d postgres`.
+1. Copy `.env.example` to `.env` and keep real secrets outside Git.
+2. Start PostgreSQL with `docker compose up -d postgres` when the active milestone requires it.
 3. Create a Python 3.12 virtual environment.
 4. Install with `pip install -e ".[dev]"`.
-5. Apply migrations with `alembic upgrade head`.
-6. Run tests with `pytest`.
+5. Run `pytest tests/unit`.
 
-## Data update
+The Alembic chain now starts from the clean v0.2 foundation. It intentionally does not migrate the v0.1 public-schema database.
 
-After PostgreSQL is running and migrations are current:
+For isolated migration tests, use `docker compose up -d postgres-test`. It exposes only the project test database on localhost port55432.
 
-```powershell
-style-rotation-data-update --start 1999-01-01 --end 2026-07-30
-style-rotation-factor-update
-style-rotation-signal-update
-style-rotation-backtest-update
-style-rotation-metrics-update
-```
+## Unified CLI
 
-The same five steps can be run sequentially with:
+v0.2 exposes one command:
 
 ```powershell
-style-rotation-pipeline-update --start 1999-01-01 --end 2026-07-30
+style-rotation --version
+style-rotation modules
+style-rotation db status
+style-rotation db upgrade
 ```
 
-The end date is inclusive at the application boundary. The pipeline pins provider request
-parameters, stores raw rows before cleaning, publishes only datasets that pass the quality
-gate, and creates a new `data_version` whenever source content changes.
-
-Yahoo Finance data is intended for personal research use. The project stores source metadata
-and hashes because historical adjusted values may be revised by the provider.
-
-`style-rotation-factor-update` uses the latest published clean dataset unless both explicit
-version identifiers are supplied. It stores unranked factor values only; direction normalization,
-Top 2 selection, and target weights belong to the signal layer.
-
-`style-rotation-signal-update` uses the latest published factor dataset unless all three upstream
-version identifiers are supplied. It publishes target weights only; it does not assume trades have
-filled or calculate turnover, costs, holdings, returns, or NAV.
-
-`style-rotation-backtest-update` uses the latest published signal dataset unless all four upstream
-version identifiers are supplied. The formal matrix contains 24 variants, two frequencies, two
-strategy templates, and three cost scenarios (288 runs). `--variant-key` may be repeated for a
-scoped development or verification run. Completed fingerprints are reused without recalculation.
-
-`style-rotation-metrics-update` selects the latest clean, complete 288-run matrix by default. It
-publishes 48 shared factor/frequency diagnostic sets and one performance publication per run.
-Metric formulas, code, dependencies, Git commit, units, sample counts, and undefined reasons are
-versioned; a repeated completed metric version is reused without recalculation.
-
-## Local research interface
-
-Start the read-only application after PostgreSQL contains a complete formal metric publication:
+Destructive local rebuilds require an exact database-name confirmation:
 
 ```powershell
-style-rotation-web
+style-rotation db reset --confirm-database style_rotation_test
 ```
 
-Open `http://127.0.0.1:8000`. The application selects the latest metric version containing all
-288 published runs and uses database read-only transactions. It does not trigger calculations or
-write results. The leaderboard is a multi-metric research view rather than a single-metric
-"best factor" selector. API documentation is available at `http://127.0.0.1:8000/docs`.
+Database commands plus `bootstrap catalogs`, `artifact list/show/invalidate`, `lineage show`, and the loopback-only `api` server are implemented. Later domain commands are registered early so the interface remains stable, but return an explicit nonzero “not implemented” result until their delivery milestone. They never silently invoke v0.1 calculations.
 
-## Design rule
+Planned commands are `db`, `bootstrap`, `data`, `factor`, `signal`, `model`, `strategy`, `experiment`, `lineage`, `artifact`, `backup`, and `api`.
 
-Database access is isolated behind persistence/repository boundaries. Factor, ranking,
-portfolio, cost, and metric functions remain pure deterministic calculations.
+## Machine-readable research catalog
+
+The v0.2.0 seed catalog is under `v0.2/catalogs/`. Validate it with:
+
+```powershell
+.\.venv\Scripts\python.exe v0.2/tools/validate_catalogs.py
+```
+
+The frozen M0 baseline contains 12 factor definitions, 28 factor variants, 51 generated signals, 31 non-empty dimension-subset patterns, and 86 concrete seed model specifications.
+
+Publish the catalogs idempotently and inspect their immutable lineage:
+
+```powershell
+style-rotation bootstrap catalogs
+style-rotation bootstrap scope
+style-rotation artifact list
+style-rotation lineage show <artifact-uuid>
+```
+
+Build the React application and run the combined local service:
+
+```powershell
+cd frontend
+pnpm install --frozen-lockfile
+pnpm run generate:api
+pnpm run lint
+pnpm run typecheck
+pnpm run test
+pnpm run build
+cd ..
+style-rotation api
+```
+
+The application is then available at `http://127.0.0.1:8000/`, with OpenAPI docs at `/api/v2/docs`. The unauthenticated server refuses non-loopback bind addresses.
+
+## Development rules
+
+- Published v0.2 artifacts are versioned, immutable, traceable, and never silently overwritten.
+- Formal runs pin exact data, catalog, engine, and policy versions instead of resolving `latest` during calculation.
+- Pure calculators do not access the database; services orchestrate; repositories persist; API and CLI do not contain financial algorithms.
+- The frontend displays published backend results and does not recompute financial metrics.
+- Every milestone includes tests, documentation, a repeatable verification command, and a short application-oriented design note.

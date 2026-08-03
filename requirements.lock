@@ -1,4 +1,4 @@
-# Generated for the v0.1 phase-2 development environment on Python 3.12.
+# Dependency snapshot carried into the v0.2 M1A development environment on Python 3.12.
 # Regenerate and hash this file whenever the engine dependency set changes.
 alembic==1.18.5
 annotated-doc==0.0.5

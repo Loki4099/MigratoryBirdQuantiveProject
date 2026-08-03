@@ -132,9 +132,7 @@ def test_terminal_position_is_not_liquidated() -> None:
     assert len(result.executions) == 1
     assert len(result.trades) == 1
     final_asset_position = next(
-        item
-        for item in result.daily_positions
-        if item.nav_date == second and item.sleeve == "AAA"
+        item for item in result.daily_positions if item.nav_date == second and item.sleeve == "AAA"
     )
     assert final_asset_position.close_weight == 1
 

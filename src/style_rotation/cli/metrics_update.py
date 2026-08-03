@@ -58,9 +58,7 @@ def main() -> None:
     commit = _git_commit()
     lock_path = Path(__file__).resolve().parents[3] / "requirements.lock"
     metric_version_id = repository.ensure_metric_version(
-        version_key=(
-            f"metrics-v0.1.0-{commit[:8]}-{methodology_hash[:8]}-{code_hash[:8]}"
-        ),
+        version_key=(f"metrics-v0.1.0-{commit[:8]}-{methodology_hash[:8]}-{code_hash[:8]}"),
         methodology_hash=methodology_hash,
         code_hash=code_hash,
         dependency_lock_hash=_file_hash(lock_path),

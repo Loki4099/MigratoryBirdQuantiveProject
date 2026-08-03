@@ -34,9 +34,7 @@ class FakeRepository:
     def factor_detail(self, factor_variant_id: uuid.UUID) -> dict[str, Any]:
         return {"factor": {"factor_variant_id": factor_variant_id}}
 
-    def compare(
-        self, run_ids: Sequence[uuid.UUID], *, max_points: int
-    ) -> dict[str, Any]:
+    def compare(self, run_ids: Sequence[uuid.UUID], *, max_points: int) -> dict[str, Any]:
         return {"run_ids": list(run_ids), "max_points": max_points}
 
 

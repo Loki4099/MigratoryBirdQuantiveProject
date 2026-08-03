@@ -63,9 +63,7 @@ FORMAL_RUN_CONFIGURATION: dict[str, object] = {
 def validate_formal_run_matrix(runs: tuple[SourceRunDescriptor, ...]) -> None:
     """Reject a source group unless it is the exact frozen v0.1 run matrix."""
     if len(runs) != FORMAL_RUN_COUNT:
-        raise LookupError(
-            f"Formal source matrix requires {FORMAL_RUN_COUNT} runs, got {len(runs)}"
-        )
+        raise LookupError(f"Formal source matrix requires {FORMAL_RUN_COUNT} runs, got {len(runs)}")
 
     variant_keys = {run.factor_variant_key for run in runs}
     if len(variant_keys) != FORMAL_VARIANT_COUNT:
@@ -106,23 +104,17 @@ def validate_formal_run_matrix(runs: tuple[SourceRunDescriptor, ...]) -> None:
         raise LookupError("Formal source runs do not share one official end date")
     for frequency in FORMAL_FREQUENCIES:
         signal_dates = {
-            run.official_signal_start_date
-            for run in runs
-            if run.rebalance_frequency == frequency
+            run.official_signal_start_date for run in runs if run.rebalance_frequency == frequency
         }
         if len(signal_dates) != 1:
             raise LookupError(
                 f"Formal {frequency} runs do not share one official signal start date"
             )
         execution_dates = {
-            run.first_execution_date
-            for run in runs
-            if run.rebalance_frequency == frequency
+            run.first_execution_date for run in runs if run.rebalance_frequency == frequency
         }
         if len(execution_dates) != 1:
-            raise LookupError(
-                f"Formal {frequency} runs do not share one first execution date"
-            )
+            raise LookupError(f"Formal {frequency} runs do not share one first execution date")
     for run in runs:
         for key, expected_value in FORMAL_RUN_CONFIGURATION.items():
             if run.configuration.get(key) != expected_value:
@@ -376,9 +368,7 @@ class MetricsRepository:
                     TargetPosition.rank,
                 )
             ).all()
-            event_metadata: dict[
-                uuid.UUID, tuple[RebalanceEvent, uuid.UUID, str]
-            ] = {}
+            event_metadata: dict[uuid.UUID, tuple[RebalanceEvent, uuid.UUID, str]] = {}
             values: dict[uuid.UUID, dict[str, Decimal]] = defaultdict(dict)
             ranks: dict[uuid.UUID, dict[str, int]] = defaultdict(dict)
             for event, variant_key, symbol, oriented_value, rank in rows:
@@ -414,8 +404,7 @@ class MetricsRepository:
                 .order_by(CleanMarketPrice.trade_date, Asset.symbol)
             ).all()
             prices = tuple(
-                OpenPrice(symbol, price.trade_date, price.open_adj)
-                for price, symbol in price_rows
+                OpenPrice(symbol, price.trade_date, price.open_adj) for price, symbol in price_rows
             )
             return events, prices, signal_dataset.content_hash, clean_dataset.content_hash
 
@@ -600,10 +589,7 @@ class MetricsRepository:
             benchmark_by_type[row.benchmark_type].append(row)
         if set(benchmark_by_type) != {"four_etf_equal_weight", "spy_buy_hold"}:
             raise LookupError("Completed run must contain both formal benchmarks")
-        if any(
-            tuple(row.nav_date for row in rows) != dates
-            for rows in benchmark_by_type.values()
-        ):
+        if any(tuple(row.nav_date for row in rows) != dates for rows in benchmark_by_type.values()):
             raise LookupError("Benchmark dates do not align with strategy NAV")
         if tuple(row.nav_date for row in reserve_rows) != dates:
             raise LookupError("Reserve position dates do not align with strategy NAV")
@@ -615,14 +601,11 @@ class MetricsRepository:
             SeriesPoint(row.nav_date, row.net_daily_return, row.net_nav) for row in nav_rows
         )
 
-        def benchmark_series(
-            benchmark_type: str, basis: str
-        ) -> tuple[SeriesPoint, ...]:
+        def benchmark_series(benchmark_type: str, basis: str) -> tuple[SeriesPoint, ...]:
             rows = benchmark_by_type[benchmark_type]
             if basis == "gross":
                 return tuple(
-                    SeriesPoint(row.nav_date, row.gross_daily_return, row.gross_nav)
-                    for row in rows
+                    SeriesPoint(row.nav_date, row.gross_daily_return, row.gross_nav) for row in rows
                 )
             return tuple(
                 SeriesPoint(row.nav_date, row.net_daily_return, row.net_nav) for row in rows

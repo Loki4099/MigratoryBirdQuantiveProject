@@ -12,7 +12,7 @@ class SettingsTests(unittest.TestCase):
     def test_defaults_target_local_postgres(self) -> None:
         with patch.dict(os.environ, {}, clear=True):
             settings = Settings(_env_file=None)  # type: ignore[call-arg]
-        self.assertEqual(settings.system_version, "0.1.0")
+        self.assertEqual(settings.system_version, "0.2.0")
         self.assertTrue(settings.database_url.startswith("postgresql+psycopg://"))
 
     def test_environment_overrides_are_validated(self) -> None:

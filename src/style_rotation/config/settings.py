@@ -18,9 +18,10 @@ class Settings(BaseSettings):
     database_url: str = Field(
         default="postgresql+psycopg://style_rotation:style_rotation@localhost:5432/style_rotation"
     )
-    database_schema: str = "public"
     log_level: str = "INFO"
-    system_version: str = "0.1.0"
+    system_version: str = "0.2.0"
+    api_host: str = "127.0.0.1"
+    api_port: int = 8000
     yahoo_timeout_seconds: float = 30.0
     fred_csv_url: str = "https://fred.stlouisfed.org/graph/fredgraph.csv"
 

@@ -1,0 +1,320 @@
+from __future__ import annotations
+
+import uuid
+from collections.abc import Sequence
+from pathlib import Path
+from typing import Annotated, Any, Protocol
+
+from fastapi import FastAPI, Header, HTTPException, Query, Request, Response
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+
+from style_rotation import __version__
+from style_rotation.api.query import ArtifactQueryService
+from style_rotation.api.schemas import (
+    ApiContext,
+    ApiError,
+    ArtifactDetailResponse,
+    ArtifactListResponse,
+    ArtifactSummary,
+    AssetCatalogResponse,
+    CapabilitiesResponse,
+    DataRequirementResponse,
+    DependencySummary,
+    DomainCapability,
+    HealthResponse,
+    LineageManifestResponse,
+    QualityState,
+    QualitySummary,
+)
+from style_rotation.architecture import DOMAIN_BOUNDARIES
+from style_rotation.config.settings import get_settings
+from style_rotation.core.canonical import sha256_hexdigest
+from style_rotation.persistence.session import create_postgres_engine
+
+ARTIFACT_STATUSES = ("draft", "published", "retired", "superseded", "invalidated", "tainted")
+INTERFACE_STATES = (
+    "loading",
+    "empty",
+    "partial",
+    "warning",
+    "error",
+    "stale",
+    "tainted",
+    "invalidated",
+)
+DEFAULT_STATIC_DIR = Path(__file__).parents[3] / "frontend" / "dist"
+
+
+class ArtifactReader(Protocol):
+    def database_revision(self) -> str | None: ...
+    def list_artifacts(
+        self,
+        *,
+        statuses: Sequence[str],
+        artifact_type: str | None,
+        limit: int,
+        offset: int,
+    ) -> tuple[list[dict[str, Any]], int]: ...
+    def artifact_detail(self, artifact_id: uuid.UUID) -> dict[str, Any]: ...
+    def lineage_manifest(self, artifact_id: uuid.UUID) -> dict[str, Any]: ...
+    def asset_catalog(self) -> dict[str, Any]: ...
+    def data_requirements(self) -> dict[str, Any]: ...
+
+
+def _context() -> ApiContext:
+    return ApiContext(system_version=__version__)
+
+
+def _quality(status: str) -> QualitySummary:
+    mapping: dict[str, tuple[QualityState, list[str]]] = {
+        "draft": ("partial", ["artifact.draft"]),
+        "published": ("ok", []),
+        "retired": ("warning", ["artifact.retired"]),
+        "superseded": ("warning", ["artifact.superseded"]),
+        "tainted": ("warning", ["artifact.tainted"]),
+        "invalidated": ("error", ["artifact.invalidated"]),
+    }
+    state, codes = mapping[status]
+    return QualitySummary(state=state, codes=codes)
+
+
+def _artifact(payload: dict[str, Any]) -> ArtifactSummary:
+    return ArtifactSummary.model_validate({**payload, "quality": _quality(str(payload["status"]))})
+
+
+def _etag_response(
+    payload: object, response: Response, if_none_match: str | None
+) -> Response | None:
+    hash_payload = payload.model_dump(mode="json") if isinstance(payload, BaseModel) else payload
+    etag = f'"{sha256_hexdigest(hash_payload)}"'
+    if if_none_match == etag:
+        return Response(status_code=304, headers={"ETag": etag})
+    response.headers["ETag"] = etag
+    response.headers["Cache-Control"] = "private, max-age=0, must-revalidate"
+    return None
+
+
+def create_app(
+    reader: ArtifactReader | None = None,
+    *,
+    static_directory: Path | None = None,
+) -> FastAPI:
+    if reader is None:
+        reader = ArtifactQueryService(create_postgres_engine(get_settings().database_url))
+    static_dir = static_directory or DEFAULT_STATIC_DIR
+    app = FastAPI(
+        title="Style Rotation Research API",
+        version=__version__,
+        description="Read-only v0.2 research identity, quality, and lineage interface.",
+        docs_url="/api/v2/docs",
+        redoc_url=None,
+        openapi_url="/api/v2/openapi.json",
+    )
+    app.state.reader = reader
+
+    @app.exception_handler(LookupError)
+    async def lookup_error(_request: Request, error: LookupError) -> JSONResponse:
+        return JSONResponse(
+            status_code=404,
+            content=ApiError(code="not_found", message=str(error)).model_dump(),
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_error(_request: Request, error: RequestValidationError) -> JSONResponse:
+        return JSONResponse(
+            status_code=422,
+            content=ApiError(code="invalid_request", message=str(error)).model_dump(),
+        )
+
+    @app.exception_handler(HTTPException)
+    async def http_error(_request: Request, error: HTTPException) -> JSONResponse:
+        return JSONResponse(
+            status_code=error.status_code,
+            content=ApiError(code="invalid_request", message=str(error.detail)).model_dump(),
+            headers=error.headers,
+        )
+
+    @app.get("/api/v2/health", response_model=HealthResponse, tags=["system"])
+    def health() -> HealthResponse:
+        return HealthResponse(
+            context=_context(),
+            quality=QualitySummary(state="ok"),
+            database_revision=reader.database_revision(),
+        )
+
+    @app.get("/api/v2/capabilities", response_model=CapabilitiesResponse, tags=["system"])
+    def capabilities() -> CapabilitiesResponse:
+        available = {"catalog", "lineage", "ops"}
+        return CapabilitiesResponse(
+            context=_context(),
+            quality=QualitySummary(state="ok"),
+            domains=[
+                DomainCapability(
+                    key=item.key,
+                    purpose=item.purpose,
+                    upstream=list(item.upstream),
+                    delivery_milestone=item.delivery_milestone,
+                    availability="available" if item.key in available else "planned",
+                )
+                for item in DOMAIN_BOUNDARIES
+            ],
+            endpoints=[
+                "health",
+                "capabilities",
+                "assets",
+                "data_requirements",
+                "artifacts",
+                "lineage",
+            ],
+            interface_states=list(INTERFACE_STATES),
+            languages=["zh-CN", "en"],
+        )
+
+    @app.get(
+        "/api/v2/artifacts",
+        response_model=ArtifactListResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["lineage"],
+    )
+    def artifacts(
+        response: Response,
+        status: Annotated[list[str] | None, Query()] = None,
+        artifact_type: Annotated[str | None, Query(min_length=1, max_length=80)] = None,
+        limit: Annotated[int, Query(ge=1, le=100)] = 50,
+        offset: Annotated[int, Query(ge=0)] = 0,
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> ArtifactListResponse | Response:
+        statuses = status or ["published"]
+        unknown = sorted(set(statuses).difference(ARTIFACT_STATUSES))
+        if unknown:
+            raise HTTPException(status_code=422, detail=f"Unknown artifact status: {unknown}")
+        rows, total = reader.list_artifacts(
+            statuses=statuses, artifact_type=artifact_type, limit=limit, offset=offset
+        )
+        items = [_artifact(row) for row in rows]
+        quality = QualitySummary(
+            state="warning" if any(item.quality.state != "ok" for item in items) else "ok",
+            codes=sorted({code for item in items for code in item.quality.codes}),
+        )
+        payload = ArtifactListResponse(
+            context=_context(),
+            quality=quality,
+            items=items,
+            total=total,
+            limit=limit,
+            offset=offset,
+        )
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
+
+    @app.get(
+        "/api/v2/catalog/assets",
+        response_model=AssetCatalogResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["catalog"],
+    )
+    def asset_catalog(
+        response: Response,
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> AssetCatalogResponse | Response:
+        payload = AssetCatalogResponse(
+            context=_context(), quality=QualitySummary(state="ok"), **reader.asset_catalog()
+        )
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
+
+    @app.get(
+        "/api/v2/catalog/data-requirements",
+        response_model=DataRequirementResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["catalog"],
+    )
+    def data_requirements(
+        response: Response,
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> DataRequirementResponse | Response:
+        payload = DataRequirementResponse(
+            context=_context(), quality=QualitySummary(state="ok"), **reader.data_requirements()
+        )
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
+
+    @app.get(
+        "/api/v2/artifacts/{artifact_id}",
+        response_model=ArtifactDetailResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["lineage"],
+    )
+    def artifact_detail(
+        artifact_id: uuid.UUID,
+        response: Response,
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> ArtifactDetailResponse | Response:
+        detail = reader.artifact_detail(artifact_id)
+        artifact = _artifact(detail["artifact"])
+        payload = ArtifactDetailResponse(
+            context=_context(),
+            quality=artifact.quality,
+            artifact=artifact,
+            direct_dependencies=[
+                DependencySummary(**item) for item in detail["direct_dependencies"]
+            ],
+            direct_dependents=[DependencySummary(**item) for item in detail["direct_dependents"]],
+            lineage_url=(
+                f"/api/v2/artifacts/{artifact_id}/lineage" if detail["has_manifest"] else None
+            ),
+        )
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
+
+    @app.get(
+        "/api/v2/artifacts/{artifact_id}/lineage",
+        response_model=LineageManifestResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["lineage"],
+    )
+    def lineage(
+        artifact_id: uuid.UUID,
+        response: Response,
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> LineageManifestResponse | Response:
+        result = reader.lineage_manifest(artifact_id)
+        artifact = _artifact(result["artifact"])
+        manifest = result["manifest"]
+        if not isinstance(manifest, dict):
+            raise RuntimeError("Stored lineage manifest must be an object")
+        payload = LineageManifestResponse(
+            context=_context(),
+            quality=artifact.quality,
+            root_artifact=artifact,
+            manifest_hash=str(result["manifest_hash"]),
+            canonical_version=str(result["canonical_version"]),
+            artifacts=manifest["artifacts"],
+            dependencies=[DependencySummary(**item) for item in manifest["dependencies"]],
+            created_at=result["created_at"],
+        )
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
+
+    if static_dir.is_dir():
+        assets_dir = static_dir / "assets"
+        if assets_dir.is_dir():
+            app.mount("/assets", StaticFiles(directory=assets_dir), name="frontend-assets")
+
+        @app.get("/favicon.ico", include_in_schema=False)
+        def favicon() -> Response:
+            return Response(status_code=204)
+
+        @app.get("/{frontend_path:path}", include_in_schema=False)
+        def frontend(frontend_path: str) -> FileResponse:
+            if frontend_path.startswith("api/"):
+                raise HTTPException(status_code=404, detail="API route not found")
+            return FileResponse(static_dir / "index.html")
+
+    return app
+
+
+app = create_app()

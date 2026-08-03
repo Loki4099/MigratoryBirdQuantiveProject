@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "style-rotation-engine"
-version = "0.1.0"
-description = "Deterministic US style ETF factor research and backtesting platform"
+version = "0.2.0"
+description = "Versioned US style rotation research platform"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -30,18 +30,13 @@ dev = [
 ]
 
 [project.scripts]
-style-rotation-data-update = "style_rotation.cli.data_update:main"
-style-rotation-factor-update = "style_rotation.cli.factor_update:main"
-style-rotation-signal-update = "style_rotation.cli.signal_update:main"
-style-rotation-backtest-update = "style_rotation.cli.backtest_update:main"
-style-rotation-metrics-update = "style_rotation.cli.metrics_update:main"
-style-rotation-pipeline-update = "style_rotation.cli.pipeline_update:main"
-style-rotation-web = "style_rotation.cli.web:main"
+style-rotation = "style_rotation.cli.main:run"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
+"style_rotation" = ["py.typed"]
 "style_rotation.web" = ["static/*"]
 
 [tool.pytest.ini_options]

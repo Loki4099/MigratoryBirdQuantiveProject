@@ -1,0 +1,41 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+
+import { AppShell } from "./components/AppShell";
+import { ApiPage } from "./pages/ApiPage";
+import { AssetsPage } from "./pages/AssetsPage";
+import { ArtifactDetailPage } from "./pages/ArtifactDetailPage";
+import { ArtifactsPage } from "./pages/ArtifactsPage";
+import { DashboardPage } from "./pages/DashboardPage";
+import { PlannedPage } from "./pages/PlannedPage";
+
+export const queryClient = new QueryClient({
+  defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false } },
+});
+
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route element={<AppShell />}>
+        <Route index element={<DashboardPage />} />
+        <Route path="assets" element={<AssetsPage />} />
+        <Route path="data" element={<PlannedPage titleKey="nav.data" milestone="M2" />} />
+        <Route path="factors" element={<PlannedPage titleKey="nav.factors" milestone="M3" />} />
+        <Route path="signals" element={<PlannedPage titleKey="nav.signals" milestone="M4" />} />
+        <Route path="models" element={<PlannedPage titleKey="nav.models" milestone="M5" />} />
+        <Route path="strategies" element={<PlannedPage titleKey="nav.strategies" milestone="M6" />} />
+        <Route path="experiments" element={<PlannedPage titleKey="nav.experiments" milestone="M7" />} />
+        <Route path="compare" element={<PlannedPage titleKey="nav.compare" milestone="M8" />} />
+        <Route path="artifacts" element={<ArtifactsPage />} />
+        <Route path="artifacts/:artifactId" element={<ArtifactDetailPage />} />
+        <Route path="runs" element={<PlannedPage titleKey="nav.runs" milestone="M7" />} />
+        <Route path="api" element={<ApiPage />} />
+        <Route path="*" element={<PlannedPage titleKey="nav.dashboard" milestone="M1D" />} />
+      </Route>
+    </Routes>
+  );
+}
+
+export default function App() {
+  return <QueryClientProvider client={queryClient}><BrowserRouter><AppRoutes /></BrowserRouter></QueryClientProvider>;
+}

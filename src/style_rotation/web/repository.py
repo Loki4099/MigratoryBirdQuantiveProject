@@ -85,14 +85,18 @@ class ResearchRepository:
         return f"{metric.series_type}.{metric.return_basis}.{metric_key}"
 
     def _context(self, session: Session, version: MetricVersion) -> dict[str, Any]:
-        rows = session.execute(
-            select(BacktestRun)
-            .join(MetricPublication, MetricPublication.run_id == BacktestRun.run_id)
-            .where(
-                MetricPublication.metric_version_id == version.metric_version_id,
-                MetricPublication.status == "published",
+        rows = (
+            session.execute(
+                select(BacktestRun)
+                .join(MetricPublication, MetricPublication.run_id == BacktestRun.run_id)
+                .where(
+                    MetricPublication.metric_version_id == version.metric_version_id,
+                    MetricPublication.status == "published",
+                )
             )
-        ).scalars().all()
+            .scalars()
+            .all()
+        )
         if not rows:
             raise RuntimeError("Formal metric version has no published runs")
         first = rows[0]
@@ -148,45 +152,69 @@ class ResearchRepository:
         with self._read_session() as session:
             version = self._version_or_raise(session)
             metric_version_id = version.metric_version_id
-            publication_count = session.scalar(
-                select(func.count()).select_from(MetricPublication).where(
-                    MetricPublication.metric_version_id == metric_version_id,
-                    MetricPublication.status == "published",
+            publication_count = (
+                session.scalar(
+                    select(func.count())
+                    .select_from(MetricPublication)
+                    .where(
+                        MetricPublication.metric_version_id == metric_version_id,
+                        MetricPublication.status == "published",
+                    )
                 )
-            ) or 0
-            publishing_count = session.scalar(
-                select(func.count()).select_from(MetricPublication).where(
-                    MetricPublication.metric_version_id == metric_version_id,
-                    MetricPublication.status != "published",
+                or 0
+            )
+            publishing_count = (
+                session.scalar(
+                    select(func.count())
+                    .select_from(MetricPublication)
+                    .where(
+                        MetricPublication.metric_version_id == metric_version_id,
+                        MetricPublication.status != "published",
+                    )
                 )
-            ) or 0
-            diagnostic_count = session.scalar(
-                select(func.count()).select_from(FactorDiagnosticSet).where(
-                    FactorDiagnosticSet.metric_version_id == metric_version_id,
-                    FactorDiagnosticSet.status == "published",
+                or 0
+            )
+            diagnostic_count = (
+                session.scalar(
+                    select(func.count())
+                    .select_from(FactorDiagnosticSet)
+                    .where(
+                        FactorDiagnosticSet.metric_version_id == metric_version_id,
+                        FactorDiagnosticSet.status == "published",
+                    )
                 )
-            ) or 0
-            period_count = session.scalar(
-                select(func.count())
-                .select_from(FactorDiagnosticPeriod)
-                .join(FactorDiagnosticSet)
-                .where(FactorDiagnosticSet.metric_version_id == metric_version_id)
-            ) or 0
-            metric_count = session.scalar(
-                select(func.count())
-                .select_from(PerformanceMetric)
-                .join(MetricPublication)
-                .where(MetricPublication.metric_version_id == metric_version_id)
-            ) or 0
-            completed_runs = session.scalar(
-                select(func.count())
-                .select_from(BacktestRun)
-                .join(MetricPublication)
-                .where(
-                    MetricPublication.metric_version_id == metric_version_id,
-                    BacktestRun.status == "completed",
+                or 0
+            )
+            period_count = (
+                session.scalar(
+                    select(func.count())
+                    .select_from(FactorDiagnosticPeriod)
+                    .join(FactorDiagnosticSet)
+                    .where(FactorDiagnosticSet.metric_version_id == metric_version_id)
                 )
-            ) or 0
+                or 0
+            )
+            metric_count = (
+                session.scalar(
+                    select(func.count())
+                    .select_from(PerformanceMetric)
+                    .join(MetricPublication)
+                    .where(MetricPublication.metric_version_id == metric_version_id)
+                )
+                or 0
+            )
+            completed_runs = (
+                session.scalar(
+                    select(func.count())
+                    .select_from(BacktestRun)
+                    .join(MetricPublication)
+                    .where(
+                        MetricPublication.metric_version_id == metric_version_id,
+                        BacktestRun.status == "completed",
+                    )
+                )
+                or 0
+            )
             checks = {
                 "publications": publication_count == EXPECTED_PUBLICATIONS,
                 "diagnostic_sets": diagnostic_count == EXPECTED_DIAGNOSTIC_SETS,
@@ -255,14 +283,18 @@ class ResearchRepository:
                         self._metric_label(metric)
                     ] = self._metric_dict(metric)
             diagnostic_ids = {publication.diagnostic_set_id for _, _, _, publication in run_rows}
-            diagnostics = {
-                item.diagnostic_set_id: item
-                for item in session.scalars(
-                    select(FactorDiagnosticSet).where(
-                        FactorDiagnosticSet.diagnostic_set_id.in_(diagnostic_ids)
-                    )
-                ).all()
-            } if diagnostic_ids else {}
+            diagnostics = (
+                {
+                    item.diagnostic_set_id: item
+                    for item in session.scalars(
+                        select(FactorDiagnosticSet).where(
+                            FactorDiagnosticSet.diagnostic_set_id.in_(diagnostic_ids)
+                        )
+                    ).all()
+                }
+                if diagnostic_ids
+                else {}
+            )
             items: list[dict[str, Any]] = []
             for run, variant, definition, publication in run_rows:
                 diagnostic = diagnostics[publication.diagnostic_set_id]
@@ -315,11 +347,13 @@ class ResearchRepository:
                 raise LookupError("Factor variant not found")
             variant, definition = metadata
             diagnostics = session.scalars(
-                select(FactorDiagnosticSet).where(
+                select(FactorDiagnosticSet)
+                .where(
                     FactorDiagnosticSet.metric_version_id == version.metric_version_id,
                     FactorDiagnosticSet.factor_variant_id == factor_variant_id,
                     FactorDiagnosticSet.status == "published",
-                ).order_by(FactorDiagnosticSet.rebalance_frequency)
+                )
+                .order_by(FactorDiagnosticSet.rebalance_frequency)
             ).all()
             diagnostic_items: list[dict[str, Any]] = []
             for diagnostic in diagnostics:
@@ -328,23 +362,28 @@ class ResearchRepository:
                     .where(FactorDiagnosticPeriod.diagnostic_set_id == diagnostic.diagnostic_set_id)
                     .order_by(FactorDiagnosticPeriod.signal_date)
                 ).all()
-                diagnostic_items.append({
-                    "frequency": diagnostic.rebalance_frequency,
-                    "period_count": diagnostic.period_count,
-                    "valid_ic_count": diagnostic.valid_ic_count,
-                    "undefined_ic_count": diagnostic.undefined_ic_count,
-                    "mean_rank_ic": diagnostic.mean_rank_ic,
-                    "positive_ic_ratio": diagnostic.positive_ic_ratio,
-                    "mean_top_bottom_return_spread": diagnostic.mean_top_bottom_return_spread,
-                    "periods": [{
-                        "signal_date": period.signal_date,
-                        "execution_date": period.execution_date,
-                        "next_execution_date": period.next_execution_date,
-                        "rank_ic": period.rank_ic,
-                        "rank_ic_reason": period.rank_ic_reason_code,
-                        "top_bottom_return_spread": period.top_bottom_return_spread,
-                    } for period in periods],
-                })
+                diagnostic_items.append(
+                    {
+                        "frequency": diagnostic.rebalance_frequency,
+                        "period_count": diagnostic.period_count,
+                        "valid_ic_count": diagnostic.valid_ic_count,
+                        "undefined_ic_count": diagnostic.undefined_ic_count,
+                        "mean_rank_ic": diagnostic.mean_rank_ic,
+                        "positive_ic_ratio": diagnostic.positive_ic_ratio,
+                        "mean_top_bottom_return_spread": diagnostic.mean_top_bottom_return_spread,
+                        "periods": [
+                            {
+                                "signal_date": period.signal_date,
+                                "execution_date": period.execution_date,
+                                "next_execution_date": period.next_execution_date,
+                                "rank_ic": period.rank_ic,
+                                "rank_ic_reason": period.rank_ic_reason_code,
+                                "top_bottom_return_spread": period.top_bottom_return_spread,
+                            }
+                            for period in periods
+                        ],
+                    }
+                )
             run_rows = session.execute(
                 select(BacktestRun, MetricPublication)
                 .join(MetricPublication, MetricPublication.run_id == BacktestRun.run_id)
@@ -386,13 +425,16 @@ class ResearchRepository:
                     "minimum_observations": variant.minimum_observations,
                 },
                 "diagnostics": diagnostic_items,
-                "runs": [{
-                    "run_id": run.run_id,
-                    "frequency": run.rebalance_frequency,
-                    "strategy_template": run.strategy_template,
-                    "transaction_cost_bps": run.transaction_cost_bps,
-                    "metrics": metric_map[publication.metric_publication_id],
-                } for run, publication in run_rows],
+                "runs": [
+                    {
+                        "run_id": run.run_id,
+                        "frequency": run.rebalance_frequency,
+                        "strategy_template": run.strategy_template,
+                        "transaction_cost_bps": run.transaction_cost_bps,
+                        "metrics": metric_map[publication.metric_publication_id],
+                    }
+                    for run, publication in run_rows
+                ],
             }
 
     @staticmethod
@@ -400,8 +442,7 @@ class ResearchRepository:
         if len(points) <= max_points:
             return list(points)
         indices = {
-            round(index * (len(points) - 1) / (max_points - 1))
-            for index in range(max_points)
+            round(index * (len(points) - 1) / (max_points - 1)) for index in range(max_points)
         }
         return [points[index] for index in sorted(indices)]
 
@@ -449,10 +490,12 @@ class ResearchRepository:
                     .order_by(DailyNav.nav_date)
                 ).all()
                 benchmark = session.scalars(
-                    select(BenchmarkDailyNav).where(
+                    select(BenchmarkDailyNav)
+                    .where(
                         BenchmarkDailyNav.run_id == run.run_id,
                         BenchmarkDailyNav.benchmark_type == "spy_buy_hold",
-                    ).order_by(BenchmarkDailyNav.nav_date)
+                    )
+                    .order_by(BenchmarkDailyNav.nav_date)
                 ).all()
                 points = [
                     {
@@ -465,19 +508,21 @@ class ResearchRepository:
                 benchmark_points = [
                     {"date": item.nav_date, "net_nav": item.net_nav} for item in benchmark
                 ]
-                items.append({
-                    "run_id": run.run_id,
-                    "factor_variant_id": variant.factor_variant_id,
-                    "variant_key": variant.variant_key,
-                    "factor_name": definition.name,
-                    "frequency": run.rebalance_frequency,
-                    "strategy_template": run.strategy_template,
-                    "transaction_cost_bps": run.transaction_cost_bps,
-                    "first_execution_date": run.first_execution_date,
-                    "official_end_date": run.official_end_date,
-                    "metrics": metric_map[publication.metric_publication_id],
-                    "nav": self._downsample(points, max_points),
-                    "spy": self._downsample(benchmark_points, max_points),
-                })
+                items.append(
+                    {
+                        "run_id": run.run_id,
+                        "factor_variant_id": variant.factor_variant_id,
+                        "variant_key": variant.variant_key,
+                        "factor_name": definition.name,
+                        "frequency": run.rebalance_frequency,
+                        "strategy_template": run.strategy_template,
+                        "transaction_cost_bps": run.transaction_cost_bps,
+                        "first_execution_date": run.first_execution_date,
+                        "official_end_date": run.official_end_date,
+                        "metrics": metric_map[publication.metric_publication_id],
+                        "nav": self._downsample(points, max_points),
+                        "spy": self._downsample(benchmark_points, max_points),
+                    }
+                )
             items.sort(key=lambda item: run_ids.index(item["run_id"]))
             return {"context": self._context(session, version), "items": items}

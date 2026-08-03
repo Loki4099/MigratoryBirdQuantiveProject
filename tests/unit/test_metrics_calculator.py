@@ -44,9 +44,7 @@ def test_performance_metrics_match_hand_calculated_sample() -> None:
         official_end_date=start + timedelta(days=3),
     )
     assert metrics["cumulative_return"].value == Decimal("0.01959803")
-    assert float(metrics["annualized_volatility"].value or 0) == pytest.approx(
-        0.303973683071413
-    )
+    assert float(metrics["annualized_volatility"].value or 0) == pytest.approx(0.303973683071413)
     assert float(metrics["sharpe_ratio"].value or 0) == pytest.approx(4.14509567824654)
     assert float(metrics["sortino_ratio"].value or 0) == pytest.approx(11.2249721603218)
     assert metrics["max_drawdown"].value == Decimal("-0.01")
@@ -54,9 +52,7 @@ def test_performance_metrics_match_hand_calculated_sample() -> None:
     benchmark = _series(start, ("0", "-0.01", "0.01", "-0.01"))
     relative = calculate_relative_metrics(strategy, benchmark)
     assert float(relative["tracking_error"].value or 0) == pytest.approx(0.151986841535707)
-    assert float(relative["information_ratio"].value or 0) == pytest.approx(
-        12.4352870347396
-    )
+    assert float(relative["information_ratio"].value or 0) == pytest.approx(12.4352870347396)
     assert relative["cumulative_relative_return"].value == Decimal("0.03")
 
 
@@ -171,8 +167,7 @@ def test_rank_ic_and_top_bottom_diagnostics_match_golden_periods() -> None:
             opens[symbol] *= Decimal(1) + forward_return
             prices.append(OpenPrice(symbol, next_date, opens[symbol]))
     events = tuple(
-        _event(variant_id, index, execution_date)
-        for index, execution_date in enumerate(dates)
+        _event(variant_id, index, execution_date) for index, execution_date in enumerate(dates)
     )
     periods = calculate_factor_diagnostics(events, tuple(prices))
     assert [period.rank_ic for period in periods] == [Decimal(1), Decimal(0), Decimal(-1)]
@@ -221,10 +216,7 @@ def test_constant_factor_cross_section_produces_explicit_undefined_ic() -> None:
     )
     prices = tuple(
         [OpenPrice(symbol, first, Decimal(100)) for symbol in SYMBOLS]
-        + [
-            OpenPrice(symbol, second, Decimal(100 + index))
-            for index, symbol in enumerate(SYMBOLS)
-        ]
+        + [OpenPrice(symbol, second, Decimal(100 + index)) for index, symbol in enumerate(SYMBOLS)]
     )
     period = calculate_factor_diagnostics(events, prices)[0]
     assert period.rank_ic is None

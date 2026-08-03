@@ -1,0 +1,142 @@
+{
+  "catalog_type": "factor",
+  "catalog_version": "0.2.0",
+  "definitions": [
+    {
+      "key": "total_return",
+      "family": "return",
+      "formula": "close_adj[t] / close_adj[t-window] - 1",
+      "inputs": ["close_adj"],
+      "implementation_key": "total_return_v1",
+      "variants": [
+        {"key": "total_return__w5", "parameters": {"window": 5}, "required_price_observations": 6, "preset_type": "sensitivity"},
+        {"key": "total_return__w20", "parameters": {"window": 20}, "required_price_observations": 21, "preset_type": "horizon_anchor"},
+        {"key": "total_return__w60", "parameters": {"window": 60}, "required_price_observations": 61, "preset_type": "horizon_anchor"},
+        {"key": "total_return__w120", "parameters": {"window": 120}, "required_price_observations": 121, "preset_type": "canonical"},
+        {"key": "total_return__w252", "parameters": {"window": 252}, "required_price_observations": 253, "preset_type": "horizon_anchor"}
+      ]
+    },
+    {
+      "key": "lagged_return",
+      "family": "return",
+      "formula": "close_adj[t-skip_window] / close_adj[t-long_window] - 1",
+      "inputs": ["close_adj"],
+      "implementation_key": "lagged_return_v1",
+      "variants": [
+        {"key": "lagged_return__l120_s20", "parameters": {"long_window": 120, "skip_window": 20}, "required_price_observations": 121, "preset_type": "canonical"},
+        {"key": "lagged_return__l252_s20", "parameters": {"long_window": 252, "skip_window": 20}, "required_price_observations": 253, "preset_type": "horizon_anchor"}
+      ]
+    },
+    {
+      "key": "moving_average_ratio",
+      "family": "trend",
+      "formula": "SMA(close_adj, short_window) / SMA(close_adj, long_window) - 1; short_window=1 means current close",
+      "inputs": ["close_adj"],
+      "implementation_key": "moving_average_ratio_v1",
+      "variants": [
+        {"key": "moving_average_ratio__s20_l60", "parameters": {"short_window": 20, "long_window": 60}, "required_price_observations": 60, "preset_type": "horizon_anchor"},
+        {"key": "moving_average_ratio__s60_l120", "parameters": {"short_window": 60, "long_window": 120}, "required_price_observations": 120, "preset_type": "horizon_anchor"},
+        {"key": "moving_average_ratio__s1_l50", "parameters": {"short_window": 1, "long_window": 50}, "required_price_observations": 50, "preset_type": "sensitivity"},
+        {"key": "moving_average_ratio__s1_l200", "parameters": {"short_window": 1, "long_window": 200}, "required_price_observations": 200, "preset_type": "canonical"},
+        {"key": "moving_average_ratio__s50_l200", "parameters": {"short_window": 50, "long_window": 200}, "required_price_observations": 200, "preset_type": "canonical"}
+      ]
+    },
+    {
+      "key": "rsi",
+      "family": "oscillator",
+      "formula": "Wilder RSI using window price changes, SMA seed, then Wilder smoothing",
+      "inputs": ["close_adj"],
+      "implementation_key": "rsi_wilder_v1",
+      "variants": [
+        {"key": "rsi__w14", "parameters": {"window": 14}, "required_price_observations": 15, "preset_type": "canonical"}
+      ]
+    },
+    {
+      "key": "return_skewness",
+      "family": "tail_distribution",
+      "formula": "bias-corrected Fisher-Pearson skewness of window adjusted-close log returns",
+      "inputs": ["close_adj"],
+      "implementation_key": "return_skewness_fisher_pearson_v1",
+      "variants": [
+        {"key": "return_skewness__w60", "parameters": {"window": 60}, "required_price_observations": 61, "preset_type": "canonical"},
+        {"key": "return_skewness__w120", "parameters": {"window": 120}, "required_price_observations": 121, "preset_type": "horizon_anchor"}
+      ]
+    },
+    {
+      "key": "return_excess_kurtosis",
+      "family": "tail_distribution",
+      "formula": "bias-corrected Fisher excess kurtosis of window adjusted-close log returns; normal=0",
+      "inputs": ["close_adj"],
+      "implementation_key": "return_excess_kurtosis_fisher_v1",
+      "variants": [
+        {"key": "return_excess_kurtosis__w120", "parameters": {"window": 120}, "required_price_observations": 121, "preset_type": "canonical"},
+        {"key": "return_excess_kurtosis__w252", "parameters": {"window": 252}, "required_price_observations": 253, "preset_type": "horizon_anchor"}
+      ]
+    },
+    {
+      "key": "realized_volatility",
+      "family": "risk",
+      "formula": "sample_stdev(window adjusted-close log returns, ddof=1) * sqrt(252)",
+      "inputs": ["close_adj"],
+      "implementation_key": "realized_volatility_v1",
+      "variants": [
+        {"key": "realized_volatility__w20", "parameters": {"window": 20}, "required_price_observations": 21, "preset_type": "canonical"},
+        {"key": "realized_volatility__w60", "parameters": {"window": 60}, "required_price_observations": 61, "preset_type": "horizon_anchor"}
+      ]
+    },
+    {
+      "key": "downside_deviation",
+      "family": "risk",
+      "formula": "sqrt(252 * mean(min(log_return, 0)^2)) over window returns",
+      "inputs": ["close_adj"],
+      "implementation_key": "downside_deviation_v1",
+      "variants": [
+        {"key": "downside_deviation__w20", "parameters": {"window": 20}, "required_price_observations": 21, "preset_type": "canonical"},
+        {"key": "downside_deviation__w60", "parameters": {"window": 60}, "required_price_observations": 61, "preset_type": "horizon_anchor"}
+      ]
+    },
+    {
+      "key": "maximum_drawdown",
+      "family": "risk",
+      "formula": "abs(min(close_adj / running_max(close_adj) - 1)) inside window prices",
+      "inputs": ["close_adj"],
+      "implementation_key": "maximum_drawdown_v1",
+      "variants": [
+        {"key": "maximum_drawdown__w60", "parameters": {"window": 60}, "required_price_observations": 60, "preset_type": "canonical"},
+        {"key": "maximum_drawdown__w120", "parameters": {"window": 120}, "required_price_observations": 120, "preset_type": "horizon_anchor"}
+      ]
+    },
+    {
+      "key": "relative_dollar_volume",
+      "family": "liquidity",
+      "formula": "(close_raw[t] * volume_raw[t]) / mean(close_raw * volume_raw, window) - 1; current observation included",
+      "inputs": ["close_raw", "volume_raw"],
+      "implementation_key": "relative_dollar_volume_v1",
+      "variants": [
+        {"key": "relative_dollar_volume__w20", "parameters": {"window": 20}, "required_price_observations": 20, "preset_type": "canonical"},
+        {"key": "relative_dollar_volume__w60", "parameters": {"window": 60}, "required_price_observations": 60, "preset_type": "horizon_anchor"}
+      ]
+    },
+    {
+      "key": "amihud_illiquidity",
+      "family": "liquidity",
+      "formula": "mean(abs(simple_return_adj) / (close_raw * volume_raw), window)",
+      "inputs": ["close_adj", "close_raw", "volume_raw"],
+      "implementation_key": "amihud_illiquidity_v1",
+      "variants": [
+        {"key": "amihud_illiquidity__w20", "parameters": {"window": 20}, "required_price_observations": 21, "preset_type": "canonical"},
+        {"key": "amihud_illiquidity__w60", "parameters": {"window": 60}, "required_price_observations": 61, "preset_type": "horizon_anchor"}
+      ]
+    },
+    {
+      "key": "ppo_histogram",
+      "family": "trend",
+      "formula": "PPO=100*(EMA_fast-EMA_slow)/EMA_slow; signal=EMA(PPO, signal_window); histogram=PPO-signal; each EMA seeded by SMA",
+      "inputs": ["close_adj"],
+      "implementation_key": "ppo_histogram_sma_seed_v1",
+      "variants": [
+        {"key": "ppo_histogram__f12_s26_g9", "parameters": {"fast_window": 12, "slow_window": 26, "signal_window": 9}, "required_price_observations": 34, "preset_type": "exploratory"}
+      ]
+    }
+  ]
+}
