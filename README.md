@@ -74,12 +74,15 @@ style-rotation bootstrap scope
 style-rotation bootstrap data-contracts
 style-rotation data calendar --start 2000-01-01 --end 2026-12-31
 style-rotation data fetch --start 2000-01-01 --end 2026-08-03
+style-rotation data publish-market --snapshot-artifact-id <uuid> --calendar-artifact-id <uuid> --version 1
+style-rotation data publish-rate --snapshot-artifact-id <uuid> --version 1
 style-rotation artifact list
 style-rotation lineage show <artifact-uuid>
 ```
 
-`data fetch` performs real network requests and publishes immutable source snapshots. It does not
-yet parse or approve canonical research data; that quality-gated step is delivered in M2B3.
+`data fetch` performs real network requests and publishes immutable source snapshots. The explicit
+`publish-market` and `publish-rate` commands parse those snapshots, apply the versioned quality
+gate, and publish typed canonical datasets; bundle and universe eligibility follow in M2B3B.
 
 Build the React application and run the combined local service:
 

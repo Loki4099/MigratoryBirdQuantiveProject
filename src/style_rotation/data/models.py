@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import date, datetime
+from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import (
@@ -13,6 +14,7 @@ from sqlalchemy import (
     Index,
     Integer,
     LargeBinary,
+    Numeric,
     String,
     Text,
     UniqueConstraint,
@@ -281,3 +283,192 @@ class CalendarSession(Base):
     open_at_utc: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     close_at_utc: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     is_early_close: Mapped[bool] = mapped_column(nullable=False)
+
+
+class DatasetPublication(CreatedAtMixin, Base):
+    __tablename__ = "dataset_publication"
+    __table_args__ = (
+        UniqueConstraint("dataset_key", "version_number", name="uq_dataset_key_version"),
+        CheckConstraint("version_number >= 1", name="version_number_positive"),
+        CheckConstraint("dataset_kind IN ('canonical', 'derived')", name="dataset_kind_allowed"),
+        CheckConstraint(
+            "value_kind IN ('daily_bar', 'rate_observation', 'reserve_return')",
+            name="value_kind_allowed",
+        ),
+        CheckConstraint("coverage_start <= coverage_end", name="coverage_ordered"),
+        CheckConstraint("row_count >= 1", name="row_count_positive"),
+        {"schema": "data"},
+    )
+
+    dataset_publication_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    artifact_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("lineage.artifact.artifact_id", ondelete="RESTRICT"),
+        nullable=False,
+        unique=True,
+    )
+    cleaning_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.cleaning_version.cleaning_version_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    calendar_version_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("catalog.calendar_version.calendar_version_id", ondelete="RESTRICT"),
+    )
+    dataset_key: Mapped[str] = mapped_column(String(140), nullable=False)
+    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    dataset_kind: Mapped[str] = mapped_column(String(30), nullable=False)
+    value_kind: Mapped[str] = mapped_column(String(40), nullable=False)
+    coverage_start: Mapped[date] = mapped_column(Date, nullable=False)
+    coverage_end: Mapped[date] = mapped_column(Date, nullable=False)
+    row_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
+
+
+class DatasetInput(Base):
+    __tablename__ = "dataset_input"
+    __table_args__ = (
+        UniqueConstraint("dataset_publication_id", "role", "ordinal", name="uq_dataset_input_role"),
+        {"schema": "data"},
+    )
+
+    dataset_input_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    dataset_publication_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.dataset_publication.dataset_publication_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    source_snapshot_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.source_snapshot.source_snapshot_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    role: Mapped[str] = mapped_column(String(80), nullable=False)
+    ordinal: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class DailyBar(Base):
+    __tablename__ = "daily_bar"
+    __table_args__ = (
+        CheckConstraint(
+            "LEAST(open_raw, high_raw, low_raw, close_raw, adj_close, "
+            "open_adj, high_adj, low_adj, close_adj, adjustment_factor) > 0",
+            name="prices_positive",
+        ),
+        CheckConstraint("volume_raw >= 0", name="volume_nonnegative"),
+        {"schema": "data"},
+    )
+
+    dataset_publication_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.dataset_publication.dataset_publication_id", ondelete="RESTRICT"),
+        primary_key=True,
+    )
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("catalog.asset.asset_id", ondelete="RESTRICT"),
+        primary_key=True,
+    )
+    session_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    open_raw: Mapped[Decimal] = mapped_column(Numeric(24, 10), nullable=False)
+    high_raw: Mapped[Decimal] = mapped_column(Numeric(24, 10), nullable=False)
+    low_raw: Mapped[Decimal] = mapped_column(Numeric(24, 10), nullable=False)
+    close_raw: Mapped[Decimal] = mapped_column(Numeric(24, 10), nullable=False)
+    adj_close: Mapped[Decimal] = mapped_column(Numeric(24, 10), nullable=False)
+    open_adj: Mapped[Decimal] = mapped_column(Numeric(24, 10), nullable=False)
+    high_adj: Mapped[Decimal] = mapped_column(Numeric(24, 10), nullable=False)
+    low_adj: Mapped[Decimal] = mapped_column(Numeric(24, 10), nullable=False)
+    close_adj: Mapped[Decimal] = mapped_column(Numeric(24, 10), nullable=False)
+    adjustment_factor: Mapped[Decimal] = mapped_column(Numeric(24, 14), nullable=False)
+    volume_raw: Mapped[int] = mapped_column(BigInteger, nullable=False)
+
+
+class CorporateAction(Base):
+    __tablename__ = "corporate_action"
+    __table_args__ = (
+        CheckConstraint("cash_dividend >= 0", name="cash_dividend_nonnegative"),
+        CheckConstraint("split_ratio >= 0", name="split_ratio_nonnegative"),
+        CheckConstraint("cash_dividend > 0 OR split_ratio > 0", name="action_nonempty"),
+        {"schema": "data"},
+    )
+
+    dataset_publication_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.dataset_publication.dataset_publication_id", ondelete="RESTRICT"),
+        primary_key=True,
+    )
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("catalog.asset.asset_id", ondelete="RESTRICT"),
+        primary_key=True,
+    )
+    effective_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    cash_dividend: Mapped[Decimal] = mapped_column(Numeric(24, 10), nullable=False)
+    split_ratio: Mapped[Decimal] = mapped_column(Numeric(24, 10), nullable=False)
+
+
+class CanonicalRateObservation(Base):
+    __tablename__ = "rate_observation"
+    __table_args__ = ({"schema": "data"},)
+
+    dataset_publication_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.dataset_publication.dataset_publication_id", ondelete="RESTRICT"),
+        primary_key=True,
+    )
+    series_key: Mapped[str] = mapped_column(String(100), primary_key=True)
+    observation_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    available_date: Mapped[date] = mapped_column(Date, nullable=False)
+    annual_rate_percent: Mapped[Decimal] = mapped_column(Numeric(18, 8), nullable=False)
+
+
+class DatasetCoverage(Base):
+    __tablename__ = "dataset_coverage"
+    __table_args__ = (
+        CheckConstraint("coverage_start <= coverage_end", name="coverage_ordered"),
+        CheckConstraint("observation_count >= 1", name="observation_count_positive"),
+        CheckConstraint("missing_count >= 0", name="missing_count_nonnegative"),
+        UniqueConstraint(
+            "dataset_publication_id", "subject_key", name="uq_dataset_coverage_subject"
+        ),
+        {"schema": "data"},
+    )
+
+    dataset_coverage_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    dataset_publication_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.dataset_publication.dataset_publication_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    asset_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("catalog.asset.asset_id", ondelete="RESTRICT")
+    )
+    subject_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    coverage_start: Mapped[date] = mapped_column(Date, nullable=False)
+    coverage_end: Mapped[date] = mapped_column(Date, nullable=False)
+    observation_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    missing_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
+
+
+class QualityIssueRecord(CreatedAtMixin, Base):
+    __tablename__ = "quality_issue"
+    __table_args__ = (
+        CheckConstraint("severity IN ('info', 'warning', 'error')", name="severity_allowed"),
+        Index("ix_quality_issue_dataset_severity", "dataset_publication_id", "severity"),
+        {"schema": "data"},
+    )
+
+    quality_issue_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    dataset_publication_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.dataset_publication.dataset_publication_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    asset_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("catalog.asset.asset_id", ondelete="RESTRICT")
+    )
+    severity: Mapped[str] = mapped_column(String(20), nullable=False)
+    rule_code: Mapped[str] = mapped_column(String(100), nullable=False)
+    event_date: Mapped[date | None] = mapped_column(Date)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    details: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)

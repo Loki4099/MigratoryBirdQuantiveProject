@@ -21,6 +21,7 @@ from style_rotation.data.providers.snapshots import (
     FredCsvSnapshotAdapter,
     YahooYFinanceSnapshotAdapter,
 )
+from style_rotation.data.publication import CanonicalDataPublicationService
 from style_rotation.data.service import publish_data_contracts
 from style_rotation.lineage.service import ArtifactService
 from style_rotation.persistence.database import database_status, reset_database, upgrade_database
@@ -165,6 +166,30 @@ def _data_calendar(start: date, end_inclusive: date, version_number: int) -> int
     return 0
 
 
+def _canonical_market(
+    snapshot_artifact_ids: tuple[str, ...], calendar_artifact_id: str, version_number: int
+) -> int:
+    service = CanonicalDataPublicationService(create_postgres_engine(get_settings().database_url))
+    result = service.publish_market(
+        tuple(uuid.UUID(item) for item in snapshot_artifact_ids),
+        uuid.UUID(calendar_artifact_id),
+        version_number=version_number,
+    )
+    payload = asdict(result)
+    payload["artifact_id"] = str(result.artifact_id)
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _canonical_rate(snapshot_artifact_id: str, version_number: int) -> int:
+    service = CanonicalDataPublicationService(create_postgres_engine(get_settings().database_url))
+    result = service.publish_rate(uuid.UUID(snapshot_artifact_id), version_number=version_number)
+    payload = asdict(result)
+    payload["artifact_id"] = str(result.artifact_id)
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
+
+
 def _artifact_list() -> int:
     print(json.dumps(_artifact_service().list_artifacts(), indent=2, ensure_ascii=False))
     return 0
@@ -252,9 +277,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     fetch_parser.add_argument("--start", required=True, type=_parse_date)
     fetch_parser.add_argument("--end", required=True, type=_parse_date, dest="end_inclusive")
-    fetch_parser.add_argument(
-        "--symbols", nargs="+", default=["IWF", "IWD", "IWO", "IWN", "SPY"]
-    )
+    fetch_parser.add_argument("--symbols", nargs="+", default=["IWF", "IWD", "IWO", "IWN", "SPY"])
     fetch_parser.add_argument("--skip-market", action="store_true")
     fetch_parser.add_argument("--skip-rate", action="store_true")
     fetch_parser.set_defaults(
@@ -273,9 +296,28 @@ def build_parser() -> argparse.ArgumentParser:
     calendar_parser.add_argument("--end", required=True, type=_parse_date, dest="end_inclusive")
     calendar_parser.add_argument("--version", type=int, default=1, dest="version_number")
     calendar_parser.set_defaults(
-        handler=lambda args: _data_calendar(
-            args.start, args.end_inclusive, args.version_number
+        handler=lambda args: _data_calendar(args.start, args.end_inclusive, args.version_number)
+    )
+    market_parser = data_subparsers.add_parser(
+        "publish-market", help="Validate and publish a canonical daily-market dataset"
+    )
+    market_parser.add_argument("--snapshot-artifact-id", action="append", required=True)
+    market_parser.add_argument("--calendar-artifact-id", required=True)
+    market_parser.add_argument("--version", type=int, required=True, dest="version_number")
+    market_parser.set_defaults(
+        handler=lambda args: _canonical_market(
+            tuple(args.snapshot_artifact_id),
+            args.calendar_artifact_id,
+            args.version_number,
         )
+    )
+    rate_parser = data_subparsers.add_parser(
+        "publish-rate", help="Validate and publish a canonical DGS3MO dataset"
+    )
+    rate_parser.add_argument("--snapshot-artifact-id", required=True)
+    rate_parser.add_argument("--version", type=int, required=True, dest="version_number")
+    rate_parser.set_defaults(
+        handler=lambda args: _canonical_rate(args.snapshot_artifact_id, args.version_number)
     )
 
     artifact_parser = subparsers.add_parser("artifact", help="Inspect artifact identity/status")
