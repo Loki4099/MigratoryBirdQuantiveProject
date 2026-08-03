@@ -63,6 +63,43 @@ class UnifiedCliTests(unittest.TestCase):
         self.assertEqual(result, 0)
         command.assert_called_once_with("factor.json")
 
+    def test_factor_engine_command_requires_explicit_commit(self) -> None:
+        with patch("style_rotation.cli.main._factor_bootstrap_engine", return_value=0) as command:
+            result = main(
+                [
+                    "factor",
+                    "bootstrap-engine",
+                    "--git-commit",
+                    "abcdef0",
+                    "--dependency-lock-file",
+                    "lock.txt",
+                    "--version",
+                    "2",
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with("abcdef0", "lock.txt", 2)
+
+    def test_factor_publish_requires_all_lineage_artifacts(self) -> None:
+        ids = [f"00000000-0000-0000-0000-00000000000{index}" for index in range(1, 5)]
+        with patch("style_rotation.cli.main._factor_publish", return_value=0) as command:
+            result = main(
+                [
+                    "factor",
+                    "publish",
+                    "--factor-catalog-artifact-id",
+                    ids[0],
+                    "--bundle-artifact-id",
+                    ids[1],
+                    "--eligibility-artifact-id",
+                    ids[2],
+                    "--engine-artifact-id",
+                    ids[3],
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with(*ids)
+
 
 if __name__ == "__main__":
     unittest.main()

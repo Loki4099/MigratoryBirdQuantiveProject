@@ -62,8 +62,8 @@ def test_empty_database_migrates_to_one_clean_v02_head() -> None:
     psycopg_url = _reset()
     assert DATABASE_URL is not None
     status = database_status(DATABASE_URL)
-    assert status.current_revision == "20260803_07_v02_factor"
-    assert status.head_revisions == ("20260803_07_v02_factor",)
+    assert status.current_revision == "20260803_08_v02_factor_engine"
+    assert status.head_revisions == ("20260803_08_v02_factor_engine",)
     assert status.present_schemas == SCHEMA_NAMES
     assert status.missing_schemas == ()
 
@@ -166,7 +166,14 @@ def test_ops_engine_and_run_constraints_are_enforced() -> None:
     fingerprint = "f" * 64
 
     with psycopg.connect(psycopg_url) as connection:
-        _insert_published(connection, artifact_id, "test-engine-v1", "1" * 64, "2" * 64)
+        connection.execute(
+            """
+            INSERT INTO lineage.artifact (
+                artifact_id, artifact_type, artifact_key, version_number, status
+            ) VALUES (%s, 'test', 'test-engine-v1', 1, 'draft')
+            """,
+            (artifact_id,),
+        )
         connection.execute(
             """
             INSERT INTO ops.engine_definition (
@@ -185,6 +192,22 @@ def test_ops_engine_and_run_constraints_are_enforced() -> None:
                       '20260802_01_v02_foundation', %s, '{}'::jsonb)
             """,
             (engine_version_id, engine_definition_id, artifact_id, "3" * 64, "4" * 64),
+        )
+        connection.execute(
+            """
+            SELECT set_config('style_rotation.status_event_id', %s, true),
+                   set_config('style_rotation.status_reason', 'test publication', true)
+            """,
+            (str(uuid.uuid4()),),
+        )
+        connection.execute(
+            """
+            UPDATE lineage.artifact
+            SET status = 'published', semantic_fingerprint = %s, content_hash = %s,
+                published_at = now()
+            WHERE artifact_id = %s
+            """,
+            ("1" * 64, "2" * 64, artifact_id),
         )
         connection.execute(
             """
@@ -217,6 +240,14 @@ def test_ops_engine_and_run_constraints_are_enforced() -> None:
             )
         connection.execute("ROLLBACK TO SAVEPOINT duplicate_check")
 
+        connection.execute("SAVEPOINT definition_check")
+        with pytest.raises(psycopg.DatabaseError):
+            connection.execute(
+                "UPDATE ops.engine_definition SET name = 'changed' WHERE engine_definition_id = %s",
+                (engine_definition_id,),
+            )
+        connection.execute("ROLLBACK TO SAVEPOINT definition_check")
+
         connection.rollback()
 
 
@@ -232,5 +263,5 @@ def test_migration_can_downgrade_to_base_and_upgrade_again() -> None:
 
     upgrade_database(DATABASE_URL)
     upgraded = database_status(DATABASE_URL)
-    assert upgraded.current_revision == "20260803_07_v02_factor"
+    assert upgraded.current_revision == "20260803_08_v02_factor_engine"
     assert upgraded.missing_schemas == ()

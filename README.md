@@ -4,7 +4,7 @@ Versioned research platform for explainable US style rotation across IWF, IWD, I
 
 ## Status
 
-v0.2 is being rebuilt in short, independently verified milestones. M0, M1, and M2 are complete, and M3 factor development is underway. The platform now has immutable publication, an asset/data catalog, source evidence, typed canonical data, reserve accrual, frozen data bundles, eligibility diagnostics, a read-only Data API, bilingual Assets/Data pages, and typed factor definitions/versions/variants. Factor calculation and diagnostics, followed by signal, model, strategy, and experiment implementations, continue in later milestones.
+v0.2 is being rebuilt in short, independently verified milestones. M0, M1, M2, M3A, and M3B are complete. The platform now has immutable publication, an asset/data catalog, source evidence, typed canonical data, reserve accrual, frozen data bundles, eligibility diagnostics, a read-only Data API, bilingual Assets/Data pages, typed factor definitions/versions/variants, and a versioned deterministic engine that publishes all 28 seed factor datasets. Factor diagnostics and the Factors API/UI are next in M3C, followed by signal, model, strategy, and experiment implementations.
 
 The authoritative plan is [v0.2/正式开发方案.md](v0.2/正式开发方案.md). Detailed decisions and database rationale are stored in [v0.2/设计决策记录.md](v0.2/设计决策记录.md) and [v0.2/数据库设计.md](v0.2/数据库设计.md).
 
@@ -81,6 +81,8 @@ style-rotation data publish-reserve --rate-dataset-artifact-id <uuid> --calendar
 style-rotation data publish-bundle --market-artifact-id <uuid> --rate-artifact-id <uuid> --reserve-artifact-id <uuid> --calendar-artifact-id <uuid> --version 1
 style-rotation data publish-eligibility --universe-artifact-id <uuid> --requirement-artifact-id <uuid> --bundle-artifact-id <uuid> --start 2010-01-01 --end 2026-08-03 --warmup-observations 253 --version 1
 style-rotation factor bootstrap --catalog-file v0.2/catalogs/factors.v0.2.0.json
+style-rotation factor bootstrap-engine --git-commit <hex-commit> --dependency-lock-file requirements.lock --version 1
+style-rotation factor publish --factor-catalog-artifact-id <uuid> --bundle-artifact-id <uuid> --eligibility-artifact-id <uuid> --engine-artifact-id <uuid>
 style-rotation artifact list
 style-rotation lineage show <artifact-uuid>
 ```

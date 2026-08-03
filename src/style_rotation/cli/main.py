@@ -29,6 +29,8 @@ from style_rotation.data.providers.snapshots import (
 )
 from style_rotation.data.publication import CanonicalDataPublicationService
 from style_rotation.data.service import publish_data_contracts
+from style_rotation.factor.engine import build_factor_engine_spec, publish_factor_engine
+from style_rotation.factor.publication import FactorDatasetPublicationService
 from style_rotation.factor.service import publish_factor_catalog
 from style_rotation.lineage.service import ArtifactService
 from style_rotation.persistence.database import database_status, reset_database, upgrade_database
@@ -213,6 +215,43 @@ def _factor_bootstrap(catalog_file: str) -> int:
         create_postgres_engine(get_settings().database_url), Path(catalog_file)
     )
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _factor_bootstrap_engine(
+    git_commit: str, dependency_lock_file: str, version_number: int
+) -> int:
+    settings = get_settings()
+    engine = create_postgres_engine(settings.database_url)
+    status = database_status(settings.database_url)
+    if status.current_revision is None:
+        raise ValueError("Database must be migrated before publishing a factor engine")
+    spec = build_factor_engine_spec(
+        git_commit,
+        Path(dependency_lock_file),
+        status.current_revision,
+        version_number=version_number,
+    )
+    result = publish_factor_engine(engine, spec)
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _factor_publish(
+    factor_catalog_artifact_id: str,
+    bundle_artifact_id: str,
+    eligibility_artifact_id: str,
+    engine_artifact_id: str,
+) -> int:
+    results = FactorDatasetPublicationService(
+        create_postgres_engine(get_settings().database_url)
+    ).publish(
+        uuid.UUID(factor_catalog_artifact_id),
+        uuid.UUID(bundle_artifact_id),
+        uuid.UUID(eligibility_artifact_id),
+        uuid.UUID(engine_artifact_id),
+    )
+    print(json.dumps([item.to_dict() for item in results], indent=2, ensure_ascii=False))
     return 0
 
 
@@ -512,6 +551,32 @@ def build_parser() -> argparse.ArgumentParser:
         "--catalog-file", default="v0.2/catalogs/factors.v0.2.0.json"
     )
     factor_bootstrap_parser.set_defaults(handler=lambda args: _factor_bootstrap(args.catalog_file))
+    factor_engine_parser = factor_subparsers.add_parser(
+        "bootstrap-engine", help="Publish the deterministic factor engine version"
+    )
+    factor_engine_parser.add_argument("--git-commit", required=True)
+    factor_engine_parser.add_argument("--dependency-lock-file", default="requirements.lock")
+    factor_engine_parser.add_argument("--version", type=int, default=1)
+    factor_engine_parser.set_defaults(
+        handler=lambda args: _factor_bootstrap_engine(
+            args.git_commit, args.dependency_lock_file, args.version
+        )
+    )
+    factor_publish_parser = factor_subparsers.add_parser(
+        "publish", help="Calculate and publish all variants in a factor catalog"
+    )
+    factor_publish_parser.add_argument("--factor-catalog-artifact-id", required=True)
+    factor_publish_parser.add_argument("--bundle-artifact-id", required=True)
+    factor_publish_parser.add_argument("--eligibility-artifact-id", required=True)
+    factor_publish_parser.add_argument("--engine-artifact-id", required=True)
+    factor_publish_parser.set_defaults(
+        handler=lambda args: _factor_publish(
+            args.factor_catalog_artifact_id,
+            args.bundle_artifact_id,
+            args.eligibility_artifact_id,
+            args.engine_artifact_id,
+        )
+    )
 
     for command in PLANNED_COMMANDS:
         if command.key in {"bootstrap", "data", "factor", "artifact", "lineage", "api"}:
