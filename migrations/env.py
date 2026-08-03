@@ -7,6 +7,7 @@ from sqlalchemy import engine_from_config, pool
 
 from style_rotation.catalog import models as catalog_models  # noqa: F401
 from style_rotation.config.settings import get_settings
+from style_rotation.data import models as data_models  # noqa: F401
 from style_rotation.lineage import models as lineage_models  # noqa: F401
 from style_rotation.ops import models as ops_models  # noqa: F401
 from style_rotation.persistence.base import Base

@@ -1,5 +1,81 @@
+from __future__ import annotations
+
+from typing import Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
 from style_rotation.contracts.spec import ContractLayer, DataContractSpec, FieldSpec
 
+
+class StrictModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class ProviderContract(StrictModel):
+    key: str
+    name: str
+    provider_type: Literal["market_data_wrapper", "official_api", "software_calendar"]
+    homepage: str
+    terms_note: str
+
+
+class SeriesVersionContract(StrictModel):
+    version_number: int = Field(ge=1)
+    provider: str
+    provider_series_key: str
+    interval_unit: str
+    interval_count: int = Field(ge=1)
+    calendar_key: str
+    timestamp_semantics: str
+    availability_semantics: str
+    parser_version: str
+    request_template: dict[str, Any]
+    field_mapping: dict[str, str] = Field(min_length=1)
+
+
+class SeriesContract(StrictModel):
+    key: str
+    name: str
+    description: str
+    subject_type: Literal["asset_listing", "reference_series", "calendar"]
+    value_kind: Literal["market_bar", "rate_observation", "calendar_session"]
+    version: SeriesVersionContract
+
+
+class CleaningContract(StrictModel):
+    key: str
+    name: str
+    description: str
+    version_number: int = Field(ge=1)
+    implementation_key: str
+    implementation_version: str
+    configuration: dict[str, Any]
+
+
+class DataContractsCatalog(StrictModel):
+    catalog_type: Literal["data_contracts"]
+    catalog_version: str = Field(pattern=r"^\d+\.\d+\.\d+$")
+    providers: list[ProviderContract] = Field(min_length=1)
+    series: list[SeriesContract] = Field(min_length=1)
+    cleaning: list[CleaningContract] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_references(self) -> DataContractsCatalog:
+        _unique("provider key", [item.key for item in self.providers])
+        _unique("series key", [item.key for item in self.series])
+        _unique("cleaning key", [item.key for item in self.cleaning])
+        providers = {item.key for item in self.providers}
+        if any(item.version.provider not in providers for item in self.series):
+            raise ValueError("Data series references an unknown provider")
+        return self
+
+
+def _unique(label: str, values: list[str]) -> None:
+    if len(values) != len(set(values)):
+        raise ValueError(f"Duplicate {label}")
+
+
+# Legacy v0.1 contracts remain importable while the v0.2 replacement is built.
 RAW_MARKET_PRICES_CONTRACT = DataContractSpec(
     layer=ContractLayer.RAW,
     name="raw_market_prices",
@@ -21,7 +97,6 @@ RAW_MARKET_PRICES_CONTRACT = DataContractSpec(
     ),
     quality_rules=("unique primary key", "nullable raw values are rejected by publication gate"),
 )
-
 
 CLEAN_MARKET_PRICES_CONTRACT = DataContractSpec(
     layer=ContractLayer.CLEAN,
@@ -52,7 +127,6 @@ CLEAN_MARKET_PRICES_CONTRACT = DataContractSpec(
     ),
 )
 
-
 RESERVE_RETURNS_CONTRACT = DataContractSpec(
     layer=ContractLayer.CLEAN,
     name="reserve_daily_returns",
@@ -77,7 +151,6 @@ RESERVE_RETURNS_CONTRACT = DataContractSpec(
         "ACT/365 conversion",
     ),
 )
-
 
 PHASE2_CONTRACTS = (
     RAW_MARKET_PRICES_CONTRACT,

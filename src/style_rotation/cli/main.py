@@ -14,6 +14,7 @@ from style_rotation.architecture import DOMAIN_BOUNDARIES
 from style_rotation.catalog.bootstrap import publish_catalogs
 from style_rotation.catalog.scope import publish_research_scope
 from style_rotation.config.settings import get_settings
+from style_rotation.data.service import publish_data_contracts
 from style_rotation.lineage.service import ArtifactService
 from style_rotation.persistence.database import database_status, reset_database, upgrade_database
 from style_rotation.persistence.session import create_postgres_engine
@@ -104,6 +105,13 @@ def _bootstrap_scope(catalog_file: str) -> int:
     return 0
 
 
+def _bootstrap_data_contracts(catalog_file: str) -> int:
+    engine = create_postgres_engine(get_settings().database_url)
+    results = publish_data_contracts(engine, Path(catalog_file))
+    print(json.dumps(results, indent=2, ensure_ascii=False))
+    return 0
+
+
 def _artifact_list() -> int:
     print(json.dumps(_artifact_service().list_artifacts(), indent=2, ensure_ascii=False))
     return 0
@@ -174,6 +182,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     scope_parser.add_argument("--catalog-file", default="v0.2/catalogs/research_scope.v0.2.0.json")
     scope_parser.set_defaults(handler=lambda args: _bootstrap_scope(args.catalog_file))
+    data_contracts_parser = bootstrap_subparsers.add_parser(
+        "data-contracts", help="Publish M2B source, series, and cleaning contracts"
+    )
+    data_contracts_parser.add_argument(
+        "--catalog-file", default="v0.2/catalogs/data_contracts.v0.2.0.json"
+    )
+    data_contracts_parser.set_defaults(
+        handler=lambda args: _bootstrap_data_contracts(args.catalog_file)
+    )
 
     artifact_parser = subparsers.add_parser("artifact", help="Inspect artifact identity/status")
     artifact_subparsers = artifact_parser.add_subparsers(dest="artifact_command", required=True)

@@ -1,0 +1,109 @@
+{
+  "catalog_type": "data_contracts",
+  "catalog_version": "0.2.0",
+  "providers": [
+    {
+      "key": "yahoo_yfinance",
+      "name": "Yahoo Finance via yfinance",
+      "provider_type": "market_data_wrapper",
+      "homepage": "https://finance.yahoo.com/",
+      "terms_note": "Research use only; yfinance is an unofficial wrapper and does not provide historical vendor vintages."
+    },
+    {
+      "key": "fred",
+      "name": "Federal Reserve Economic Data",
+      "provider_type": "official_api",
+      "homepage": "https://fred.stlouisfed.org/",
+      "terms_note": "Official FRED observations; observation and availability semantics must remain separate."
+    },
+    {
+      "key": "exchange_calendars",
+      "name": "exchange_calendars",
+      "provider_type": "software_calendar",
+      "homepage": "https://github.com/gerrymanoim/exchange_calendars",
+      "terms_note": "Generated calendar output is frozen with the exact library version and coverage."
+    }
+  ],
+  "series": [
+    {
+      "key": "us_etf_daily_market",
+      "name": "US ETF Daily Market Data",
+      "description": "Raw daily OHLC, adjusted close, volume, dividends, and splits for one listing.",
+      "subject_type": "asset_listing",
+      "value_kind": "market_bar",
+      "version": {
+        "version_number": 1,
+        "provider": "yahoo_yfinance",
+        "provider_series_key": "{ticker}",
+        "interval_unit": "day",
+        "interval_count": 1,
+        "calendar_key": "XNYS",
+        "timestamp_semantics": "exchange_session_date",
+        "availability_semantics": "available after the completed session; download time is recorded",
+        "parser_version": "yfinance_daily_v1",
+        "request_template": {"interval": "1d", "auto_adjust": false, "actions": true},
+        "field_mapping": {"Open": "open_raw", "High": "high_raw", "Low": "low_raw", "Close": "close_raw", "Adj Close": "adj_close", "Volume": "volume_raw", "Dividends": "cash_dividend", "Stock Splits": "split_ratio"}
+      }
+    },
+    {
+      "key": "dgs3mo_daily",
+      "name": "DGS3MO Daily Observation",
+      "description": "Three-month Treasury constant maturity rate observations and availability dates.",
+      "subject_type": "reference_series",
+      "value_kind": "rate_observation",
+      "version": {
+        "version_number": 1,
+        "provider": "fred",
+        "provider_series_key": "DGS3MO",
+        "interval_unit": "day",
+        "interval_count": 1,
+        "calendar_key": "CALENDAR",
+        "timestamp_semantics": "observation_date",
+        "availability_semantics": "available_at is stored independently from observation_date",
+        "parser_version": "fred_csv_v1",
+        "request_template": {"series_id": "DGS3MO", "file_type": "json"},
+        "field_mapping": {"date": "observation_date", "value": "annual_rate_percent"}
+      }
+    },
+    {
+      "key": "xnys_calendar",
+      "name": "XNYS Trading Sessions",
+      "description": "Version-frozen regular XNYS sessions with UTC open and close times.",
+      "subject_type": "calendar",
+      "value_kind": "calendar_session",
+      "version": {
+        "version_number": 1,
+        "provider": "exchange_calendars",
+        "provider_series_key": "XNYS",
+        "interval_unit": "session",
+        "interval_count": 1,
+        "calendar_key": "XNYS",
+        "timestamp_semantics": "session_date_with_utc_open_close",
+        "availability_semantics": "software calendar known at generation time and frozen by artifact",
+        "parser_version": "exchange_calendars_xnys_v1",
+        "request_template": {"calendar": "XNYS"},
+        "field_mapping": {"session": "session_date", "open": "open_at_utc", "close": "close_at_utc"}
+      }
+    }
+  ],
+  "cleaning": [
+    {
+      "key": "adjusted_ohlc",
+      "name": "Company-action-consistent adjusted OHLC",
+      "description": "Apply Adj Close / raw Close uniformly to same-session raw OHLC.",
+      "version_number": 1,
+      "implementation_key": "style_rotation.data.cleaning.adjusted_ohlc",
+      "implementation_version": "1",
+      "configuration": {"adjustment_factor": "adj_close / close_raw", "volume_basis": "raw", "dollar_volume_price": "close_raw", "reject_nonpositive_factor": true}
+    },
+    {
+      "key": "dgs3mo_observation",
+      "name": "DGS3MO observation normalization",
+      "description": "Normalize missing markers and preserve observation and availability dates.",
+      "version_number": 1,
+      "implementation_key": "style_rotation.data.cleaning.dgs3mo_observation",
+      "implementation_version": "1",
+      "configuration": {"missing_marker": ".", "rate_unit": "annual_percent", "availability_required": true}
+    }
+  ]
+}

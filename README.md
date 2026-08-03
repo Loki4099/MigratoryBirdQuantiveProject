@@ -71,6 +71,7 @@ Publish the catalogs idempotently and inspect their immutable lineage:
 ```powershell
 style-rotation bootstrap catalogs
 style-rotation bootstrap scope
+style-rotation bootstrap data-contracts
 style-rotation artifact list
 style-rotation lineage show <artifact-uuid>
 ```
