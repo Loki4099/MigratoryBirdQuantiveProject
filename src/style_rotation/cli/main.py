@@ -13,9 +13,15 @@ from typing import NoReturn
 from style_rotation import __version__
 from style_rotation.architecture import DOMAIN_BOUNDARIES
 from style_rotation.catalog.bootstrap import publish_catalogs
+from style_rotation.catalog.eligibility import EligibilityPublicationService
 from style_rotation.catalog.scope import publish_research_scope
 from style_rotation.config.settings import get_settings
 from style_rotation.data.acquisition import SourceAcquisitionService
+from style_rotation.data.bundle import (
+    ReservePublicationService,
+    publish_data_bundle,
+    publish_reserve_model,
+)
 from style_rotation.data.calendar import CalendarPublicationService, XNYSCalendarGenerator
 from style_rotation.data.providers.snapshots import (
     FredCsvSnapshotAdapter,
@@ -190,6 +196,85 @@ def _canonical_rate(snapshot_artifact_id: str, version_number: int) -> int:
     return 0
 
 
+def _bootstrap_reserve_model() -> int:
+    results = publish_reserve_model(create_postgres_engine(get_settings().database_url))
+    payload = []
+    for result in results:
+        item = asdict(result)
+        item["artifact_id"] = str(result.artifact_id)
+        payload.append(item)
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _publish_reserve(
+    rate_dataset_artifact_id: str,
+    calendar_artifact_id: str,
+    model_artifact_id: str,
+    version_number: int,
+) -> int:
+    result = ReservePublicationService(create_postgres_engine(get_settings().database_url)).publish(
+        uuid.UUID(rate_dataset_artifact_id),
+        uuid.UUID(calendar_artifact_id),
+        uuid.UUID(model_artifact_id),
+        version_number=version_number,
+    )
+    payload = asdict(result)
+    payload["artifact_id"] = str(result.artifact_id)
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _publish_bundle(
+    market_artifact_id: str,
+    rate_artifact_id: str,
+    reserve_artifact_id: str,
+    calendar_artifact_id: str,
+    version_number: int,
+) -> int:
+    results = publish_data_bundle(
+        create_postgres_engine(get_settings().database_url),
+        uuid.UUID(market_artifact_id),
+        uuid.UUID(rate_artifact_id),
+        uuid.UUID(reserve_artifact_id),
+        uuid.UUID(calendar_artifact_id),
+        version_number=version_number,
+    )
+    payload = []
+    for result in results:
+        item = asdict(result)
+        item["artifact_id"] = str(result.artifact_id)
+        payload.append(item)
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _publish_eligibility(
+    universe_artifact_id: str,
+    requirement_artifact_id: str,
+    bundle_artifact_id: str,
+    start: date,
+    end_inclusive: date,
+    warmup_observations: int,
+    version_number: int,
+) -> int:
+    result = EligibilityPublicationService(
+        create_postgres_engine(get_settings().database_url)
+    ).publish(
+        uuid.UUID(universe_artifact_id),
+        uuid.UUID(requirement_artifact_id),
+        uuid.UUID(bundle_artifact_id),
+        requested_start=start,
+        requested_end=end_inclusive,
+        warmup_observations=warmup_observations,
+        version_number=version_number,
+    )
+    payload = asdict(result)
+    payload["artifact_id"] = str(result.artifact_id)
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
+
+
 def _artifact_list() -> int:
     print(json.dumps(_artifact_service().list_artifacts(), indent=2, ensure_ascii=False))
     return 0
@@ -269,6 +354,10 @@ def build_parser() -> argparse.ArgumentParser:
     data_contracts_parser.set_defaults(
         handler=lambda args: _bootstrap_data_contracts(args.catalog_file)
     )
+    reserve_model_parser = bootstrap_subparsers.add_parser(
+        "reserve-model", help="Publish the versioned DGS3MO cash-accrual model"
+    )
+    reserve_model_parser.set_defaults(handler=lambda _args: _bootstrap_reserve_model())
 
     data_parser = subparsers.add_parser("data", help="Acquire immutable source evidence")
     data_subparsers = data_parser.add_subparsers(dest="data_command", required=True)
@@ -318,6 +407,59 @@ def build_parser() -> argparse.ArgumentParser:
     rate_parser.add_argument("--version", type=int, required=True, dest="version_number")
     rate_parser.set_defaults(
         handler=lambda args: _canonical_rate(args.snapshot_artifact_id, args.version_number)
+    )
+    reserve_parser = data_subparsers.add_parser(
+        "publish-reserve", help="Publish derived ACT/365 reserve-return intervals"
+    )
+    reserve_parser.add_argument("--rate-dataset-artifact-id", required=True)
+    reserve_parser.add_argument("--calendar-artifact-id", required=True)
+    reserve_parser.add_argument("--model-artifact-id", required=True)
+    reserve_parser.add_argument("--version", type=int, required=True, dest="version_number")
+    reserve_parser.set_defaults(
+        handler=lambda args: _publish_reserve(
+            args.rate_dataset_artifact_id,
+            args.calendar_artifact_id,
+            args.model_artifact_id,
+            args.version_number,
+        )
+    )
+    bundle_parser = data_subparsers.add_parser(
+        "publish-bundle", help="Publish a fixed research data bundle"
+    )
+    bundle_parser.add_argument("--market-artifact-id", required=True)
+    bundle_parser.add_argument("--rate-artifact-id", required=True)
+    bundle_parser.add_argument("--reserve-artifact-id", required=True)
+    bundle_parser.add_argument("--calendar-artifact-id", required=True)
+    bundle_parser.add_argument("--version", type=int, required=True, dest="version_number")
+    bundle_parser.set_defaults(
+        handler=lambda args: _publish_bundle(
+            args.market_artifact_id,
+            args.rate_artifact_id,
+            args.reserve_artifact_id,
+            args.calendar_artifact_id,
+            args.version_number,
+        )
+    )
+    eligibility_parser = data_subparsers.add_parser(
+        "publish-eligibility", help="Publish universe eligibility for one requested range"
+    )
+    eligibility_parser.add_argument("--universe-artifact-id", required=True)
+    eligibility_parser.add_argument("--requirement-artifact-id", required=True)
+    eligibility_parser.add_argument("--bundle-artifact-id", required=True)
+    eligibility_parser.add_argument("--start", required=True, type=_parse_date)
+    eligibility_parser.add_argument("--end", required=True, type=_parse_date, dest="end_inclusive")
+    eligibility_parser.add_argument("--warmup-observations", type=int, default=253)
+    eligibility_parser.add_argument("--version", type=int, required=True, dest="version_number")
+    eligibility_parser.set_defaults(
+        handler=lambda args: _publish_eligibility(
+            args.universe_artifact_id,
+            args.requirement_artifact_id,
+            args.bundle_artifact_id,
+            args.start,
+            args.end_inclusive,
+            args.warmup_observations,
+            args.version_number,
+        )
     )
 
     artifact_parser = subparsers.add_parser("artifact", help="Inspect artifact identity/status")

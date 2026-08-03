@@ -76,13 +76,18 @@ style-rotation data calendar --start 2000-01-01 --end 2026-12-31
 style-rotation data fetch --start 2000-01-01 --end 2026-08-03
 style-rotation data publish-market --snapshot-artifact-id <uuid> --calendar-artifact-id <uuid> --version 1
 style-rotation data publish-rate --snapshot-artifact-id <uuid> --version 1
+style-rotation bootstrap reserve-model
+style-rotation data publish-reserve --rate-dataset-artifact-id <uuid> --calendar-artifact-id <uuid> --model-artifact-id <uuid> --version 1
+style-rotation data publish-bundle --market-artifact-id <uuid> --rate-artifact-id <uuid> --reserve-artifact-id <uuid> --calendar-artifact-id <uuid> --version 1
+style-rotation data publish-eligibility --universe-artifact-id <uuid> --requirement-artifact-id <uuid> --bundle-artifact-id <uuid> --start 2010-01-01 --end 2026-08-03 --warmup-observations 253 --version 1
 style-rotation artifact list
 style-rotation lineage show <artifact-uuid>
 ```
 
 `data fetch` performs real network requests and publishes immutable source snapshots. The explicit
-`publish-market` and `publish-rate` commands parse those snapshots, apply the versioned quality
-gate, and publish typed canonical datasets; bundle and universe eligibility follow in M2B3B.
+`publish-market` and `publish-rate` parse source evidence into typed canonical datasets. Reserve
+accrual, bundles, and eligibility are separate explicit publications, so formal research never
+selects a runtime `latest` dataset or silently changes its warmup requirement.
 
 Build the React application and run the combined local service:
 

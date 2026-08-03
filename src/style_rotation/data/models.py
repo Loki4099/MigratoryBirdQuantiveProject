@@ -307,10 +307,9 @@ class DatasetPublication(CreatedAtMixin, Base):
         nullable=False,
         unique=True,
     )
-    cleaning_version_id: Mapped[uuid.UUID] = mapped_column(
+    cleaning_version_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("data.cleaning_version.cleaning_version_id", ondelete="RESTRICT"),
-        nullable=False,
     )
     calendar_version_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
@@ -329,6 +328,10 @@ class DatasetInput(Base):
     __tablename__ = "dataset_input"
     __table_args__ = (
         UniqueConstraint("dataset_publication_id", "role", "ordinal", name="uq_dataset_input_role"),
+        CheckConstraint(
+            "num_nonnulls(source_snapshot_id, upstream_dataset_publication_id) = 1",
+            name="exactly_one_input",
+        ),
         {"schema": "data"},
     )
 
@@ -338,10 +341,13 @@ class DatasetInput(Base):
         ForeignKey("data.dataset_publication.dataset_publication_id", ondelete="RESTRICT"),
         nullable=False,
     )
-    source_snapshot_id: Mapped[uuid.UUID] = mapped_column(
+    source_snapshot_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("data.source_snapshot.source_snapshot_id", ondelete="RESTRICT"),
-        nullable=False,
+    )
+    upstream_dataset_publication_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.dataset_publication.dataset_publication_id", ondelete="RESTRICT"),
     )
     role: Mapped[str] = mapped_column(String(80), nullable=False)
     ordinal: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -472,3 +478,249 @@ class QualityIssueRecord(CreatedAtMixin, Base):
     event_date: Mapped[date | None] = mapped_column(Date)
     message: Mapped[str] = mapped_column(Text, nullable=False)
     details: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+
+
+class ReserveReturn(Base):
+    __tablename__ = "reserve_return"
+    __table_args__ = (
+        CheckConstraint("interval_start < interval_end", name="interval_ordered"),
+        CheckConstraint("calendar_days >= 1", name="calendar_days_positive"),
+        CheckConstraint("accrual_factor > 0", name="accrual_factor_positive"),
+        CheckConstraint("staleness_days >= 0", name="staleness_nonnegative"),
+        CheckConstraint("quality_status IN ('normal', 'warning')", name="quality_status_allowed"),
+        {"schema": "data"},
+    )
+
+    dataset_publication_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.dataset_publication.dataset_publication_id", ondelete="RESTRICT"),
+        primary_key=True,
+    )
+    interval_start: Mapped[date] = mapped_column(Date, primary_key=True)
+    interval_end: Mapped[date] = mapped_column(Date, nullable=False)
+    source_observation_date: Mapped[date] = mapped_column(Date, nullable=False)
+    source_available_date: Mapped[date] = mapped_column(Date, nullable=False)
+    annual_rate_percent: Mapped[Decimal] = mapped_column(Numeric(18, 8), nullable=False)
+    calendar_days: Mapped[int] = mapped_column(Integer, nullable=False)
+    accrual_factor: Mapped[Decimal] = mapped_column(Numeric(24, 14), nullable=False)
+    staleness_days: Mapped[int] = mapped_column(Integer, nullable=False)
+    quality_status: Mapped[str] = mapped_column(String(20), nullable=False)
+
+
+class DataBundleDefinition(CreatedAtMixin, Base):
+    __tablename__ = "data_bundle_definition"
+    __table_args__ = ({"schema": "data"},)
+
+    data_bundle_definition_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True
+    )
+    artifact_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("lineage.artifact.artifact_id", ondelete="RESTRICT"),
+        nullable=False,
+        unique=True,
+    )
+    bundle_key: Mapped[str] = mapped_column(String(120), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(240), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+class DataBundleVersion(CreatedAtMixin, Base):
+    __tablename__ = "data_bundle_version"
+    __table_args__ = (
+        UniqueConstraint(
+            "data_bundle_definition_id", "version_number", name="uq_data_bundle_version"
+        ),
+        CheckConstraint("version_number >= 1", name="version_number_positive"),
+        CheckConstraint("member_count >= 1", name="member_count_positive"),
+        CheckConstraint("coverage_start <= coverage_end", name="coverage_ordered"),
+        {"schema": "data"},
+    )
+
+    data_bundle_version_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    data_bundle_definition_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.data_bundle_definition.data_bundle_definition_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    artifact_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("lineage.artifact.artifact_id", ondelete="RESTRICT"),
+        nullable=False,
+        unique=True,
+    )
+    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    member_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    coverage_start: Mapped[date] = mapped_column(Date, nullable=False)
+    coverage_end: Mapped[date] = mapped_column(Date, nullable=False)
+
+
+class DataBundleMember(Base):
+    __tablename__ = "data_bundle_member"
+    __table_args__ = (
+        UniqueConstraint("data_bundle_version_id", "role", name="uq_data_bundle_member_role"),
+        CheckConstraint(
+            "num_nonnulls(dataset_publication_id, calendar_version_id) = 1",
+            name="exactly_one_member",
+        ),
+        {"schema": "data"},
+    )
+
+    data_bundle_member_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    data_bundle_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.data_bundle_version.data_bundle_version_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    dataset_publication_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.dataset_publication.dataset_publication_id", ondelete="RESTRICT"),
+    )
+    calendar_version_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("catalog.calendar_version.calendar_version_id", ondelete="RESTRICT"),
+    )
+    role: Mapped[str] = mapped_column(String(80), nullable=False)
+    ordinal: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class EligibilitySnapshot(CreatedAtMixin, Base):
+    __tablename__ = "eligibility_snapshot"
+    __table_args__ = (
+        CheckConstraint("requested_start <= requested_end", name="requested_range_ordered"),
+        CheckConstraint("warmup_observations >= 1", name="warmup_positive"),
+        CheckConstraint("eligible_count >= 0", name="eligible_count_nonnegative"),
+        CheckConstraint("member_count >= eligible_count", name="eligible_count_bounded"),
+        {"schema": "catalog"},
+    )
+
+    eligibility_snapshot_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    artifact_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("lineage.artifact.artifact_id", ondelete="RESTRICT"),
+        nullable=False,
+        unique=True,
+    )
+    universe_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("catalog.universe_version.universe_version_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    data_requirement_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey(
+            "catalog.data_requirement_version.data_requirement_version_id", ondelete="RESTRICT"
+        ),
+        nullable=False,
+    )
+    data_bundle_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.data_bundle_version.data_bundle_version_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    snapshot_key: Mapped[str] = mapped_column(String(180), nullable=False, unique=True)
+    requested_start: Mapped[date] = mapped_column(Date, nullable=False)
+    requested_end: Mapped[date] = mapped_column(Date, nullable=False)
+    warmup_observations: Mapped[int] = mapped_column(Integer, nullable=False)
+    member_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    eligible_count: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class EligibilityItem(Base):
+    __tablename__ = "eligibility_item"
+    __table_args__ = (
+        UniqueConstraint("eligibility_snapshot_id", "asset_id", name="uq_eligibility_item_asset"),
+        {"schema": "catalog"},
+    )
+
+    eligibility_item_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    eligibility_snapshot_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("catalog.eligibility_snapshot.eligibility_snapshot_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("catalog.asset.asset_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    role: Mapped[str] = mapped_column(String(30), nullable=False)
+    is_eligible: Mapped[bool] = mapped_column(nullable=False)
+    available_start: Mapped[date | None] = mapped_column(Date)
+    available_end: Mapped[date | None] = mapped_column(Date)
+    data_ready_date: Mapped[date | None] = mapped_column(Date)
+    observation_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
+
+
+class EligibilityIssue(Base):
+    __tablename__ = "eligibility_issue"
+    __table_args__ = (
+        CheckConstraint("severity IN ('warning', 'error')", name="severity_allowed"),
+        {"schema": "catalog"},
+    )
+
+    eligibility_issue_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    eligibility_item_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("catalog.eligibility_item.eligibility_item_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    severity: Mapped[str] = mapped_column(String(20), nullable=False)
+    issue_code: Mapped[str] = mapped_column(String(100), nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    details: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+
+
+class ReserveReturnModelDefinition(CreatedAtMixin, Base):
+    __tablename__ = "reserve_return_model_definition"
+    __table_args__ = ({"schema": "experiment"},)
+
+    reserve_return_model_definition_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True
+    )
+    artifact_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("lineage.artifact.artifact_id", ondelete="RESTRICT"),
+        nullable=False,
+        unique=True,
+    )
+    model_key: Mapped[str] = mapped_column(String(120), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(240), nullable=False)
+
+
+class ReserveReturnModelVersion(CreatedAtMixin, Base):
+    __tablename__ = "reserve_return_model_version"
+    __table_args__ = (
+        UniqueConstraint(
+            "reserve_return_model_definition_id",
+            "version_number",
+            name="uq_reserve_return_model_version",
+        ),
+        CheckConstraint("version_number >= 1", name="version_number_positive"),
+        CheckConstraint("warning_after_days >= 0", name="warning_days_nonnegative"),
+        CheckConstraint("error_after_days >= warning_after_days", name="staleness_ordered"),
+        {"schema": "experiment"},
+    )
+
+    reserve_return_model_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True
+    )
+    reserve_return_model_definition_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey(
+            "experiment.reserve_return_model_definition.reserve_return_model_definition_id",
+            ondelete="RESTRICT",
+        ),
+        nullable=False,
+    )
+    artifact_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("lineage.artifact.artifact_id", ondelete="RESTRICT"),
+        nullable=False,
+        unique=True,
+    )
+    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    accrual_method: Mapped[str] = mapped_column(String(80), nullable=False)
+    day_count_basis: Mapped[str] = mapped_column(String(40), nullable=False)
+    warning_after_days: Mapped[int] = mapped_column(Integer, nullable=False)
+    error_after_days: Mapped[int] = mapped_column(Integer, nullable=False)
