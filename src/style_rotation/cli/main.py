@@ -29,6 +29,7 @@ from style_rotation.data.providers.snapshots import (
 )
 from style_rotation.data.publication import CanonicalDataPublicationService
 from style_rotation.data.service import publish_data_contracts
+from style_rotation.factor.service import publish_factor_catalog
 from style_rotation.lineage.service import ArtifactService
 from style_rotation.persistence.database import database_status, reset_database, upgrade_database
 from style_rotation.persistence.session import create_postgres_engine
@@ -204,6 +205,14 @@ def _bootstrap_reserve_model() -> int:
         item["artifact_id"] = str(result.artifact_id)
         payload.append(item)
     print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _factor_bootstrap(catalog_file: str) -> int:
+    result = publish_factor_catalog(
+        create_postgres_engine(get_settings().database_url), Path(catalog_file)
+    )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0
 
 
@@ -492,8 +501,20 @@ def build_parser() -> argparse.ArgumentParser:
     api_parser.add_argument("--port", type=int, default=get_settings().api_port)
     api_parser.set_defaults(handler=lambda args: _run_api(args.host, args.port))
 
+    factor_parser = subparsers.add_parser(
+        "factor", help="Materialize factor definitions and publish factor datasets"
+    )
+    factor_subparsers = factor_parser.add_subparsers(dest="factor_command", required=True)
+    factor_bootstrap_parser = factor_subparsers.add_parser(
+        "bootstrap", help="Materialize the published M0 factor catalog"
+    )
+    factor_bootstrap_parser.add_argument(
+        "--catalog-file", default="v0.2/catalogs/factors.v0.2.0.json"
+    )
+    factor_bootstrap_parser.set_defaults(handler=lambda args: _factor_bootstrap(args.catalog_file))
+
     for command in PLANNED_COMMANDS:
-        if command.key in {"bootstrap", "data", "artifact", "lineage", "api"}:
+        if command.key in {"bootstrap", "data", "factor", "artifact", "lineage", "api"}:
             continue
         command_parser = subparsers.add_parser(command.key, help=command.summary)
         command_parser.set_defaults(handler=lambda _args, item=command: _planned(item))

@@ -18,13 +18,13 @@ class UnifiedCliTests(unittest.TestCase):
         self.assertEqual(len(payload), 9)
         self.assertEqual(payload[0]["key"], "catalog")
 
-    def test_planned_command_fails_explicitly(self) -> None:
+    def test_next_planned_command_fails_explicitly(self) -> None:
         error = StringIO()
         with redirect_stderr(error):
-            result = main(["factor"])
+            result = main(["signal"])
         self.assertEqual(result, 2)
         self.assertIn("not implemented", error.getvalue())
-        self.assertIn("M3", error.getvalue())
+        self.assertIn("M4", error.getvalue())
 
     def test_version_flag_uses_v02_package_version(self) -> None:
         output = StringIO()
@@ -56,6 +56,12 @@ class UnifiedCliTests(unittest.TestCase):
             )
         self.assertEqual(result, 0)
         command.assert_called_once_with(date(2026, 1, 1), date(2026, 12, 31), 1)
+
+    def test_factor_bootstrap_uses_explicit_catalog_file(self) -> None:
+        with patch("style_rotation.cli.main._factor_bootstrap", return_value=0) as command:
+            result = main(["factor", "bootstrap", "--catalog-file", "factor.json"])
+        self.assertEqual(result, 0)
+        command.assert_called_once_with("factor.json")
 
 
 if __name__ == "__main__":
