@@ -68,6 +68,9 @@ class FakeArtifactReader:
             "created_at": datetime(2026, 8, 2, tzinfo=UTC),
         }
 
+    def data_overview(self) -> dict[str, Any]:
+        return {"sources": [], "datasets": [], "bundle": None, "eligibility": None}
+
 
 def _client() -> tuple[TestClient, FakeArtifactReader]:
     reader = FakeArtifactReader()
@@ -134,6 +137,21 @@ def test_artifact_detail_lineage_and_errors_use_stable_contracts() -> None:
     assert invalid.json()["code"] == "invalid_request"
 
     assert client.post("/api/v2/artifacts").status_code == 405
+
+
+def test_data_overview_reports_an_incomplete_published_chain() -> None:
+    client, _reader = _client()
+    response = client.get("/api/v2/data/overview")
+    assert response.status_code == 200
+    assert response.json()["quality"] == {
+        "state": "partial",
+        "codes": ["data.incomplete_chain"],
+    }
+    assert response.json()["datasets"] == []
+    assert "etag" in response.headers
+    capabilities = client.get("/api/v2/capabilities").json()
+    data_domain = next(item for item in capabilities["domains"] if item["key"] == "data")
+    assert data_domain["availability"] == "available"
 
 
 def test_committed_openapi_contract_matches_application() -> None:

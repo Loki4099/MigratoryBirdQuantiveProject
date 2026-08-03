@@ -4,7 +4,7 @@ Versioned research platform for explainable US style rotation across IWF, IWD, I
 
 ## Status
 
-v0.2 is being rebuilt in short, independently verified milestones. M0, M1A, and M1B are complete. The clean PostgreSQL schema foundation and safe database CLI are available; immutable publication, market-data, factor, signal, model, strategy, and experiment implementations follow in later milestones.
+v0.2 is being rebuilt in short, independently verified milestones. M0, M1, and M2 are complete. The platform now has immutable publication, an asset/data catalog, source evidence, typed canonical data, reserve accrual, frozen data bundles, eligibility diagnostics, a read-only Data API, and bilingual Assets/Data pages. Factor, signal, model, strategy, and experiment implementations follow in later milestones.
 
 The authoritative plan is [v0.2/正式开发方案.md](v0.2/正式开发方案.md). Detailed decisions and database rationale are stored in [v0.2/设计决策记录.md](v0.2/设计决策记录.md) and [v0.2/数据库设计.md](v0.2/数据库设计.md).
 
@@ -104,6 +104,7 @@ style-rotation api
 ```
 
 The application is then available at `http://127.0.0.1:8000/`, with OpenAPI docs at `/api/v2/docs`. The unauthenticated server refuses non-loopback bind addresses.
+The Data page reads `/api/v2/data/overview` and shows only published source, coverage, quality, bundle, and eligibility facts; it does not calculate or display strategy performance.
 
 ## Development rules
 

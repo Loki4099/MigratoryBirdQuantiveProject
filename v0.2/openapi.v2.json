@@ -397,6 +397,216 @@
         "title": "CapabilitiesResponse",
         "type": "object"
       },
+      "DataBundleItem": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "format": "uuid",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "bundle_key": {
+            "title": "Bundle Key",
+            "type": "string"
+          },
+          "coverage_end": {
+            "format": "date",
+            "title": "Coverage End",
+            "type": "string"
+          },
+          "coverage_start": {
+            "format": "date",
+            "title": "Coverage Start",
+            "type": "string"
+          },
+          "member_count": {
+            "title": "Member Count",
+            "type": "integer"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/DataBundleMemberItem"
+            },
+            "title": "Members",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "version_number": {
+            "title": "Version Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "bundle_key",
+          "name",
+          "version_number",
+          "coverage_start",
+          "coverage_end",
+          "member_count",
+          "members"
+        ],
+        "title": "DataBundleItem",
+        "type": "object"
+      },
+      "DataBundleMemberItem": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "format": "uuid",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "artifact_key": {
+            "title": "Artifact Key",
+            "type": "string"
+          },
+          "artifact_type": {
+            "title": "Artifact Type",
+            "type": "string"
+          },
+          "ordinal": {
+            "title": "Ordinal",
+            "type": "integer"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "version_number": {
+            "title": "Version Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "role",
+          "ordinal",
+          "artifact_id",
+          "artifact_type",
+          "artifact_key",
+          "version_number"
+        ],
+        "title": "DataBundleMemberItem",
+        "type": "object"
+      },
+      "DataOverviewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "bundle": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DataBundleItem"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "datasets": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetPublicationItem"
+            },
+            "title": "Datasets",
+            "type": "array"
+          },
+          "eligibility": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EligibilitySnapshotItem"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceSnapshotItem"
+            },
+            "title": "Sources",
+            "type": "array"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "sources",
+          "datasets",
+          "bundle",
+          "eligibility"
+        ],
+        "title": "DataOverviewResponse",
+        "type": "object"
+      },
+      "DataQualityIssueItem": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Key"
+          },
+          "details": {
+            "additionalProperties": true,
+            "title": "Details",
+            "type": "object"
+          },
+          "event_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Date"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "rule_code": {
+            "title": "Rule Code",
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "info",
+              "warning",
+              "error"
+            ],
+            "title": "Severity",
+            "type": "string"
+          }
+        },
+        "required": [
+          "severity",
+          "rule_code",
+          "asset_key",
+          "event_date",
+          "message",
+          "details"
+        ],
+        "title": "DataQualityIssueItem",
+        "type": "object"
+      },
       "DataRequirementItem": {
         "additionalProperties": false,
         "properties": {
@@ -495,6 +705,135 @@
         "title": "DataRequirementResponse",
         "type": "object"
       },
+      "DatasetCoverageItem": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Key"
+          },
+          "coverage_end": {
+            "format": "date",
+            "title": "Coverage End",
+            "type": "string"
+          },
+          "coverage_start": {
+            "format": "date",
+            "title": "Coverage Start",
+            "type": "string"
+          },
+          "missing_count": {
+            "title": "Missing Count",
+            "type": "integer"
+          },
+          "observation_count": {
+            "title": "Observation Count",
+            "type": "integer"
+          },
+          "subject_key": {
+            "title": "Subject Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject_key",
+          "asset_key",
+          "coverage_start",
+          "coverage_end",
+          "observation_count",
+          "missing_count"
+        ],
+        "title": "DatasetCoverageItem",
+        "type": "object"
+      },
+      "DatasetPublicationItem": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "format": "uuid",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "coverage": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetCoverageItem"
+            },
+            "title": "Coverage",
+            "type": "array"
+          },
+          "coverage_end": {
+            "format": "date",
+            "title": "Coverage End",
+            "type": "string"
+          },
+          "coverage_start": {
+            "format": "date",
+            "title": "Coverage Start",
+            "type": "string"
+          },
+          "dataset_key": {
+            "title": "Dataset Key",
+            "type": "string"
+          },
+          "dataset_kind": {
+            "enum": [
+              "canonical",
+              "derived"
+            ],
+            "title": "Dataset Kind",
+            "type": "string"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/DataQualityIssueItem"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "row_count": {
+            "title": "Row Count",
+            "type": "integer"
+          },
+          "value_kind": {
+            "enum": [
+              "daily_bar",
+              "rate_observation",
+              "reserve_return"
+            ],
+            "title": "Value Kind",
+            "type": "string"
+          },
+          "version_number": {
+            "title": "Version Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "dataset_key",
+          "version_number",
+          "dataset_kind",
+          "value_kind",
+          "coverage_start",
+          "coverage_end",
+          "row_count",
+          "coverage",
+          "issues",
+          "quality"
+        ],
+        "title": "DatasetPublicationItem",
+        "type": "object"
+      },
       "DependencySummary": {
         "additionalProperties": false,
         "properties": {
@@ -572,6 +911,182 @@
           "availability"
         ],
         "title": "DomainCapability",
+        "type": "object"
+      },
+      "EligibilityAssetItem": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_id": {
+            "format": "uuid",
+            "title": "Asset Id",
+            "type": "string"
+          },
+          "asset_key": {
+            "title": "Asset Key",
+            "type": "string"
+          },
+          "available_end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Available End"
+          },
+          "available_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Available Start"
+          },
+          "data_ready_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Ready Date"
+          },
+          "is_eligible": {
+            "title": "Is Eligible",
+            "type": "boolean"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/EligibilityIssueItem"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "observation_count": {
+            "title": "Observation Count",
+            "type": "integer"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id",
+          "asset_key",
+          "symbol",
+          "role",
+          "is_eligible",
+          "available_start",
+          "available_end",
+          "data_ready_date",
+          "observation_count",
+          "issues"
+        ],
+        "title": "EligibilityAssetItem",
+        "type": "object"
+      },
+      "EligibilityIssueItem": {
+        "additionalProperties": false,
+        "properties": {
+          "details": {
+            "additionalProperties": true,
+            "title": "Details",
+            "type": "object"
+          },
+          "issue_code": {
+            "title": "Issue Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "warning",
+              "error"
+            ],
+            "title": "Severity",
+            "type": "string"
+          }
+        },
+        "required": [
+          "severity",
+          "issue_code",
+          "message",
+          "details"
+        ],
+        "title": "EligibilityIssueItem",
+        "type": "object"
+      },
+      "EligibilitySnapshotItem": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "format": "uuid",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "eligible_count": {
+            "title": "Eligible Count",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EligibilityAssetItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "member_count": {
+            "title": "Member Count",
+            "type": "integer"
+          },
+          "requested_end": {
+            "format": "date",
+            "title": "Requested End",
+            "type": "string"
+          },
+          "requested_start": {
+            "format": "date",
+            "title": "Requested Start",
+            "type": "string"
+          },
+          "snapshot_key": {
+            "title": "Snapshot Key",
+            "type": "string"
+          },
+          "warmup_observations": {
+            "title": "Warmup Observations",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "snapshot_key",
+          "requested_start",
+          "requested_end",
+          "warmup_observations",
+          "member_count",
+          "eligible_count",
+          "items"
+        ],
+        "title": "EligibilitySnapshotItem",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -695,6 +1210,58 @@
           "state"
         ],
         "title": "QualitySummary",
+        "type": "object"
+      },
+      "SourceSnapshotItem": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "format": "uuid",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "as_of_at": {
+            "format": "date-time",
+            "title": "As Of At",
+            "type": "string"
+          },
+          "fetched_at": {
+            "format": "date-time",
+            "title": "Fetched At",
+            "type": "string"
+          },
+          "payload_hash": {
+            "title": "Payload Hash",
+            "type": "string"
+          },
+          "provider_key": {
+            "title": "Provider Key",
+            "type": "string"
+          },
+          "raw_size_bytes": {
+            "title": "Raw Size Bytes",
+            "type": "integer"
+          },
+          "series_key": {
+            "title": "Series Key",
+            "type": "string"
+          },
+          "snapshot_key": {
+            "title": "Snapshot Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "series_key",
+          "provider_key",
+          "snapshot_key",
+          "fetched_at",
+          "as_of_at",
+          "raw_size_bytes",
+          "payload_hash"
+        ],
+        "title": "SourceSnapshotItem",
         "type": "object"
       },
       "ValidationError": {
@@ -1104,6 +1671,58 @@
         "summary": "Data Requirements",
         "tags": [
           "catalog"
+        ]
+      }
+    },
+    "/api/v2/data/overview": {
+      "get": {
+        "operationId": "data_overview_api_v2_data_overview_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "if-none-match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-None-Match"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataOverviewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Not modified"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Data Overview",
+        "tags": [
+          "data"
         ]
       }
     },

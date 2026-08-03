@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Literal
 from uuid import UUID
 
@@ -147,3 +147,106 @@ class DataRequirementResponse(ApiModel):
     requirement_set_key: str
     version_number: int
     items: list[DataRequirementItem]
+
+
+class SourceSnapshotItem(ApiModel):
+    artifact_id: UUID
+    series_key: str
+    provider_key: str
+    snapshot_key: str
+    fetched_at: datetime
+    as_of_at: datetime
+    raw_size_bytes: int
+    payload_hash: str
+
+
+class DatasetCoverageItem(ApiModel):
+    subject_key: str
+    asset_key: str | None
+    coverage_start: date
+    coverage_end: date
+    observation_count: int
+    missing_count: int
+
+
+class DataQualityIssueItem(ApiModel):
+    severity: Literal["info", "warning", "error"]
+    rule_code: str
+    asset_key: str | None
+    event_date: date | None
+    message: str
+    details: dict[str, Any]
+
+
+class DatasetPublicationItem(ApiModel):
+    artifact_id: UUID
+    dataset_key: str
+    version_number: int
+    dataset_kind: Literal["canonical", "derived"]
+    value_kind: Literal["daily_bar", "rate_observation", "reserve_return"]
+    coverage_start: date
+    coverage_end: date
+    row_count: int
+    coverage: list[DatasetCoverageItem]
+    issues: list[DataQualityIssueItem]
+    quality: QualitySummary
+
+
+class DataBundleMemberItem(ApiModel):
+    role: str
+    ordinal: int
+    artifact_id: UUID
+    artifact_type: str
+    artifact_key: str
+    version_number: int
+
+
+class DataBundleItem(ApiModel):
+    artifact_id: UUID
+    bundle_key: str
+    name: str
+    version_number: int
+    coverage_start: date
+    coverage_end: date
+    member_count: int
+    members: list[DataBundleMemberItem]
+
+
+class EligibilityIssueItem(ApiModel):
+    severity: Literal["warning", "error"]
+    issue_code: str
+    message: str
+    details: dict[str, Any]
+
+
+class EligibilityAssetItem(ApiModel):
+    asset_id: UUID
+    asset_key: str
+    symbol: str
+    role: str
+    is_eligible: bool
+    available_start: date | None
+    available_end: date | None
+    data_ready_date: date | None
+    observation_count: int
+    issues: list[EligibilityIssueItem]
+
+
+class EligibilitySnapshotItem(ApiModel):
+    artifact_id: UUID
+    snapshot_key: str
+    requested_start: date
+    requested_end: date
+    warmup_observations: int
+    member_count: int
+    eligible_count: int
+    items: list[EligibilityAssetItem]
+
+
+class DataOverviewResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    sources: list[SourceSnapshotItem]
+    datasets: list[DatasetPublicationItem]
+    bundle: DataBundleItem | None
+    eligibility: EligibilitySnapshotItem | None

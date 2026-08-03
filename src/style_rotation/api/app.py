@@ -21,7 +21,9 @@ from style_rotation.api.schemas import (
     ArtifactSummary,
     AssetCatalogResponse,
     CapabilitiesResponse,
+    DataOverviewResponse,
     DataRequirementResponse,
+    DatasetPublicationItem,
     DependencySummary,
     DomainCapability,
     HealthResponse,
@@ -62,6 +64,7 @@ class ArtifactReader(Protocol):
     def lineage_manifest(self, artifact_id: uuid.UUID) -> dict[str, Any]: ...
     def asset_catalog(self) -> dict[str, Any]: ...
     def data_requirements(self) -> dict[str, Any]: ...
+    def data_overview(self) -> dict[str, Any]: ...
 
 
 def _context() -> ApiContext:
@@ -147,7 +150,7 @@ def create_app(
 
     @app.get("/api/v2/capabilities", response_model=CapabilitiesResponse, tags=["system"])
     def capabilities() -> CapabilitiesResponse:
-        available = {"catalog", "lineage", "ops"}
+        available = {"catalog", "data", "lineage", "ops"}
         return CapabilitiesResponse(
             context=_context(),
             quality=QualitySummary(state="ok"),
@@ -166,6 +169,7 @@ def create_app(
                 "capabilities",
                 "assets",
                 "data_requirements",
+                "data_overview",
                 "artifacts",
                 "lineage",
             ],
@@ -206,6 +210,58 @@ def create_app(
             total=total,
             limit=limit,
             offset=offset,
+        )
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
+
+    @app.get(
+        "/api/v2/data/overview",
+        response_model=DataOverviewResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["data"],
+    )
+    def data_overview(
+        response: Response,
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> DataOverviewResponse | Response:
+        result = reader.data_overview()
+        dataset_payloads: list[dict[str, Any]] = []
+        quality_codes: set[str] = set()
+        has_error = False
+        has_warning = False
+        for dataset in result["datasets"]:
+            severities = {issue["severity"] for issue in dataset["issues"]}
+            if "error" in severities:
+                dataset_quality = QualitySummary(state="error", codes=["data.quality_error"])
+                has_error = True
+            elif "warning" in severities:
+                dataset_quality = QualitySummary(state="warning", codes=["data.quality_warning"])
+                has_warning = True
+            else:
+                dataset_quality = QualitySummary(state="ok")
+            quality_codes.update(dataset_quality.codes)
+            dataset_payloads.append({**dataset, "quality": dataset_quality})
+        eligibility = result["eligibility"]
+        if eligibility and eligibility["eligible_count"] < eligibility["member_count"]:
+            has_warning = True
+            quality_codes.add("data.ineligible_assets")
+        incomplete = not result["datasets"] or result["bundle"] is None or eligibility is None
+        if has_error:
+            overall_state: QualityState = "error"
+        elif incomplete:
+            quality_codes.add("data.incomplete_chain")
+            overall_state = "partial"
+        elif has_warning:
+            overall_state = "warning"
+        else:
+            overall_state = "ok"
+        payload = DataOverviewResponse(
+            context=_context(),
+            quality=QualitySummary(state=overall_state, codes=sorted(quality_codes)),
+            sources=result["sources"],
+            datasets=[DatasetPublicationItem.model_validate(item) for item in dataset_payloads],
+            bundle=result["bundle"],
+            eligibility=eligibility,
         )
         cached = _etag_response(payload, response, if_none_match)
         return cached or payload

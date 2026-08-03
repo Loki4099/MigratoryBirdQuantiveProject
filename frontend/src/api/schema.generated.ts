@@ -106,6 +106,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/data/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Data Overview */
+        get: operations["data_overview_api_v2_data_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/health": {
         parameters: {
             query?: never;
@@ -265,6 +282,83 @@ export interface components {
             languages: ("zh-CN" | "en")[];
             quality: components["schemas"]["QualitySummary"];
         };
+        /** DataBundleItem */
+        DataBundleItem: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /** Bundle Key */
+            bundle_key: string;
+            /**
+             * Coverage End
+             * Format: date
+             */
+            coverage_end: string;
+            /**
+             * Coverage Start
+             * Format: date
+             */
+            coverage_start: string;
+            /** Member Count */
+            member_count: number;
+            /** Members */
+            members: components["schemas"]["DataBundleMemberItem"][];
+            /** Name */
+            name: string;
+            /** Version Number */
+            version_number: number;
+        };
+        /** DataBundleMemberItem */
+        DataBundleMemberItem: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /** Artifact Key */
+            artifact_key: string;
+            /** Artifact Type */
+            artifact_type: string;
+            /** Ordinal */
+            ordinal: number;
+            /** Role */
+            role: string;
+            /** Version Number */
+            version_number: number;
+        };
+        /** DataOverviewResponse */
+        DataOverviewResponse: {
+            bundle: components["schemas"]["DataBundleItem"] | null;
+            context: components["schemas"]["ApiContext"];
+            /** Datasets */
+            datasets: components["schemas"]["DatasetPublicationItem"][];
+            eligibility: components["schemas"]["EligibilitySnapshotItem"] | null;
+            quality: components["schemas"]["QualitySummary"];
+            /** Sources */
+            sources: components["schemas"]["SourceSnapshotItem"][];
+        };
+        /** DataQualityIssueItem */
+        DataQualityIssueItem: {
+            /** Asset Key */
+            asset_key: string | null;
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+            /** Event Date */
+            event_date: string | null;
+            /** Message */
+            message: string;
+            /** Rule Code */
+            rule_code: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "info" | "warning" | "error";
+        };
         /** DataRequirementItem */
         DataRequirementItem: {
             /** Calendar Type */
@@ -302,6 +396,66 @@ export interface components {
             /** Version Number */
             version_number: number;
         };
+        /** DatasetCoverageItem */
+        DatasetCoverageItem: {
+            /** Asset Key */
+            asset_key: string | null;
+            /**
+             * Coverage End
+             * Format: date
+             */
+            coverage_end: string;
+            /**
+             * Coverage Start
+             * Format: date
+             */
+            coverage_start: string;
+            /** Missing Count */
+            missing_count: number;
+            /** Observation Count */
+            observation_count: number;
+            /** Subject Key */
+            subject_key: string;
+        };
+        /** DatasetPublicationItem */
+        DatasetPublicationItem: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /** Coverage */
+            coverage: components["schemas"]["DatasetCoverageItem"][];
+            /**
+             * Coverage End
+             * Format: date
+             */
+            coverage_end: string;
+            /**
+             * Coverage Start
+             * Format: date
+             */
+            coverage_start: string;
+            /** Dataset Key */
+            dataset_key: string;
+            /**
+             * Dataset Kind
+             * @enum {string}
+             */
+            dataset_kind: "canonical" | "derived";
+            /** Issues */
+            issues: components["schemas"]["DataQualityIssueItem"][];
+            quality: components["schemas"]["QualitySummary"];
+            /** Row Count */
+            row_count: number;
+            /**
+             * Value Kind
+             * @enum {string}
+             */
+            value_kind: "daily_bar" | "rate_observation" | "reserve_return";
+            /** Version Number */
+            version_number: number;
+        };
         /** DependencySummary */
         DependencySummary: {
             /**
@@ -334,6 +488,76 @@ export interface components {
             purpose: string;
             /** Upstream */
             upstream: string[];
+        };
+        /** EligibilityAssetItem */
+        EligibilityAssetItem: {
+            /**
+             * Asset Id
+             * Format: uuid
+             */
+            asset_id: string;
+            /** Asset Key */
+            asset_key: string;
+            /** Available End */
+            available_end: string | null;
+            /** Available Start */
+            available_start: string | null;
+            /** Data Ready Date */
+            data_ready_date: string | null;
+            /** Is Eligible */
+            is_eligible: boolean;
+            /** Issues */
+            issues: components["schemas"]["EligibilityIssueItem"][];
+            /** Observation Count */
+            observation_count: number;
+            /** Role */
+            role: string;
+            /** Symbol */
+            symbol: string;
+        };
+        /** EligibilityIssueItem */
+        EligibilityIssueItem: {
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+            /** Issue Code */
+            issue_code: string;
+            /** Message */
+            message: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "warning" | "error";
+        };
+        /** EligibilitySnapshotItem */
+        EligibilitySnapshotItem: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /** Eligible Count */
+            eligible_count: number;
+            /** Items */
+            items: components["schemas"]["EligibilityAssetItem"][];
+            /** Member Count */
+            member_count: number;
+            /**
+             * Requested End
+             * Format: date
+             */
+            requested_end: string;
+            /**
+             * Requested Start
+             * Format: date
+             */
+            requested_start: string;
+            /** Snapshot Key */
+            snapshot_key: string;
+            /** Warmup Observations */
+            warmup_observations: number;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -377,6 +601,34 @@ export interface components {
              * @enum {string}
              */
             state: "ok" | "partial" | "warning" | "error";
+        };
+        /** SourceSnapshotItem */
+        SourceSnapshotItem: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /**
+             * As Of At
+             * Format: date-time
+             */
+            as_of_at: string;
+            /**
+             * Fetched At
+             * Format: date-time
+             */
+            fetched_at: string;
+            /** Payload Hash */
+            payload_hash: string;
+            /** Provider Key */
+            provider_key: string;
+            /** Raw Size Bytes */
+            raw_size_bytes: number;
+            /** Series Key */
+            series_key: string;
+            /** Snapshot Key */
+            snapshot_key: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -599,6 +851,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DataRequirementResponse"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    data_overview_api_v2_data_overview_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "if-none-match"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataOverviewResponse"];
                 };
             };
             /** @description Not modified */

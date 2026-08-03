@@ -6,8 +6,11 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import text
 
+from style_rotation.api.app import create_app
+from style_rotation.api.query import ArtifactQueryService
 from style_rotation.catalog.eligibility import EligibilityPublicationService
 from style_rotation.catalog.scope import publish_research_scope
 from style_rotation.data.bundle import (
@@ -173,6 +176,20 @@ def test_reserve_bundle_and_eligibility_complete_the_formal_data_chain() -> None
             {"artifact_id": rejected.artifact_id},
         ).one()
     assert rejected_counts == (0, 5)
+    overview = TestClient(create_app(ArtifactQueryService(engine))).get("/api/v2/data/overview")
+    assert overview.status_code == 200
+    payload = overview.json()
+    assert payload["quality"]["state"] == "warning"
+    assert payload["bundle"]["artifact_id"] == str(bundle.artifact_id)
+    assert len(payload["bundle"]["members"]) == 4
+    assert payload["eligibility"]["eligible_count"] == 0
+    assert len(payload["eligibility"]["items"]) == 5
+    assert {item["value_kind"] for item in payload["datasets"]} == {
+        "daily_bar",
+        "rate_observation",
+        "reserve_return",
+    }
+    assert len(payload["sources"]) == 6
     with (
         pytest.raises(Exception, match="only change while their artifact is draft"),
         engine.begin() as connection,
