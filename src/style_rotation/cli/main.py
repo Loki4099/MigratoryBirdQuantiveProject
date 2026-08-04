@@ -66,8 +66,13 @@ from style_rotation.signal.diagnostic_publication import SignalDiagnosticPublica
 from style_rotation.signal.engine import build_signal_engine_spec, publish_signal_engine
 from style_rotation.signal.publication import SignalDatasetPublicationService
 from style_rotation.signal.service import publish_signal_catalog
+from style_rotation.strategy.engine import (
+    build_strategy_target_engine_spec,
+    publish_strategy_target_engine,
+)
 from style_rotation.strategy.product_service import publish_strategy_product
 from style_rotation.strategy.service import publish_strategy_catalog
+from style_rotation.strategy.target_publication import StrategyTargetPublicationService
 
 
 @dataclass(frozen=True, slots=True)
@@ -367,6 +372,46 @@ def _strategy_publish_product(
         model_specification_key,
         strategy_variant_key,
         schedule_key,
+    )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _strategy_bootstrap_target_engine(
+    git_commit: str, dependency_lock_file: str, version_number: int
+) -> int:
+    settings = get_settings()
+    status = database_status(settings.database_url)
+    if status.current_revision is None:
+        raise ValueError("Database must be migrated before publishing a Strategy Target engine")
+    spec = build_strategy_target_engine_spec(
+        git_commit,
+        Path(dependency_lock_file),
+        status.current_revision,
+        version_number=version_number,
+    )
+    result = publish_strategy_target_engine(create_postgres_engine(settings.database_url), spec)
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _strategy_publish_target(
+    product_artifact_id: str,
+    model_dataset_artifact_id: str,
+    target_engine_artifact_id: str,
+    auxiliary_signal_dataset_artifact_id: str | None,
+) -> int:
+    result = StrategyTargetPublicationService(
+        create_postgres_engine(get_settings().database_url)
+    ).publish(
+        uuid.UUID(product_artifact_id),
+        uuid.UUID(model_dataset_artifact_id),
+        uuid.UUID(target_engine_artifact_id),
+        (
+            uuid.UUID(auxiliary_signal_dataset_artifact_id)
+            if auxiliary_signal_dataset_artifact_id is not None
+            else None
+        ),
     )
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0
@@ -1134,6 +1179,32 @@ def build_parser() -> argparse.ArgumentParser:
             args.model_specification_key,
             args.strategy_variant_key,
             args.schedule_key,
+        )
+    )
+    strategy_engine_parser = strategy_subparsers.add_parser(
+        "bootstrap-target-engine", help="Publish the deterministic Strategy Target engine"
+    )
+    strategy_engine_parser.add_argument("--git-commit", required=True)
+    strategy_engine_parser.add_argument("--dependency-lock-file", default="requirements.lock")
+    strategy_engine_parser.add_argument("--version", type=int, default=1)
+    strategy_engine_parser.set_defaults(
+        handler=lambda args: _strategy_bootstrap_target_engine(
+            args.git_commit, args.dependency_lock_file, args.version
+        )
+    )
+    strategy_target_parser = strategy_subparsers.add_parser(
+        "publish-target", help="Calculate and publish one immutable Strategy Target Path"
+    )
+    strategy_target_parser.add_argument("--product-artifact-id", required=True)
+    strategy_target_parser.add_argument("--model-dataset-artifact-id", required=True)
+    strategy_target_parser.add_argument("--target-engine-artifact-id", required=True)
+    strategy_target_parser.add_argument("--auxiliary-signal-dataset-artifact-id")
+    strategy_target_parser.set_defaults(
+        handler=lambda args: _strategy_publish_target(
+            args.product_artifact_id,
+            args.model_dataset_artifact_id,
+            args.target_engine_artifact_id,
+            args.auxiliary_signal_dataset_artifact_id,
         )
     )
 

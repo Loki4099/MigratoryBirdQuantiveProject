@@ -134,6 +134,26 @@ class UnifiedCliTests(unittest.TestCase):
             "weekly_last_common_session_close",
         )
 
+    def test_strategy_target_publish_accepts_optional_auxiliary_dataset(self) -> None:
+        ids = [f"00000000-0000-0000-0000-00000000000{index}" for index in range(1, 5)]
+        with patch("style_rotation.cli.main._strategy_publish_target", return_value=0) as command:
+            result = main(
+                [
+                    "strategy",
+                    "publish-target",
+                    "--product-artifact-id",
+                    ids[0],
+                    "--model-dataset-artifact-id",
+                    ids[1],
+                    "--target-engine-artifact-id",
+                    ids[2],
+                    "--auxiliary-signal-dataset-artifact-id",
+                    ids[3],
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with(*ids)
+
     def test_model_engine_command_requires_explicit_commit(self) -> None:
         with patch("style_rotation.cli.main._model_bootstrap_engine", return_value=0) as command:
             result = main(

@@ -61,6 +61,13 @@ from style_rotation.signal.diagnostic_publication import SignalDiagnosticPublica
 from style_rotation.signal.engine import build_signal_engine_spec, publish_signal_engine
 from style_rotation.signal.publication import SignalDatasetPublicationService
 from style_rotation.signal.service import publish_signal_catalog
+from style_rotation.strategy.engine import (
+    build_strategy_target_engine_spec,
+    publish_strategy_target_engine,
+)
+from style_rotation.strategy.product_service import publish_strategy_product
+from style_rotation.strategy.service import publish_strategy_catalog
+from style_rotation.strategy.target_publication import StrategyTargetPublicationService
 
 pytestmark = pytest.mark.integration
 DATABASE_URL = os.getenv("STYLE_ROTATION_TEST_DATABASE_URL")
@@ -111,6 +118,9 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     )
     model_catalog = publish_model_catalog(
         engine, PROJECT_ROOT / "v0.2" / "catalogs" / "models.v0.2.0.json"
+    )
+    strategy_catalog = publish_strategy_catalog(
+        engine, PROJECT_ROOT / "v0.2" / "catalogs" / "strategies.v0.2.0.json"
     )
     target_catalog = publish_forward_return_catalog(
         engine, PROJECT_ROOT / "v0.2" / "catalogs" / "forward_returns.v0.2.0.json"
@@ -378,7 +388,7 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     model_engine_spec = build_model_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260804_17_v02_strategy_core",
+        "20260804_18_v02_strategy_target",
     )
     model_engine = publish_model_engine(engine, model_engine_spec)
     assert publish_model_engine(engine, model_engine_spec).reused is True
@@ -450,6 +460,89 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     assert single_matches_signal == 32
     assert invalid_model_values == 0
 
+    universe_artifact_id = uuid.UUID(
+        next(item["artifact_id"] for item in scope if item["catalog_type"] == "universe_version")
+    )
+    product = publish_strategy_product(
+        engine,
+        strategy_catalog.release_artifact_id,
+        model_catalog.release_artifact_id,
+        universe_artifact_id,
+        "dimension_equal_weight__momentum_trend",
+        "pre_selection_trend_eligible_top_k__k2",
+        "weekly_last_common_session_close",
+    )
+    target_engine_spec = build_strategy_target_engine_spec(
+        "a" * 40,
+        PROJECT_ROOT / "requirements.lock",
+        "20260804_18_v02_strategy_target",
+    )
+    strategy_target_engine = publish_strategy_target_engine(engine, target_engine_spec)
+    target_service = StrategyTargetPublicationService(engine)
+    target_model = next(
+        item
+        for item in models
+        if item.specification_key == "dimension_equal_weight__momentum_trend"
+    )
+    trend_signal = next(
+        item
+        for item in signals
+        if item.signal_key == "price_above_ma_state__moving_average_ratio__s1_l200"
+    )
+    with pytest.raises(ValueError, match="requires its auxiliary Signal Dataset"):
+        target_service.publish(
+            product.version_artifact_id,
+            target_model.artifact_id,
+            strategy_target_engine.artifact_id,
+        )
+    target_path = target_service.publish(
+        product.version_artifact_id,
+        target_model.artifact_id,
+        strategy_target_engine.artifact_id,
+        trend_signal.artifact_id,
+    )
+    target_reused = target_service.publish(
+        product.version_artifact_id,
+        target_model.artifact_id,
+        strategy_target_engine.artifact_id,
+        trend_signal.artifact_id,
+    )
+    assert target_path.reused is False
+    assert target_reused.reused is True
+    assert target_path.artifact_id == target_reused.artifact_id
+    assert target_path.frequency == "weekly"
+    assert target_path.decision_count == 2
+    assert target_path.position_count == target_path.decision_count * 4
+    with engine.connect() as connection:
+        target_counts = connection.execute(
+            text(
+                "SELECT (SELECT count(*) FROM strategy.portfolio_target_path), "
+                "(SELECT count(*) FROM strategy.model_strategy_target_path), "
+                "(SELECT count(*) FROM strategy.target_path_auxiliary_input), "
+                "(SELECT count(*) FROM strategy.portfolio_decision), "
+                "(SELECT count(*) FROM strategy.target_asset_position)"
+            )
+        ).one()
+        budgets = connection.execute(
+            text(
+                "SELECT decision.decision_date, decision.reserve_target_weight + "
+                "sum(position.target_weight) FROM strategy.portfolio_decision decision "
+                "JOIN strategy.target_asset_position position ON "
+                "position.portfolio_decision_id = decision.portfolio_decision_id "
+                "GROUP BY decision.portfolio_decision_id ORDER BY decision.decision_date"
+            )
+        ).all()
+    assert target_counts == (
+        1,
+        1,
+        1,
+        target_path.decision_count,
+        target_path.position_count,
+    )
+    assert all(
+        abs(Decimal(total) - Decimal(1)) <= Decimal("0.000000000000001") for _, total in budgets
+    )
+
     evaluation_spec = build_signal_evaluation_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
@@ -499,7 +592,7 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     model_evaluation_spec = build_model_evaluation_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260804_17_v02_strategy_core",
+        "20260804_18_v02_strategy_target",
     )
     model_evaluation_engine = publish_model_evaluation_engine(engine, model_evaluation_spec)
     assert publish_model_evaluation_engine(engine, model_evaluation_spec).reused is True
