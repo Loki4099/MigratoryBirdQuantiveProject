@@ -8,6 +8,7 @@ from typing import Any, cast
 from sqlalchemy import Engine, bindparam, text
 from sqlalchemy.engine import RowMapping
 
+from style_rotation.experiment.compare import classify_comparison
 from style_rotation.experiment.ranking import RankableValue, competition_ranks
 
 _RANKING_METRICS = {
@@ -1685,6 +1686,294 @@ class ArtifactQueryService:
             "candidate_count": len(entries),
             "ranked_count": sum(item["rank"] is not None for item in entries),
             "entries": entries,
+        }
+
+    def product_compare(self, *, result_artifact_ids: tuple[uuid.UUID, ...]) -> dict[str, Any]:
+        """Compare accepted results and prove whether exactly one research dimension changed."""
+        ordered_ids = tuple(dict.fromkeys(result_artifact_ids))
+        if len(ordered_ids) < 2 or len(ordered_ids) > 6:
+            raise ValueError("Product Compare requires between two and six distinct results")
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            rows = connection.execute(text("""
+                SELECT publication.artifact_id AS result_artifact_id,
+                       product_definition.product_key,
+                       model_specification.specification_key AS model_specification_key,
+                       model_specification.model_specification_id,
+                       variant.template_key AS strategy_template_key, variant.variant_key,
+                       concat_ws('|', variant.selection_order, variant.trend_filter,
+                           variant.strategy_definition_version_id,
+                           variant.strategy_input_contract_id,
+                           variant.auxiliary_signal_version_id,
+                           variant.auxiliary_eligible_state,
+                           variant.empty_slot_policy, variant.tie_policy,
+                           variant.slot_weight_rule, variant.reserve_rule) AS strategy_semantics,
+                       variant.target_k, schedule.frequency,
+                       cost.cost_model_version_id, cost.cost_bps_per_side,
+                       specification.template_key, specification.initialization_policy,
+                       concat_ws('|', specification.template_key,
+                           specification.initialization_policy, specification.as_of_date,
+                           specification.custom_start, specification.custom_end)
+                           AS interval_semantics,
+                       publication.availability_status, publication.quality_status,
+                       interval.resolved_start, interval.resolved_end,
+                       target.universe_version_id, target.data_bundle_version_id,
+                       target.eligibility_snapshot_id, product.execution_policy_version_id,
+                       strategy_gross.reserve_return_model_version_id,
+                       specification.benchmark_version_id,
+                       specification.performance_metric_catalog_id,
+                       specification.accounting_engine_version_id,
+                       specification.benchmark_engine_version_id,
+                       specification.performance_engine_version_id, 'USD' AS currency,
+                       publication.interval_performance_result_id
+                FROM experiment.result_publication publication
+                JOIN lineage.artifact artifact ON artifact.artifact_id = publication.artifact_id
+                                             AND artifact.status = 'published'
+                JOIN experiment.experiment_specification specification ON
+                     specification.experiment_specification_id =
+                     publication.experiment_specification_id
+                JOIN experiment.interval_performance_result interval ON
+                     interval.interval_performance_result_id =
+                     publication.interval_performance_result_id
+                JOIN experiment.net_cost_path strategy_net ON strategy_net.net_cost_path_id =
+                                                              interval.strategy_net_cost_path_id
+                JOIN experiment.gross_portfolio_path strategy_gross ON
+                     strategy_gross.gross_portfolio_path_id = strategy_net.gross_portfolio_path_id
+                JOIN strategy.portfolio_target_path target ON target.portfolio_target_path_id =
+                                                              strategy_gross.portfolio_target_path_id
+                JOIN strategy.model_strategy_target_path model_path ON
+                     model_path.portfolio_target_path_id = target.portfolio_target_path_id
+                JOIN strategy.strategy_product_version product ON
+                     product.strategy_product_version_id = model_path.strategy_product_version_id
+                JOIN strategy.strategy_product_definition product_definition ON
+                     product_definition.strategy_product_definition_id =
+                     product.strategy_product_definition_id
+                JOIN model.model_specification model_specification ON
+                     model_specification.model_specification_id = product.model_specification_id
+                JOIN strategy.strategy_variant variant ON variant.strategy_variant_id =
+                                                          product.strategy_variant_id
+                JOIN ops.rebalance_schedule_version schedule ON
+                     schedule.rebalance_schedule_version_id = product.rebalance_schedule_version_id
+                JOIN experiment.cost_scenario cost ON cost.cost_scenario_id =
+                                                      specification.cost_scenario_id
+                WHERE publication.artifact_id IN :artifacts
+            """).bindparams(bindparam("artifacts", expanding=True)),
+                {"artifacts": ordered_ids}).mappings().all()
+            by_id = {row["result_artifact_id"]: row for row in rows}
+            if len(by_id) != len(ordered_ids):
+                raise LookupError("Every Product Compare result must be published and accepted")
+            rows = [by_id[item] for item in ordered_ids]
+            interval_ids = tuple(row["interval_performance_result_id"] for row in rows)
+            metric_rows = connection.execute(text("""
+                SELECT value.interval_performance_result_id, value.series_role,
+                       definition.metric_scope, definition.metric_key, definition.name,
+                       definition.unit, value.metric_value, value.value_status,
+                       value.reason_code, value.observation_count
+                FROM experiment.performance_metric_value value
+                JOIN experiment.performance_metric_definition definition ON
+                     definition.performance_metric_definition_id =
+                     value.performance_metric_definition_id
+                WHERE value.interval_performance_result_id IN :results
+                ORDER BY definition.ordinal, value.series_role
+            """).bindparams(bindparam("results", expanding=True)),
+                {"results": interval_ids}).mappings().all()
+        metrics: dict[uuid.UUID, list[dict[str, Any]]] = {item: [] for item in interval_ids}
+        for metric in metric_rows:
+            payload = dict(metric)
+            interval_id = payload.pop("interval_performance_result_id")
+            value = payload.pop("metric_value")
+            payload["value"] = float(value) if value is not None else None
+            metrics[interval_id].append(payload)
+        classification = classify_comparison([dict(row) for row in rows])
+        entries = []
+        visible_fields = (
+            "result_artifact_id", "product_key", "model_specification_key",
+            "strategy_template_key", "variant_key", "target_k", "frequency",
+            "cost_bps_per_side", "template_key", "initialization_policy",
+            "availability_status", "quality_status", "resolved_start", "resolved_end",
+        )
+        for row in rows:
+            entries.append({
+                **{field: row[field] for field in visible_fields},
+                "metrics": metrics[row["interval_performance_result_id"]],
+            })
+        return {
+            "mode": classification.mode,
+            "changed_dimensions": list(classification.changed_dimensions),
+            "blocking_context_fields": list(classification.blocking_context_fields),
+            "entries": entries,
+        }
+
+    def decision_explorer(
+        self, *, result_artifact_id: uuid.UUID, decision_date: Any | None
+    ) -> dict[str, Any]:
+        """Trace one accepted result decision through Model, Signal, Factor, and Data."""
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            context = connection.execute(text("""
+                SELECT publication.artifact_id AS result_artifact_id,
+                       target.artifact_id AS target_path_artifact_id,
+                       model_dataset.artifact_id AS model_dataset_artifact_id,
+                       model_specification.artifact_id AS model_specification_artifact_id,
+                       universe.artifact_id AS universe_artifact_id,
+                       bundle.artifact_id AS data_bundle_artifact_id,
+                       eligibility.artifact_id AS eligibility_artifact_id,
+                       method_definition.method_key, target.portfolio_target_path_id,
+                       model_dataset.model_dataset_id
+                FROM experiment.result_publication publication
+                JOIN lineage.artifact artifact ON artifact.artifact_id = publication.artifact_id
+                                             AND artifact.status = 'published'
+                JOIN experiment.experiment_specification specification ON
+                     specification.experiment_specification_id =
+                     publication.experiment_specification_id
+                JOIN strategy.portfolio_target_path target ON target.portfolio_target_path_id =
+                                                              specification.strategy_target_path_id
+                JOIN strategy.model_strategy_target_path model_path ON
+                     model_path.portfolio_target_path_id = target.portfolio_target_path_id
+                JOIN model.model_dataset model_dataset ON model_dataset.model_dataset_id =
+                                                         model_path.model_dataset_id
+                JOIN model.model_specification model_specification ON
+                     model_specification.model_specification_id =
+                     model_dataset.model_specification_id
+                JOIN model.model_method_version method_version ON
+                     method_version.model_method_version_id =
+                     model_specification.overall_method_version_id
+                JOIN model.model_method_definition method_definition ON
+                     method_definition.model_method_definition_id =
+                     method_version.model_method_definition_id
+                JOIN catalog.universe_version universe ON universe.universe_version_id =
+                                                          target.universe_version_id
+                JOIN data.data_bundle_version bundle ON bundle.data_bundle_version_id =
+                                                        target.data_bundle_version_id
+                JOIN catalog.eligibility_snapshot eligibility ON
+                     eligibility.eligibility_snapshot_id = target.eligibility_snapshot_id
+                WHERE publication.artifact_id = :result
+            """), {"result": result_artifact_id}).mappings().one_or_none()
+            if context is None:
+                raise LookupError(f"Published accepted result not found: {result_artifact_id}")
+            dates = tuple(connection.execute(text("""
+                SELECT decision_date FROM strategy.portfolio_decision
+                WHERE portfolio_target_path_id = :path ORDER BY decision_date DESC
+            """), {"path": context["portfolio_target_path_id"]}).scalars())
+            if not dates:
+                raise LookupError("Accepted result target path has no decisions")
+            selected_date = decision_date or dates[0]
+            if selected_date not in dates:
+                raise LookupError(
+                    f"Decision date is not present in the target path: {selected_date}"
+                )
+            positions = connection.execute(text("""
+                SELECT decision.target_k, decision.actual_holding_count,
+                       decision.reserve_target_weight, asset.asset_id, asset.asset_key,
+                       symbol.symbol, position.selected, position.model_score,
+                       position.model_rank, position.trend_state, position.target_weight,
+                       position.decision_reason
+                FROM strategy.portfolio_decision decision
+                JOIN strategy.target_asset_position position ON position.portfolio_decision_id =
+                                                                decision.portfolio_decision_id
+                JOIN catalog.asset asset ON asset.asset_id = position.asset_id
+                JOIN LATERAL (
+                    SELECT listing_symbol.symbol FROM catalog.asset_listing listing
+                    JOIN catalog.listing_symbol ON listing_symbol.asset_listing_id =
+                                                   listing.asset_listing_id
+                    WHERE listing.asset_id = asset.asset_id
+                      AND listing_symbol.symbol_type = 'ticker'
+                    ORDER BY listing_symbol.valid_from DESC NULLS LAST LIMIT 1
+                ) symbol ON true
+                WHERE decision.portfolio_target_path_id = :path
+                  AND decision.decision_date = :date
+                ORDER BY position.model_rank, asset.asset_key
+            """), {"path": context["portfolio_target_path_id"], "date": selected_date}
+            ).mappings().all()
+            component_rows = connection.execute(text("""
+                SELECT asset.asset_id, dimension.dimension_key,
+                       dimension.weight AS dimension_weight,
+                       dimension.input_transform AS dimension_transform,
+                       signal_definition.signal_key,
+                       signal_version.artifact_id AS signal_version_artifact_id,
+                       signal_dataset.artifact_id AS signal_dataset_artifact_id,
+                       signal_value.score AS signal_score, signal_value.state AS signal_state,
+                       component.input_transform, component.weight AS component_weight,
+                       factor_definition.factor_key,
+                       factor_variant.variant_key AS factor_variant_key,
+                       factor_dataset.artifact_id AS factor_dataset_artifact_id,
+                       factor_value.value AS factor_value,
+                       bundle.artifact_id AS data_bundle_artifact_id
+                FROM model.model_dataset_input input
+                JOIN model.model_component component ON component.model_component_id =
+                                                        input.model_component_id
+                JOIN model.model_dimension dimension ON dimension.model_dimension_id =
+                                                        component.model_dimension_id
+                JOIN signal.signal_dataset signal_dataset ON signal_dataset.signal_dataset_id =
+                                                             input.signal_dataset_id
+                JOIN signal.signal_version signal_version ON signal_version.signal_version_id =
+                                                             signal_dataset.signal_version_id
+                JOIN signal.signal_definition signal_definition ON
+                     signal_definition.signal_definition_id = signal_version.signal_definition_id
+                JOIN factor.factor_dataset factor_dataset ON factor_dataset.factor_dataset_id =
+                                                             signal_dataset.factor_dataset_id
+                JOIN factor.factor_variant factor_variant ON factor_variant.factor_variant_id =
+                                                             factor_dataset.factor_variant_id
+                JOIN factor.factor_definition_version factor_version ON
+                     factor_version.factor_definition_version_id =
+                     factor_variant.factor_definition_version_id
+                JOIN factor.factor_definition factor_definition ON
+                     factor_definition.factor_definition_id = factor_version.factor_definition_id
+                JOIN data.data_bundle_version bundle ON bundle.data_bundle_version_id =
+                                                        factor_dataset.data_bundle_version_id
+                JOIN signal.signal_value signal_value ON signal_value.signal_dataset_id =
+                                                         signal_dataset.signal_dataset_id
+                                                     AND signal_value.observation_date = :date
+                JOIN factor.factor_value factor_value ON factor_value.factor_dataset_id =
+                                                         factor_dataset.factor_dataset_id
+                                                     AND factor_value.asset_id =
+                                                         signal_value.asset_id
+                                                     AND factor_value.observation_date = :date
+                JOIN catalog.asset asset ON asset.asset_id = signal_value.asset_id
+                WHERE input.model_dataset_id = :dataset
+                ORDER BY asset.asset_key, dimension.ordinal, component.ordinal
+            """), {"dataset": context["model_dataset_id"], "date": selected_date}
+            ).mappings().all()
+        components_by_asset: dict[uuid.UUID, list[dict[str, Any]]] = {}
+        for source in component_rows:
+            row = dict(source)
+            asset_id = row.pop("asset_id")
+            signal_score = Decimal(row["signal_score"])
+            transformed = signal_score if row["input_transform"] == "identity" else Decimal(
+                1 if signal_score > 0 else -1 if signal_score < 0 else 0
+            )
+            weighted = transformed * Decimal(row["component_weight"])
+            exact = (
+                weighted * Decimal(row["dimension_weight"])
+                if context["method_key"] == "weighted_mean"
+                and row.pop("dimension_transform") == "identity" else None
+            )
+            row["signal_score"] = float(signal_score)
+            row["dimension_weight"] = float(row["dimension_weight"])
+            row["component_weight"] = float(row["component_weight"])
+            row["transformed_signal_score"] = float(transformed)
+            row["weighted_component_input"] = float(weighted)
+            row["overall_contribution"] = float(exact) if exact is not None else None
+            components_by_asset.setdefault(asset_id, []).append(row)
+        visible_context = {key: context[key] for key in (
+            "result_artifact_id", "target_path_artifact_id", "model_dataset_artifact_id",
+            "model_specification_artifact_id", "universe_artifact_id",
+            "data_bundle_artifact_id", "eligibility_artifact_id",
+        )}
+        first = positions[0]
+        return {
+            **visible_context, "model_method_key": context["method_key"],
+            "available_dates": list(dates), "selected_date": selected_date,
+            "target_k": first["target_k"],
+            "actual_holding_count": first["actual_holding_count"],
+            "reserve_target_weight": float(first["reserve_target_weight"]),
+            "positions": [{
+                **{key: (float(row[key]) if key in {"model_score", "model_rank", "target_weight"}
+                         else row[key]) for key in (
+                    "asset_key", "symbol", "selected", "model_score", "model_rank",
+                    "trend_state", "target_weight", "decision_reason")},
+                "components": components_by_asset.get(row["asset_id"], []),
+            } for row in positions],
         }
 
     @staticmethod

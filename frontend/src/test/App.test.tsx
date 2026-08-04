@@ -262,6 +262,43 @@ const productRanking = {
     core_metrics: { "strategy.cagr": 0.12, "relative.annualized_relative_wealth_growth": 0.03,
       "strategy.maximum_drawdown": -0.08 } }],
 };
+const productCompare = {
+  context: health.context, quality: health.quality, mode: "controlled",
+  changed_dimensions: ["k"], blocking_context_fields: [],
+  entries: [1, 2].map((targetK, index) => ({
+    result_artifact_id: `00000000-0000-0000-0000-00000000008${index}`,
+    product_key: `product-${targetK}`, model_specification_key: "dimension_equal_weight__momentum_trend",
+    strategy_template_key: "top_k_equal_weight", variant_key: `top_k_equal_weight__k${targetK}`,
+    target_k: targetK, frequency: "weekly", cost_bps_per_side: 5, template_key: "full_history",
+    initialization_policy: "carry_in", availability_status: "eligible", quality_status: "normal",
+    resolved_start: "2025-01-02", resolved_end: "2026-01-09",
+    metrics: [{ series_role: "strategy", metric_scope: "absolute", metric_key: "cagr", name: "CAGR",
+      unit: "annual_ratio", value: 0.1 + index * 0.02, value_status: "defined", reason_code: null,
+      observation_count: 252 }],
+  })),
+};
+const decisionExplorer = {
+  context: health.context, quality: health.quality,
+  result_artifact_id: "00000000-0000-0000-0000-000000000062",
+  target_path_artifact_id: "00000000-0000-0000-0000-000000000046",
+  model_dataset_artifact_id: "00000000-0000-0000-0000-000000000047",
+  model_specification_artifact_id: "00000000-0000-0000-0000-000000000038",
+  universe_artifact_id: "00000000-0000-0000-0000-000000000048",
+  data_bundle_artifact_id: "00000000-0000-0000-0000-000000000049",
+  eligibility_artifact_id: "00000000-0000-0000-0000-000000000050",
+  model_method_key: "weighted_mean", available_dates: ["2026-01-09"], selected_date: "2026-01-09",
+  target_k: 2, actual_holding_count: 2, reserve_target_weight: 0,
+  positions: [{ asset_key: "iwd", symbol: "IWD", selected: true, model_score: 0.8, model_rank: 1,
+    trend_state: "positive", target_weight: 0.5, decision_reason: "selected_by_rank",
+    components: [{ dimension_key: "momentum_trend", dimension_weight: 1,
+      signal_key: "return_continuation", signal_version_artifact_id: "00000000-0000-0000-0000-000000000091",
+      signal_dataset_artifact_id: "00000000-0000-0000-0000-000000000092", signal_score: 0.8,
+      signal_state: "positive", input_transform: "identity", component_weight: 1,
+      transformed_signal_score: 0.8, weighted_component_input: 0.8, overall_contribution: 0.8,
+      factor_key: "total_return", factor_variant_key: "total_return__w252",
+      factor_dataset_artifact_id: "00000000-0000-0000-0000-000000000093", factor_value: 0.12,
+      data_bundle_artifact_id: "00000000-0000-0000-0000-000000000049" }] }],
+};
 
 function renderRoute(path: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -273,7 +310,7 @@ beforeEach(async () => {
   await i18n.changeLanguage("zh-CN");
   vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
     const url = String(input);
-    const payload = url.includes("rankings/products") ? productRanking : url.includes("experiments/results") ? experimentResult : url.includes("experiments/overview") ? experimentOverview : url.includes("strategies/targets") ? strategyTarget : url.includes("strategies/overview") ? strategyOverview : url.includes("models/overview") ? modelOverview : url.includes("signals/overview") ? signalOverview : url.includes("factors/overview") ? factorOverview : url.includes("data/overview") ? dataOverview : url.includes("health") ? health : url.includes("capabilities") ? capabilities : artifacts;
+    const payload = url.includes("compare/products") ? productCompare : url.includes("/decisions") ? decisionExplorer : url.includes("rankings/products") ? productRanking : url.includes("experiments/results") ? experimentResult : url.includes("experiments/overview") ? experimentOverview : url.includes("strategies/targets") ? strategyTarget : url.includes("strategies/overview") ? strategyOverview : url.includes("models/overview") ? modelOverview : url.includes("signals/overview") ? signalOverview : url.includes("factors/overview") ? factorOverview : url.includes("data/overview") ? dataOverview : url.includes("health") ? health : url.includes("capabilities") ? capabilities : artifacts;
     return new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } });
   });
 });
@@ -283,6 +320,7 @@ test("renders real foundation data without inventing future research results", a
   expect(await screen.findByText("从可追溯研究走向严格策略比较")).toBeInTheDocument();
   expect(screen.getByText("20260802_02_v02_lineage")).toBeInTheDocument();
   expect(await screen.findByText("策略产品排行榜")).toBeInTheDocument();
+  expect(screen.getByText("候鸟实验室")).toBeInTheDocument();
 });
 
 test("language switch keeps the route and translates fixed UI text", async () => {
@@ -357,4 +395,19 @@ test("experiment page joins comparable cells, performance, and run audit", async
   expect(screen.getByText("Complete performance metrics")).toBeInTheDocument();
   expect(screen.getByText("Strategy Product Ranking")).toBeInTheDocument();
   expect(screen.getAllByText("1.1").length).toBeGreaterThan(0);
+  expect(await screen.findByRole("heading", { name: "Decision Explorer" })).toBeInTheDocument();
+  expect(screen.getByText("total_return__w252")).toBeInTheDocument();
+});
+
+test("compare page labels a one-dimension change as controlled", async () => {
+  await i18n.changeLanguage("en");
+  const second = { ...experimentOverview.specifications[0],
+    artifact_id: "00000000-0000-0000-0000-000000000081",
+    result_artifact_id: "00000000-0000-0000-0000-000000000081", variant_key: "top_k_equal_weight__k3" };
+  experimentOverview.specifications.push(second);
+  renderRoute("/compare?lang=en");
+  expect(await screen.findByRole("heading", { name: "Strategy Product Compare" })).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: "Controlled comparison" })).toBeInTheDocument();
+  expect(screen.getByText(/Only k changed/)).toBeInTheDocument();
+  experimentOverview.specifications.pop();
 });

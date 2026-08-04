@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Sequence
+from datetime import date
 from pathlib import Path
 from typing import Annotated, Any, Literal, Protocol
 
@@ -24,6 +25,7 @@ from style_rotation.api.schemas import (
     DataOverviewResponse,
     DataRequirementResponse,
     DatasetPublicationItem,
+    DecisionExplorerResponse,
     DependencySummary,
     DomainCapability,
     ExperimentOverviewResponse,
@@ -34,6 +36,7 @@ from style_rotation.api.schemas import (
     LineageManifestResponse,
     ModelDiagnosticItem,
     ModelOverviewResponse,
+    ProductCompareResponse,
     ProductRankingResponse,
     QualityState,
     QualitySummary,
@@ -85,6 +88,10 @@ class ArtifactReader(Protocol):
     def experiment_result(self, artifact_id: uuid.UUID) -> dict[str, Any]: ...
     def product_ranking(
         self, *, cohort_artifact_id: uuid.UUID | None, metric_key: str
+    ) -> dict[str, Any]: ...
+    def product_compare(self, *, result_artifact_ids: tuple[uuid.UUID, ...]) -> dict[str, Any]: ...
+    def decision_explorer(
+        self, *, result_artifact_id: uuid.UUID, decision_date: date | None
     ) -> dict[str, Any]: ...
 
 
@@ -202,6 +209,8 @@ def create_app(
                 "experiment_overview",
                 "experiment_result",
                 "product_ranking",
+                "product_compare",
+                "decision_explorer",
                 "artifacts",
                 "lineage",
             ],
@@ -277,6 +286,50 @@ def create_app(
         )
         payload = ProductRankingResponse.model_validate({
             "context": _context(), "quality": QualitySummary(state="ok"), **result,
+        })
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
+
+    @app.get(
+        "/api/v2/compare/products",
+        response_model=ProductCompareResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["experiment"],
+    )
+    def product_compare(
+        response: Response,
+        result_artifact_id: Annotated[list[uuid.UUID], Query(min_length=2, max_length=6)],
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> ProductCompareResponse | Response:
+        if len(set(result_artifact_id)) != len(result_artifact_id):
+            raise HTTPException(status_code=422, detail="Product Compare results must be distinct")
+        result = reader.product_compare(result_artifact_ids=tuple(result_artifact_id))
+        codes = [] if result["mode"] == "controlled" else [f"compare.{result['mode']}"]
+        payload = ProductCompareResponse.model_validate({
+            "context": _context(),
+            "quality": QualitySummary(state="ok" if not codes else "warning", codes=codes),
+            **result,
+        })
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
+
+    @app.get(
+        "/api/v2/experiments/results/{artifact_id}/decisions",
+        response_model=DecisionExplorerResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["experiment"],
+    )
+    def decision_explorer(
+        artifact_id: uuid.UUID,
+        response: Response,
+        decision_date: Annotated[date | None, Query()] = None,
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> DecisionExplorerResponse | Response:
+        payload = DecisionExplorerResponse.model_validate({
+            "context": _context(), "quality": QualitySummary(state="ok"),
+            **reader.decision_explorer(
+                result_artifact_id=artifact_id, decision_date=decision_date
+            ),
         })
         cached = _etag_response(payload, response, if_none_match)
         return cached or payload

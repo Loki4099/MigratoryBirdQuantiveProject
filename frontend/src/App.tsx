@@ -10,6 +10,7 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { DataPage } from "./pages/DataPage";
 import { FactorsPage } from "./pages/FactorsPage";
 import { ExperimentsPage } from "./pages/ExperimentsPage";
+import { ComparePage } from "./pages/ComparePage";
 import { PlannedPage } from "./pages/PlannedPage";
 import { SignalsPage } from "./pages/SignalsPage";
 import { ModelsPage } from "./pages/ModelsPage";
@@ -31,7 +32,7 @@ export function AppRoutes() {
         <Route path="models" element={<ModelsPage />} />
         <Route path="strategies" element={<StrategiesPage />} />
         <Route path="experiments" element={<ExperimentsPage />} />
-        <Route path="compare" element={<PlannedPage titleKey="nav.compare" milestone="M8" />} />
+        <Route path="compare" element={<ComparePage />} />
         <Route path="artifacts" element={<ArtifactsPage />} />
         <Route path="artifacts/:artifactId" element={<ArtifactDetailPage />} />
         <Route path="runs" element={<PlannedPage titleKey="nav.runs" milestone="M7" />} />

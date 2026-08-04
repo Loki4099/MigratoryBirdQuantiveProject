@@ -16,6 +16,8 @@ export type StrategyTargetPathResponse = components["schemas"]["StrategyTargetPa
 export type ExperimentOverviewResponse = components["schemas"]["ExperimentOverviewResponse"];
 export type ExperimentResultResponse = components["schemas"]["ExperimentResultResponse"];
 export type ProductRankingResponse = components["schemas"]["ProductRankingResponse"];
+export type ProductCompareResponse = components["schemas"]["ProductCompareResponse"];
+export type DecisionExplorerResponse = components["schemas"]["DecisionExplorerResponse"];
 
 export class ApiClientError extends Error {
   constructor(
@@ -65,6 +67,19 @@ export const api = {
     const search = new URLSearchParams({ metric });
     if (cohortArtifactId) search.set("cohort_artifact_id", cohortArtifactId);
     return getJson<ProductRankingResponse>(`/api/v2/rankings/products?${search.toString()}`);
+  },
+  productCompare: (resultArtifactIds: string[]) => {
+    const search = new URLSearchParams();
+    resultArtifactIds.forEach((item) => search.append("result_artifact_id", item));
+    return getJson<ProductCompareResponse>(`/api/v2/compare/products?${search.toString()}`);
+  },
+  decisionExplorer: (resultArtifactId: string, decisionDate = "") => {
+    const search = new URLSearchParams();
+    if (decisionDate) search.set("decision_date", decisionDate);
+    const suffix = search.size ? `?${search.toString()}` : "";
+    return getJson<DecisionExplorerResponse>(
+      `/api/v2/experiments/results/${resultArtifactId}/decisions${suffix}`,
+    );
   },
   artifacts: (statuses = ["published"]) => {
     const search = new URLSearchParams();

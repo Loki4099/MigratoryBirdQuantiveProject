@@ -497,6 +497,54 @@ class FakeArtifactReader:
             }],
         }
 
+    def product_compare(self, *, result_artifact_ids: tuple[uuid.UUID, ...]) -> dict[str, Any]:
+        return {
+            "mode": "controlled", "changed_dimensions": ["k"],
+            "blocking_context_fields": [],
+            "entries": [{
+                "result_artifact_id": item, "product_key": f"product-{ordinal}",
+                "model_specification_key": "dimension_equal_weight__momentum_trend",
+                "strategy_template_key": "top_k_equal_weight",
+                "variant_key": f"top_k_equal_weight__k{ordinal + 1}",
+                "target_k": ordinal + 1, "frequency": "weekly",
+                "cost_bps_per_side": 5, "template_key": "full_history",
+                "initialization_policy": "carry_in", "availability_status": "eligible",
+                "quality_status": "normal", "resolved_start": date(2025, 1, 2),
+                "resolved_end": date(2026, 1, 9),
+                "metrics": [{"series_role": "strategy", "metric_scope": "absolute",
+                    "metric_key": "cagr", "name": "CAGR", "unit": "annual_ratio",
+                    "value": 0.1 + ordinal / 100, "value_status": "defined",
+                    "reason_code": None, "observation_count": 252}],
+            } for ordinal, item in enumerate(result_artifact_ids, start=1)],
+        }
+
+    def decision_explorer(
+        self, *, result_artifact_id: uuid.UUID, decision_date: date | None
+    ) -> dict[str, Any]:
+        selected = decision_date or date(2026, 1, 9)
+        return {
+            "result_artifact_id": result_artifact_id,
+            "target_path_artifact_id": uuid.uuid4(), "model_dataset_artifact_id": uuid.uuid4(),
+            "model_specification_artifact_id": uuid.uuid4(), "universe_artifact_id": uuid.uuid4(),
+            "data_bundle_artifact_id": uuid.uuid4(), "eligibility_artifact_id": uuid.uuid4(),
+            "model_method_key": "weighted_mean",
+            "available_dates": [date(2026, 1, 9), date(2026, 1, 2)],
+            "selected_date": selected, "target_k": 2, "actual_holding_count": 2,
+            "reserve_target_weight": 0,
+            "positions": [{"asset_key": "iwd", "symbol": "IWD", "selected": True,
+                "model_score": 0.8, "model_rank": 1, "trend_state": "positive",
+                "target_weight": 0.5, "decision_reason": "selected_by_rank",
+                "components": [{"dimension_key": "momentum_trend", "dimension_weight": 1,
+                    "signal_key": "return_continuation", "signal_version_artifact_id": uuid.uuid4(),
+                    "signal_dataset_artifact_id": uuid.uuid4(), "signal_score": 0.8,
+                    "signal_state": "positive", "input_transform": "identity",
+                    "component_weight": 1, "transformed_signal_score": 0.8,
+                    "weighted_component_input": 0.8, "overall_contribution": 0.8,
+                    "factor_key": "total_return", "factor_variant_key": "total_return__w252",
+                    "factor_dataset_artifact_id": uuid.uuid4(), "factor_value": 0.12,
+                    "data_bundle_artifact_id": uuid.uuid4()}]}],
+        }
+
 
 def _client() -> tuple[TestClient, FakeArtifactReader]:
     reader = FakeArtifactReader()
@@ -693,6 +741,28 @@ def test_product_ranking_is_scoped_to_one_immutable_cohort_and_one_metric() -> N
     assert payload["entries"][1]["reason_code"] == "insufficient_observations"
     invalid = client.get("/api/v2/rankings/products?metric=black_box_score")
     assert invalid.status_code == 422
+
+
+def test_controlled_compare_and_decision_explorer_are_explicit_read_only_views() -> None:
+    client, _reader = _client()
+    left, right = uuid.uuid4(), uuid.uuid4()
+    comparison = client.get(
+        f"/api/v2/compare/products?result_artifact_id={left}&result_artifact_id={right}"
+    )
+    assert comparison.status_code == 200
+    assert comparison.json()["mode"] == "controlled"
+    assert comparison.json()["changed_dimensions"] == ["k"]
+    assert comparison.json()["entries"][0]["metrics"][0]["metric_key"] == "cagr"
+    duplicate = client.get(
+        f"/api/v2/compare/products?result_artifact_id={left}&result_artifact_id={left}"
+    )
+    assert duplicate.status_code == 422
+
+    decision = client.get(f"/api/v2/experiments/results/{left}/decisions")
+    assert decision.status_code == 200
+    payload = decision.json()
+    assert payload["positions"][0]["components"][0]["factor_key"] == "total_return"
+    assert payload["positions"][0]["components"][0]["overall_contribution"] == 0.8
 
 
 def test_committed_openapi_contract_matches_application() -> None:

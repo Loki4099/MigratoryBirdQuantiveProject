@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { api } from "../api/client";
 import { EmptyState, ErrorState, LoadingState, QualityBadge } from "../components/QueryState";
 import { ProductRanking } from "../components/ProductRanking";
+import { DecisionExplorer } from "../components/DecisionExplorer";
 
 const ratio = (value: number | null | undefined) => value == null ? "—" :
   new Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 2 }).format(value);
@@ -25,8 +26,9 @@ const metricValue = (metric: { metric_key: string; value: number | null; value_s
 export function ExperimentsPage() {
   const { t } = useTranslation();
   const overview = useQuery({ queryKey: ["experiments", "overview"], queryFn: api.experimentOverview });
+  const [searchParams, setSearchParams] = useSearchParams();
   const [status, setStatus] = useState("all");
-  const [resultId, setResultId] = useState("");
+  const [resultId, setResultId] = useState(searchParams.get("result") ?? "");
   const specifications = useMemo(() => overview.data?.specifications.filter(
     (item) => status === "all" || item.status === status,
   ) ?? [], [overview.data, status]);
@@ -61,7 +63,7 @@ export function ExperimentsPage() {
       <p className="scope-note">{t("experiment.comparisonNote")}</p>
       <div className="experiment-table">
         <div className="experiment-table-head"><span>{t("experiment.strategy")}</span><span>{t("experiment.assumptions")}</span><span>{t("experiment.netCagr")}</span><span>{t("experiment.benchmarkCagr")}</span><span>{t("experiment.sharpe")}</span><span>{t("experiment.drawdown")}</span><span>{t("common.status")}</span></div>
-        {specifications.map((item) => <button type="button" className={activeResultId === item.result_artifact_id ? "active" : ""} key={item.artifact_id} disabled={!item.result_artifact_id} onClick={() => item.result_artifact_id && setResultId(item.result_artifact_id)}>
+        {specifications.map((item) => <button type="button" className={activeResultId === item.result_artifact_id ? "active" : ""} key={`${item.suite_artifact_id}-${item.artifact_id}`} disabled={!item.result_artifact_id} onClick={() => { if (item.result_artifact_id) { setResultId(item.result_artifact_id); const next = new URLSearchParams(searchParams); next.set("result", item.result_artifact_id); setSearchParams(next, { replace: true }); } }}>
           <strong>{item.model_specification_key}<small>{item.variant_key} · {item.frequency}</small></strong>
           <span>{item.template_key}<small>{item.cost_bps_per_side} bps/side · {item.benchmark_key}</small></span>
           <code>{ratio(item.core_metrics["strategy.cagr"])}</code><code>{ratio(item.core_metrics["benchmark.cagr"])}</code><code>{decimal(item.core_metrics["strategy.sharpe_ratio"])}</code><code>{ratio(item.core_metrics["strategy.maximum_drawdown"])}</code>
@@ -82,5 +84,6 @@ export function ExperimentsPage() {
         <article><h3>{t("experiment.events")}</h3>{detail.data.events.map((event) => <div className="experiment-audit-row" key={event.sequence_number}><code>{event.sequence_number}</code><div><strong>{event.event_type}</strong><p>{event.message}</p></div></div>)}</article>
       </div>
     </section>}
+    {detail.data && <DecisionExplorer resultArtifactId={detail.data.result_artifact_id} />}
   </div>;
 }

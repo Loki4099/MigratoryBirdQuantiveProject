@@ -1172,6 +1172,25 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     assert ranking_payload["entries"][0]["rank"] == 1
     assert ranking_payload["entries"][0]["metric_value"] is not None
     assert ranking_payload["cohorts"][0]["required_warmup_observations"] == 253
+    accepted_ids = list(dict.fromkeys(
+        item["result_artifact_id"] for item in experiment_payload["specifications"]
+        if item["result_artifact_id"] is not None
+    ))
+    comparison = experiment_client.get(
+        "/api/v2/compare/products",
+        params=[("result_artifact_id", item) for item in accepted_ids[:2]],
+    )
+    assert comparison.status_code == 200, comparison.text
+    assert comparison.json()["mode"] == "controlled"
+    assert comparison.json()["changed_dimensions"] == ["interval"]
+    decision = experiment_client.get(
+        f"/api/v2/experiments/results/{eligible_cell['result_artifact_id']}/decisions"
+    )
+    assert decision.status_code == 200, decision.text
+    decision_payload = decision.json()
+    assert len(decision_payload["positions"]) == 4
+    assert sum(len(item["components"]) for item in decision_payload["positions"]) == 16
+    assert decision_payload["positions"][0]["components"][0]["factor_key"] == "total_return"
 
     evaluation_spec = build_signal_evaluation_engine_spec(
         "a" * 40,

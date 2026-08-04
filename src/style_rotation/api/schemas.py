@@ -778,3 +778,81 @@ class ProductRankingResponse(ApiModel):
     candidate_count: int
     ranked_count: int
     entries: list[ProductRankingEntry]
+
+
+class ProductCompareEntry(ApiModel):
+    result_artifact_id: UUID
+    product_key: str
+    model_specification_key: str
+    strategy_template_key: str
+    variant_key: str
+    target_k: int
+    frequency: Literal["weekly", "monthly"]
+    cost_bps_per_side: float
+    template_key: str
+    initialization_policy: str
+    availability_status: str
+    quality_status: str
+    resolved_start: date | None
+    resolved_end: date | None
+    metrics: list[ExperimentMetricItem]
+
+
+class ProductCompareResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    mode: Literal["controlled", "side_by_side", "identical"]
+    changed_dimensions: list[str]
+    blocking_context_fields: list[str]
+    entries: list[ProductCompareEntry]
+
+
+class DecisionComponentTraceItem(ApiModel):
+    dimension_key: str
+    dimension_weight: float
+    signal_key: str
+    signal_version_artifact_id: UUID
+    signal_dataset_artifact_id: UUID
+    signal_score: float
+    signal_state: str | None
+    input_transform: str
+    component_weight: float
+    transformed_signal_score: float
+    weighted_component_input: float
+    overall_contribution: float | None
+    factor_key: str
+    factor_variant_key: str
+    factor_dataset_artifact_id: UUID
+    factor_value: float
+    data_bundle_artifact_id: UUID
+
+
+class DecisionPositionTraceItem(ApiModel):
+    asset_key: str
+    symbol: str
+    selected: bool
+    model_score: float
+    model_rank: float
+    trend_state: str | None
+    target_weight: float
+    decision_reason: str
+    components: list[DecisionComponentTraceItem]
+
+
+class DecisionExplorerResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    result_artifact_id: UUID
+    target_path_artifact_id: UUID
+    model_dataset_artifact_id: UUID
+    model_specification_artifact_id: UUID
+    universe_artifact_id: UUID
+    data_bundle_artifact_id: UUID
+    eligibility_artifact_id: UUID
+    model_method_key: str
+    available_dates: list[date]
+    selected_date: date
+    target_k: int
+    actual_holding_count: int
+    reserve_target_weight: float
+    positions: list[DecisionPositionTraceItem]

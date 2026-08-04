@@ -940,6 +940,284 @@
         "title": "DatasetPublicationItem",
         "type": "object"
       },
+      "DecisionComponentTraceItem": {
+        "additionalProperties": false,
+        "properties": {
+          "component_weight": {
+            "title": "Component Weight",
+            "type": "number"
+          },
+          "data_bundle_artifact_id": {
+            "format": "uuid",
+            "title": "Data Bundle Artifact Id",
+            "type": "string"
+          },
+          "dimension_key": {
+            "title": "Dimension Key",
+            "type": "string"
+          },
+          "dimension_weight": {
+            "title": "Dimension Weight",
+            "type": "number"
+          },
+          "factor_dataset_artifact_id": {
+            "format": "uuid",
+            "title": "Factor Dataset Artifact Id",
+            "type": "string"
+          },
+          "factor_key": {
+            "title": "Factor Key",
+            "type": "string"
+          },
+          "factor_value": {
+            "title": "Factor Value",
+            "type": "number"
+          },
+          "factor_variant_key": {
+            "title": "Factor Variant Key",
+            "type": "string"
+          },
+          "input_transform": {
+            "title": "Input Transform",
+            "type": "string"
+          },
+          "overall_contribution": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Overall Contribution"
+          },
+          "signal_dataset_artifact_id": {
+            "format": "uuid",
+            "title": "Signal Dataset Artifact Id",
+            "type": "string"
+          },
+          "signal_key": {
+            "title": "Signal Key",
+            "type": "string"
+          },
+          "signal_score": {
+            "title": "Signal Score",
+            "type": "number"
+          },
+          "signal_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signal State"
+          },
+          "signal_version_artifact_id": {
+            "format": "uuid",
+            "title": "Signal Version Artifact Id",
+            "type": "string"
+          },
+          "transformed_signal_score": {
+            "title": "Transformed Signal Score",
+            "type": "number"
+          },
+          "weighted_component_input": {
+            "title": "Weighted Component Input",
+            "type": "number"
+          }
+        },
+        "required": [
+          "dimension_key",
+          "dimension_weight",
+          "signal_key",
+          "signal_version_artifact_id",
+          "signal_dataset_artifact_id",
+          "signal_score",
+          "signal_state",
+          "input_transform",
+          "component_weight",
+          "transformed_signal_score",
+          "weighted_component_input",
+          "overall_contribution",
+          "factor_key",
+          "factor_variant_key",
+          "factor_dataset_artifact_id",
+          "factor_value",
+          "data_bundle_artifact_id"
+        ],
+        "title": "DecisionComponentTraceItem",
+        "type": "object"
+      },
+      "DecisionExplorerResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "actual_holding_count": {
+            "title": "Actual Holding Count",
+            "type": "integer"
+          },
+          "available_dates": {
+            "items": {
+              "format": "date",
+              "type": "string"
+            },
+            "title": "Available Dates",
+            "type": "array"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "data_bundle_artifact_id": {
+            "format": "uuid",
+            "title": "Data Bundle Artifact Id",
+            "type": "string"
+          },
+          "eligibility_artifact_id": {
+            "format": "uuid",
+            "title": "Eligibility Artifact Id",
+            "type": "string"
+          },
+          "model_dataset_artifact_id": {
+            "format": "uuid",
+            "title": "Model Dataset Artifact Id",
+            "type": "string"
+          },
+          "model_method_key": {
+            "title": "Model Method Key",
+            "type": "string"
+          },
+          "model_specification_artifact_id": {
+            "format": "uuid",
+            "title": "Model Specification Artifact Id",
+            "type": "string"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionPositionTraceItem"
+            },
+            "title": "Positions",
+            "type": "array"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "reserve_target_weight": {
+            "title": "Reserve Target Weight",
+            "type": "number"
+          },
+          "result_artifact_id": {
+            "format": "uuid",
+            "title": "Result Artifact Id",
+            "type": "string"
+          },
+          "selected_date": {
+            "format": "date",
+            "title": "Selected Date",
+            "type": "string"
+          },
+          "target_k": {
+            "title": "Target K",
+            "type": "integer"
+          },
+          "target_path_artifact_id": {
+            "format": "uuid",
+            "title": "Target Path Artifact Id",
+            "type": "string"
+          },
+          "universe_artifact_id": {
+            "format": "uuid",
+            "title": "Universe Artifact Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "result_artifact_id",
+          "target_path_artifact_id",
+          "model_dataset_artifact_id",
+          "model_specification_artifact_id",
+          "universe_artifact_id",
+          "data_bundle_artifact_id",
+          "eligibility_artifact_id",
+          "model_method_key",
+          "available_dates",
+          "selected_date",
+          "target_k",
+          "actual_holding_count",
+          "reserve_target_weight",
+          "positions"
+        ],
+        "title": "DecisionExplorerResponse",
+        "type": "object"
+      },
+      "DecisionPositionTraceItem": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_key": {
+            "title": "Asset Key",
+            "type": "string"
+          },
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionComponentTraceItem"
+            },
+            "title": "Components",
+            "type": "array"
+          },
+          "decision_reason": {
+            "title": "Decision Reason",
+            "type": "string"
+          },
+          "model_rank": {
+            "title": "Model Rank",
+            "type": "number"
+          },
+          "model_score": {
+            "title": "Model Score",
+            "type": "number"
+          },
+          "selected": {
+            "title": "Selected",
+            "type": "boolean"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "target_weight": {
+            "title": "Target Weight",
+            "type": "number"
+          },
+          "trend_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trend State"
+          }
+        },
+        "required": [
+          "asset_key",
+          "symbol",
+          "selected",
+          "model_score",
+          "model_rank",
+          "trend_state",
+          "target_weight",
+          "decision_reason",
+          "components"
+        ],
+        "title": "DecisionPositionTraceItem",
+        "type": "object"
+      },
       "DependencySummary": {
         "additionalProperties": false,
         "properties": {
@@ -2825,6 +3103,165 @@
         "title": "ModelWindowMetricItem",
         "type": "object"
       },
+      "ProductCompareEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "availability_status": {
+            "title": "Availability Status",
+            "type": "string"
+          },
+          "cost_bps_per_side": {
+            "title": "Cost Bps Per Side",
+            "type": "number"
+          },
+          "frequency": {
+            "enum": [
+              "weekly",
+              "monthly"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "initialization_policy": {
+            "title": "Initialization Policy",
+            "type": "string"
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/ExperimentMetricItem"
+            },
+            "title": "Metrics",
+            "type": "array"
+          },
+          "model_specification_key": {
+            "title": "Model Specification Key",
+            "type": "string"
+          },
+          "product_key": {
+            "title": "Product Key",
+            "type": "string"
+          },
+          "quality_status": {
+            "title": "Quality Status",
+            "type": "string"
+          },
+          "resolved_end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved End"
+          },
+          "resolved_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved Start"
+          },
+          "result_artifact_id": {
+            "format": "uuid",
+            "title": "Result Artifact Id",
+            "type": "string"
+          },
+          "strategy_template_key": {
+            "title": "Strategy Template Key",
+            "type": "string"
+          },
+          "target_k": {
+            "title": "Target K",
+            "type": "integer"
+          },
+          "template_key": {
+            "title": "Template Key",
+            "type": "string"
+          },
+          "variant_key": {
+            "title": "Variant Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result_artifact_id",
+          "product_key",
+          "model_specification_key",
+          "strategy_template_key",
+          "variant_key",
+          "target_k",
+          "frequency",
+          "cost_bps_per_side",
+          "template_key",
+          "initialization_policy",
+          "availability_status",
+          "quality_status",
+          "resolved_start",
+          "resolved_end",
+          "metrics"
+        ],
+        "title": "ProductCompareEntry",
+        "type": "object"
+      },
+      "ProductCompareResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "blocking_context_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Blocking Context Fields",
+            "type": "array"
+          },
+          "changed_dimensions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Changed Dimensions",
+            "type": "array"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/ProductCompareEntry"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "mode": {
+            "enum": [
+              "controlled",
+              "side_by_side",
+              "identical"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "mode",
+          "changed_dimensions",
+          "blocking_context_fields",
+          "entries"
+        ],
+        "title": "ProductCompareResponse",
+        "type": "object"
+      },
       "ProductRankingEntry": {
         "additionalProperties": false,
         "properties": {
@@ -4597,6 +5034,73 @@
         ]
       }
     },
+    "/api/v2/compare/products": {
+      "get": {
+        "operationId": "product_compare_api_v2_compare_products_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "result_artifact_id",
+            "required": true,
+            "schema": {
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "maxItems": 6,
+              "minItems": 2,
+              "title": "Result Artifact Id",
+              "type": "array"
+            }
+          },
+          {
+            "in": "header",
+            "name": "if-none-match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-None-Match"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductCompareResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Not modified"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Product Compare",
+        "tags": [
+          "experiment"
+        ]
+      }
+    },
     "/api/v2/data/overview": {
       "get": {
         "operationId": "data_overview_api_v2_data_overview_get",
@@ -4758,6 +5262,85 @@
           }
         },
         "summary": "Experiment Result",
+        "tags": [
+          "experiment"
+        ]
+      }
+    },
+    "/api/v2/experiments/results/{artifact_id}/decisions": {
+      "get": {
+        "operationId": "decision_explorer_api_v2_experiments_results__artifact_id__decisions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decision_date",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Decision Date"
+            }
+          },
+          {
+            "in": "header",
+            "name": "if-none-match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-None-Match"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionExplorerResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Not modified"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Decision Explorer",
         "tags": [
           "experiment"
         ]

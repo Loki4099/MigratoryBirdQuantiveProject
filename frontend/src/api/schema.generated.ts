@@ -106,6 +106,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/compare/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Product Compare */
+        get: operations["product_compare_api_v2_compare_products_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/data/overview": {
         parameters: {
             query?: never;
@@ -149,6 +166,23 @@ export interface paths {
         };
         /** Experiment Result */
         get: operations["experiment_result_api_v2_experiments_results__artifact_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/experiments/results/{artifact_id}/decisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Decision Explorer */
+        get: operations["decision_explorer_api_v2_experiments_results__artifact_id__decisions_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -651,6 +685,133 @@ export interface components {
             value_kind: "daily_bar" | "rate_observation" | "reserve_return";
             /** Version Number */
             version_number: number;
+        };
+        /** DecisionComponentTraceItem */
+        DecisionComponentTraceItem: {
+            /** Component Weight */
+            component_weight: number;
+            /**
+             * Data Bundle Artifact Id
+             * Format: uuid
+             */
+            data_bundle_artifact_id: string;
+            /** Dimension Key */
+            dimension_key: string;
+            /** Dimension Weight */
+            dimension_weight: number;
+            /**
+             * Factor Dataset Artifact Id
+             * Format: uuid
+             */
+            factor_dataset_artifact_id: string;
+            /** Factor Key */
+            factor_key: string;
+            /** Factor Value */
+            factor_value: number;
+            /** Factor Variant Key */
+            factor_variant_key: string;
+            /** Input Transform */
+            input_transform: string;
+            /** Overall Contribution */
+            overall_contribution: number | null;
+            /**
+             * Signal Dataset Artifact Id
+             * Format: uuid
+             */
+            signal_dataset_artifact_id: string;
+            /** Signal Key */
+            signal_key: string;
+            /** Signal Score */
+            signal_score: number;
+            /** Signal State */
+            signal_state: string | null;
+            /**
+             * Signal Version Artifact Id
+             * Format: uuid
+             */
+            signal_version_artifact_id: string;
+            /** Transformed Signal Score */
+            transformed_signal_score: number;
+            /** Weighted Component Input */
+            weighted_component_input: number;
+        };
+        /** DecisionExplorerResponse */
+        DecisionExplorerResponse: {
+            /** Actual Holding Count */
+            actual_holding_count: number;
+            /** Available Dates */
+            available_dates: string[];
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Data Bundle Artifact Id
+             * Format: uuid
+             */
+            data_bundle_artifact_id: string;
+            /**
+             * Eligibility Artifact Id
+             * Format: uuid
+             */
+            eligibility_artifact_id: string;
+            /**
+             * Model Dataset Artifact Id
+             * Format: uuid
+             */
+            model_dataset_artifact_id: string;
+            /** Model Method Key */
+            model_method_key: string;
+            /**
+             * Model Specification Artifact Id
+             * Format: uuid
+             */
+            model_specification_artifact_id: string;
+            /** Positions */
+            positions: components["schemas"]["DecisionPositionTraceItem"][];
+            quality: components["schemas"]["QualitySummary"];
+            /** Reserve Target Weight */
+            reserve_target_weight: number;
+            /**
+             * Result Artifact Id
+             * Format: uuid
+             */
+            result_artifact_id: string;
+            /**
+             * Selected Date
+             * Format: date
+             */
+            selected_date: string;
+            /** Target K */
+            target_k: number;
+            /**
+             * Target Path Artifact Id
+             * Format: uuid
+             */
+            target_path_artifact_id: string;
+            /**
+             * Universe Artifact Id
+             * Format: uuid
+             */
+            universe_artifact_id: string;
+        };
+        /** DecisionPositionTraceItem */
+        DecisionPositionTraceItem: {
+            /** Asset Key */
+            asset_key: string;
+            /** Components */
+            components: components["schemas"]["DecisionComponentTraceItem"][];
+            /** Decision Reason */
+            decision_reason: string;
+            /** Model Rank */
+            model_rank: number;
+            /** Model Score */
+            model_score: number;
+            /** Selected */
+            selected: boolean;
+            /** Symbol */
+            symbol: string;
+            /** Target Weight */
+            target_weight: number;
+            /** Trend State */
+            trend_state: string | null;
         };
         /** DependencySummary */
         DependencySummary: {
@@ -1405,6 +1566,61 @@ export interface components {
              * Format: date
              */
             window_start: string;
+        };
+        /** ProductCompareEntry */
+        ProductCompareEntry: {
+            /** Availability Status */
+            availability_status: string;
+            /** Cost Bps Per Side */
+            cost_bps_per_side: number;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /** Initialization Policy */
+            initialization_policy: string;
+            /** Metrics */
+            metrics: components["schemas"]["ExperimentMetricItem"][];
+            /** Model Specification Key */
+            model_specification_key: string;
+            /** Product Key */
+            product_key: string;
+            /** Quality Status */
+            quality_status: string;
+            /** Resolved End */
+            resolved_end: string | null;
+            /** Resolved Start */
+            resolved_start: string | null;
+            /**
+             * Result Artifact Id
+             * Format: uuid
+             */
+            result_artifact_id: string;
+            /** Strategy Template Key */
+            strategy_template_key: string;
+            /** Target K */
+            target_k: number;
+            /** Template Key */
+            template_key: string;
+            /** Variant Key */
+            variant_key: string;
+        };
+        /** ProductCompareResponse */
+        ProductCompareResponse: {
+            /** Blocking Context Fields */
+            blocking_context_fields: string[];
+            /** Changed Dimensions */
+            changed_dimensions: string[];
+            context: components["schemas"]["ApiContext"];
+            /** Entries */
+            entries: components["schemas"]["ProductCompareEntry"][];
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "controlled" | "side_by_side" | "identical";
+            quality: components["schemas"]["QualitySummary"];
         };
         /** ProductRankingEntry */
         ProductRankingEntry: {
@@ -2203,6 +2419,46 @@ export interface operations {
             };
         };
     };
+    product_compare_api_v2_compare_products_get: {
+        parameters: {
+            query: {
+                result_artifact_id: string[];
+            };
+            header?: {
+                "if-none-match"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductCompareResponse"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     data_overview_api_v2_data_overview_get: {
         parameters: {
             query?: never;
@@ -2299,6 +2555,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExperimentResultResponse"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decision_explorer_api_v2_experiments_results__artifact_id__decisions_get: {
+        parameters: {
+            query?: {
+                decision_date?: string | null;
+            };
+            header?: {
+                "if-none-match"?: string | null;
+            };
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionExplorerResponse"];
                 };
             };
             /** @description Not modified */
