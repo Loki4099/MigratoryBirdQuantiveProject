@@ -12,6 +12,7 @@ import { FactorsPage } from "./pages/FactorsPage";
 import { PlannedPage } from "./pages/PlannedPage";
 import { SignalsPage } from "./pages/SignalsPage";
 import { ModelsPage } from "./pages/ModelsPage";
+import { StrategiesPage } from "./pages/StrategiesPage";
 
 export const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false } },
@@ -27,7 +28,7 @@ export function AppRoutes() {
         <Route path="factors" element={<FactorsPage />} />
         <Route path="signals" element={<SignalsPage />} />
         <Route path="models" element={<ModelsPage />} />
-        <Route path="strategies" element={<PlannedPage titleKey="nav.strategies" milestone="M6" />} />
+        <Route path="strategies" element={<StrategiesPage />} />
         <Route path="experiments" element={<PlannedPage titleKey="nav.experiments" milestone="M7" />} />
         <Route path="compare" element={<PlannedPage titleKey="nav.compare" milestone="M8" />} />
         <Route path="artifacts" element={<ArtifactsPage />} />

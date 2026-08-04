@@ -224,6 +224,50 @@ h2 { font-size: 17px; }
 .ablation-list dd { margin: 4px 0 0; color: var(--green); font: 600 10px Consolas, monospace; }
 .ablation-disclosure { margin-top: 14px; border-bottom: 1px solid var(--line); }
 .ablation-disclosure > summary { padding: 13px 10px; color: var(--green); cursor: pointer; font-size: 9px; font-weight: 700; }
+.strategy-scope-strip { grid-template-columns: 2fr repeat(3, .65fr); }
+.strategy-rule-summary { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); border-top: 0; }
+.strategy-rule-summary article { min-width: 0; padding: 18px; background: var(--paper); }
+.strategy-rule-summary span, .strategy-rule-summary strong { display: block; }
+.strategy-rule-summary span { margin-bottom: 9px; color: var(--muted); font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
+.strategy-rule-summary strong { font: 600 10px Consolas, monospace; overflow-wrap: anywhere; }
+.strategy-rule-summary p { color: var(--muted); font-size: 9px; line-height: 1.55; }
+.strategy-rule-summary code { display: block; margin: 5px 0; color: var(--green); font-size: 8px; overflow-wrap: anywhere; }
+.strategy-variant-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; margin-top: 18px; background: var(--line); border: 1px solid var(--line); }
+.strategy-variant-grid > article { min-width: 0; padding: 17px; background: var(--paper); }
+.strategy-variant-grid header { display: flex; justify-content: space-between; gap: 10px; }
+.strategy-variant-grid header span, .strategy-variant-grid header strong { display: block; }
+.strategy-variant-grid header span { color: var(--muted); font-size: 8px; text-transform: uppercase; }
+.strategy-variant-grid header strong { margin-top: 5px; font: 600 9px Consolas, monospace; overflow-wrap: anywhere; }
+.strategy-variant-grid header b { color: var(--amber); font: 600 12px Consolas, monospace; }
+.strategy-variant-grid dl { margin: 14px 0; }
+.strategy-variant-grid dl div { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 8px; }
+.strategy-variant-grid dt { color: var(--muted); }
+.strategy-variant-grid dd { margin: 0; max-width: 65%; text-align: right; overflow-wrap: anywhere; }
+.strategy-variant-grid > article > code { color: var(--green); font-size: 7px; overflow-wrap: anywhere; }
+.strategy-product-list { border-bottom: 1px solid var(--line); }
+.strategy-product-list article { display: grid; grid-template-columns: minmax(0, 1.4fr) 1fr 24px; gap: 20px; align-items: center; padding: 14px 10px; border-bottom: 1px solid var(--line); }
+.strategy-product-list span, .strategy-product-list strong, .strategy-product-list code { display: block; overflow-wrap: anywhere; }
+.strategy-product-list span { color: var(--muted); font-size: 8px; }
+.strategy-product-list strong { margin: 5px 0; font: 600 9px Consolas, monospace; }
+.strategy-product-list code { color: var(--green); font-size: 7px; }
+.strategy-product-list dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0; }
+.strategy-product-list dt { color: var(--muted); font-size: 7px; }
+.strategy-product-list dd { margin: 4px 0 0; font: 500 8px Consolas, monospace; overflow-wrap: anywhere; }
+.strategy-product-list a { color: var(--green); text-decoration: none; font-size: 16px; }
+.strategy-target-controls { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin: 18px 0; }
+.strategy-target-controls label { color: var(--muted); font-size: 8px; text-transform: uppercase; letter-spacing: .07em; }
+.strategy-target-controls select { display: block; width: 100%; margin-top: 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); padding: 9px; font-size: 9px; }
+.strategy-decision > header { display: grid; grid-template-columns: 1.7fr repeat(3, .7fr); gap: 1px; border: 1px solid var(--line); background: var(--line); }
+.strategy-decision > header div { padding: 13px; background: var(--paper); }
+.strategy-decision > header span, .strategy-decision > header strong { display: block; }
+.strategy-decision > header span { color: var(--muted); font-size: 7px; text-transform: uppercase; }
+.strategy-decision > header strong { margin-top: 6px; font: 600 10px Consolas, monospace; }
+.strategy-position-table { margin: 13px 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.strategy-position-table > div { display: grid; grid-template-columns: .8fr .6fr .5fr .65fr .55fr .65fr 1.2fr; gap: 12px; min-width: 760px; align-items: center; padding: 10px; border-bottom: 1px solid var(--line); font-size: 8px; }
+.strategy-position-table > div.selected { background: #e9eee9; }
+.strategy-position-table .strategy-position-head { color: var(--muted); font-size: 7px; text-transform: uppercase; letter-spacing: .06em; }
+.strategy-position-table strong, .strategy-position-table small { display: block; }
+.strategy-position-table small { margin-top: 3px; color: var(--muted); font-weight: 400; }
 .arrow-link { color: var(--green); text-decoration: none; font-weight: 700; text-align: right; }
 .back-link { display: inline-block; margin-bottom: 30px; color: var(--green); font-size: 11px; text-decoration: none; }
 .detail-heading p:not(.eyebrow) { font-family: Consolas, monospace; font-size: 10px; }
@@ -265,7 +309,7 @@ h2 { font-size: 17px; }
   .app-shell { grid-template-columns: 190px 1fr; }
   .sidebar { padding-inline: 12px; }
   .stat-grid, .asset-grid { grid-template-columns: 1fr 1fr; }
-  .data-detail-grid, .factor-diagnostic-grid, .signal-grid, .model-grid { grid-template-columns: 1fr; gap: 0; }
+  .data-detail-grid, .factor-diagnostic-grid, .signal-grid, .model-grid, .strategy-variant-grid { grid-template-columns: 1fr; gap: 0; }
   .artifact-list-head { display: none; }
   .artifact-row { grid-template-columns: 1.4fr 1fr .5fr; }
   .artifact-row > :nth-child(4), .artifact-row > :nth-child(5) { justify-self: start; }
@@ -283,6 +327,9 @@ h2 { font-size: 17px; }
   .ablation-list > article { grid-template-columns: 1fr; }
   .model-toolbar { align-items: stretch; flex-direction: column; }
   .model-toolbar input { width: auto; }
+  .strategy-rule-summary, .strategy-target-controls, .strategy-decision > header { grid-template-columns: 1fr; }
+  .strategy-product-list article { grid-template-columns: 1fr; }
+  .strategy-product-list dl { grid-template-columns: 1fr; }
   .signal-pair-list dl { margin-top: 8px; }
   .source-list article { grid-template-columns: 1fr; gap: 6px; }
   .requirement-list article { grid-template-columns: 1fr; gap: 7px; }

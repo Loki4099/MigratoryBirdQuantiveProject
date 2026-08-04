@@ -11,6 +11,8 @@ export type DataOverviewResponse = components["schemas"]["DataOverviewResponse"]
 export type FactorOverviewResponse = components["schemas"]["FactorOverviewResponse"];
 export type SignalOverviewResponse = components["schemas"]["SignalOverviewResponse"];
 export type ModelOverviewResponse = components["schemas"]["ModelOverviewResponse"];
+export type StrategyOverviewResponse = components["schemas"]["StrategyOverviewResponse"];
+export type StrategyTargetPathResponse = components["schemas"]["StrategyTargetPathResponse"];
 
 export class ApiClientError extends Error {
   constructor(
@@ -48,6 +50,10 @@ export const api = {
     getJson<SignalOverviewResponse>(`/api/v2/signals/overview?frequency=${frequency}`),
   modelOverview: (frequency: "weekly" | "monthly") =>
     getJson<ModelOverviewResponse>(`/api/v2/models/overview?frequency=${frequency}`),
+  strategyOverview: () =>
+    getJson<StrategyOverviewResponse>("/api/v2/strategies/overview"),
+  strategyTargetPath: (artifactId: string) =>
+    getJson<StrategyTargetPathResponse>(`/api/v2/strategies/targets/${artifactId}`),
   artifacts: (statuses = ["published"]) => {
     const search = new URLSearchParams();
     statuses.forEach((status) => search.append("status", status));

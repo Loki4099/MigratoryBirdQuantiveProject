@@ -191,6 +191,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/strategies/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Strategy Overview */
+        get: operations["strategy_overview_api_v2_strategies_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/strategies/targets/{artifact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Strategy Target Path */
+        get: operations["strategy_target_path_api_v2_strategies_targets__artifact_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1266,6 +1300,276 @@ export interface components {
             /** Snapshot Key */
             snapshot_key: string;
         };
+        /** StrategyDecisionItem */
+        StrategyDecisionItem: {
+            /** Actual Holding Count */
+            actual_holding_count: number;
+            /** Boundary Tie Count */
+            boundary_tie_count: number;
+            /**
+             * Decision Date
+             * Format: date
+             */
+            decision_date: string;
+            /** Positions */
+            positions: components["schemas"]["StrategyTargetPositionItem"][];
+            /** Reserve Target Weight */
+            reserve_target_weight: number;
+            /** Target K */
+            target_k: number;
+        };
+        /** StrategyExecutionPolicyItem */
+        StrategyExecutionPolicyItem: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /** Delay Common Sessions */
+            delay_common_sessions: number;
+            /** Execution Price */
+            execution_price: string;
+            /** Missing Execution Policy */
+            missing_execution_policy: string;
+            /** Policy Key */
+            policy_key: string;
+        };
+        /** StrategyOverviewResponse */
+        StrategyOverviewResponse: {
+            context: components["schemas"]["ApiContext"];
+            /** Products */
+            products: components["schemas"]["StrategyProductItem"][];
+            quality: components["schemas"]["QualitySummary"];
+            rules: components["schemas"]["StrategyRuleSetItem"];
+            /** Target Paths */
+            target_paths: components["schemas"]["StrategyTargetPathItem"][];
+        };
+        /** StrategyProductItem */
+        StrategyProductItem: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /** Execution Policy Key */
+            execution_policy_key: string;
+            /** Execution Price */
+            execution_price: string;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /** Model Output Type */
+            model_output_type: string;
+            /** Model Specification Key */
+            model_specification_key: string;
+            /** Model Specification Type */
+            model_specification_type: string;
+            /** Product Key */
+            product_key: string;
+            /** Research Tier */
+            research_tier: string;
+            /** Schedule Key */
+            schedule_key: string;
+            /** Target K */
+            target_k: number;
+            /** Target Path Count */
+            target_path_count: number;
+            /** Universe Key */
+            universe_key: string;
+            /** Variant Key */
+            variant_key: string;
+            /** Version Number */
+            version_number: number;
+        };
+        /** StrategyRuleSetItem */
+        StrategyRuleSetItem: {
+            /** Allocation Contract */
+            allocation_contract: string;
+            /** Candidate Input Policy */
+            candidate_input_policy: string;
+            /** Compatible Model Output Types */
+            compatible_model_output_types: string[];
+            /**
+             * Definition Artifact Id
+             * Format: uuid
+             */
+            definition_artifact_id: string;
+            execution_policy: components["schemas"]["StrategyExecutionPolicyItem"];
+            /** Hypothesis */
+            hypothesis: string;
+            /** Missing Input Policy */
+            missing_input_policy: string;
+            /** Reserve Contract */
+            reserve_contract: string;
+            /** Schedules */
+            schedules: components["schemas"]["StrategyScheduleItem"][];
+            /** Selection Contract */
+            selection_contract: string;
+            /** Strategy Family */
+            strategy_family: string;
+            /** Strategy Key */
+            strategy_key: string;
+            /** Variants */
+            variants: components["schemas"]["StrategyVariantItem"][];
+            /**
+             * Version Artifact Id
+             * Format: uuid
+             */
+            version_artifact_id: string;
+            /** Version Number */
+            version_number: number;
+        };
+        /** StrategyScheduleItem */
+        StrategyScheduleItem: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /** Decision Data Policy */
+            decision_data_policy: string;
+            /** Decision Timing */
+            decision_timing: string;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /** Schedule Key */
+            schedule_key: string;
+        };
+        /** StrategyTargetPathItem */
+        StrategyTargetPathItem: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /**
+             * Coverage End
+             * Format: date
+             */
+            coverage_end: string;
+            /**
+             * Coverage Start
+             * Format: date
+             */
+            coverage_start: string;
+            /** Decision Count */
+            decision_count: number;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /**
+             * Model Dataset Artifact Id
+             * Format: uuid
+             */
+            model_dataset_artifact_id: string;
+            /** Model Specification Key */
+            model_specification_key: string;
+            /** Position Count */
+            position_count: number;
+            /**
+             * Product Artifact Id
+             * Format: uuid
+             */
+            product_artifact_id: string;
+            /** Product Key */
+            product_key: string;
+            /** Target K */
+            target_k: number;
+            /** Variant Key */
+            variant_key: string;
+        };
+        /** StrategyTargetPathResponse */
+        StrategyTargetPathResponse: {
+            /** Auxiliary Signal Dataset Artifact Id */
+            auxiliary_signal_dataset_artifact_id: string | null;
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Data Bundle Artifact Id
+             * Format: uuid
+             */
+            data_bundle_artifact_id: string;
+            /** Decisions */
+            decisions: components["schemas"]["StrategyDecisionItem"][];
+            /**
+             * Eligibility Artifact Id
+             * Format: uuid
+             */
+            eligibility_artifact_id: string;
+            /**
+             * Engine Artifact Id
+             * Format: uuid
+             */
+            engine_artifact_id: string;
+            quality: components["schemas"]["QualitySummary"];
+            target_path: components["schemas"]["StrategyTargetPathItem"];
+            /**
+             * Universe Artifact Id
+             * Format: uuid
+             */
+            universe_artifact_id: string;
+        };
+        /** StrategyTargetPositionItem */
+        StrategyTargetPositionItem: {
+            /** Asset Key */
+            asset_key: string;
+            /** Decision Reason */
+            decision_reason: string;
+            /** Model Rank */
+            model_rank: number;
+            /** Model Score */
+            model_score: number;
+            /** Selected */
+            selected: boolean;
+            /** Selection Rank */
+            selection_rank: number | null;
+            /** Strategy Eligible */
+            strategy_eligible: boolean;
+            /** Symbol */
+            symbol: string;
+            /** Target Weight */
+            target_weight: number;
+            /** Trend State */
+            trend_state: string | null;
+        };
+        /** StrategyVariantItem */
+        StrategyVariantItem: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /** Auxiliary Eligible State */
+            auxiliary_eligible_state: string | null;
+            /** Auxiliary Signal Key */
+            auxiliary_signal_key: string | null;
+            /** Empty Slot Policy */
+            empty_slot_policy: string;
+            /** Research Tier */
+            research_tier: string;
+            /** Reserve Rule */
+            reserve_rule: string;
+            /** Selection Order */
+            selection_order: string;
+            /** Slot Weight Rule */
+            slot_weight_rule: string;
+            /** Target K */
+            target_k: number;
+            /** Template Key */
+            template_key: string;
+            /** Tie Policy */
+            tie_policy: string;
+            /** Trend Filter */
+            trend_filter: string;
+            /** Variant Key */
+            variant_key: string;
+        };
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -1663,6 +1967,84 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SignalOverviewResponse"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    strategy_overview_api_v2_strategies_overview_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "if-none-match"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategyOverviewResponse"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    strategy_target_path_api_v2_strategies_targets__artifact_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "if-none-match"?: string | null;
+            };
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategyTargetPathResponse"];
                 };
             };
             /** @description Not modified */

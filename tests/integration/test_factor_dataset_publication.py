@@ -542,6 +542,24 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     assert all(
         abs(Decimal(total) - Decimal(1)) <= Decimal("0.000000000000001") for _, total in budgets
     )
+    strategy_client = TestClient(create_app(ArtifactQueryService(engine)))
+    strategy_overview = strategy_client.get("/api/v2/strategies/overview")
+    assert strategy_overview.status_code == 200
+    strategy_payload = strategy_overview.json()
+    assert len(strategy_payload["rules"]["variants"]) == 9
+    assert len(strategy_payload["products"]) == 1
+    assert len(strategy_payload["target_paths"]) == 1
+    assert "sharpe" not in strategy_overview.text.lower()
+    target_detail = strategy_client.get(
+        f"/api/v2/strategies/targets/{target_path.artifact_id}"
+    )
+    assert target_detail.status_code == 200
+    target_payload = target_detail.json()
+    assert len(target_payload["decisions"]) == target_path.decision_count
+    assert all(len(item["positions"]) == 4 for item in target_payload["decisions"])
+    assert target_payload["auxiliary_signal_dataset_artifact_id"] == str(
+        trend_signal.artifact_id
+    )
 
     evaluation_spec = build_signal_evaluation_engine_spec(
         "a" * 40,

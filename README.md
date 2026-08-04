@@ -4,7 +4,7 @@ Versioned research platform for explainable US style rotation across IWF, IWD, I
 
 ## Status
 
-v0.2 is being rebuilt in short, independently verified milestones. M0 through M5 and M6A through M6B2 are complete. The platform now has immutable publication, typed market data, deterministic Factor/Signal/Model calculation and independent diagnostics, read-only bilingual research pages through the Models layer, complete Strategy Product identities, and immutable per-candidate Target Paths. The Strategy API/UI and experiments follow in later milestones.
+v0.2 is being rebuilt in short, independently verified milestones. M0 through M6C are complete. The platform now has immutable publication, typed market data, deterministic Factor/Signal/Model calculation and independent diagnostics, complete Strategy Product identities and Target Paths, plus read-only bilingual research pages through the Strategies layer. Experiment accounting and multi-range evaluation follow in M7.
 
 The authoritative plan is [v0.2/正式开发方案.md](v0.2/正式开发方案.md). Detailed decisions and database rationale are stored in [v0.2/设计决策记录.md](v0.2/设计决策记录.md) and [v0.2/数据库设计.md](v0.2/数据库设计.md).
 
@@ -124,7 +124,7 @@ style-rotation api
 ```
 
 The application is then available at `http://127.0.0.1:8000/`, with OpenAPI docs at `/api/v2/docs`. The unauthenticated server refuses non-loopback bind addresses.
-The Data, Factors, and Signals pages read published overview endpoints. The Signals page selects an explicit weekly or monthly target and shows economic direction, IC/spread diagnostics, annual stability, activity, potential turnover, redundancy, quality, and lineage. The browser does not recompute research statistics or display strategy performance on these upstream pages.
+The Data, Factors, Signals, Models, and Strategies pages read published overview endpoints. Strategies separates frozen rules, complete product identities, and per-decision candidate target weights. The browser does not recompute research statistics or display not-yet-produced strategy performance.
 
 ## Development rules
 

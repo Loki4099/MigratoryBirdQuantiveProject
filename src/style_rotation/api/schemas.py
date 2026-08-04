@@ -505,3 +505,128 @@ class ModelOverviewResponse(ApiModel):
     pairs: list[ModelPairDiagnosticItem]
     ablations: list[ModelAblationItem]
     issues: list[ModelDiagnosticIssueItem]
+
+
+class StrategyVariantItem(ApiModel):
+    artifact_id: UUID
+    variant_key: str
+    template_key: str
+    target_k: int
+    research_tier: str
+    selection_order: str
+    trend_filter: str
+    auxiliary_signal_key: str | None
+    auxiliary_eligible_state: str | None
+    empty_slot_policy: str
+    tie_policy: str
+    slot_weight_rule: str
+    reserve_rule: str
+
+
+class StrategyScheduleItem(ApiModel):
+    artifact_id: UUID
+    schedule_key: str
+    frequency: Literal["weekly", "monthly"]
+    decision_timing: str
+    decision_data_policy: str
+
+
+class StrategyExecutionPolicyItem(ApiModel):
+    artifact_id: UUID
+    policy_key: str
+    delay_common_sessions: int
+    execution_price: str
+    missing_execution_policy: str
+
+
+class StrategyRuleSetItem(ApiModel):
+    definition_artifact_id: UUID
+    version_artifact_id: UUID
+    strategy_key: str
+    strategy_family: str
+    hypothesis: str
+    version_number: int
+    selection_contract: str
+    allocation_contract: str
+    reserve_contract: str
+    compatible_model_output_types: list[str]
+    candidate_input_policy: str
+    missing_input_policy: str
+    variants: list[StrategyVariantItem]
+    schedules: list[StrategyScheduleItem]
+    execution_policy: StrategyExecutionPolicyItem
+
+
+class StrategyProductItem(ApiModel):
+    artifact_id: UUID
+    product_key: str
+    version_number: int
+    model_specification_key: str
+    model_specification_type: str
+    model_output_type: str
+    variant_key: str
+    target_k: int
+    research_tier: str
+    universe_key: str
+    schedule_key: str
+    frequency: Literal["weekly", "monthly"]
+    execution_policy_key: str
+    execution_price: str
+    target_path_count: int
+
+
+class StrategyTargetPathItem(ApiModel):
+    artifact_id: UUID
+    product_artifact_id: UUID
+    product_key: str
+    model_dataset_artifact_id: UUID
+    model_specification_key: str
+    variant_key: str
+    target_k: int
+    frequency: Literal["weekly", "monthly"]
+    coverage_start: date
+    coverage_end: date
+    decision_count: int
+    position_count: int
+
+
+class StrategyOverviewResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    rules: StrategyRuleSetItem
+    products: list[StrategyProductItem]
+    target_paths: list[StrategyTargetPathItem]
+
+
+class StrategyTargetPositionItem(ApiModel):
+    asset_key: str
+    symbol: str
+    model_score: float
+    model_rank: float
+    selection_rank: float | None
+    trend_state: str | None
+    strategy_eligible: bool
+    selected: bool
+    target_weight: float
+    decision_reason: str
+
+
+class StrategyDecisionItem(ApiModel):
+    decision_date: date
+    target_k: int
+    actual_holding_count: int
+    boundary_tie_count: int
+    reserve_target_weight: float
+    positions: list[StrategyTargetPositionItem]
+
+
+class StrategyTargetPathResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    target_path: StrategyTargetPathItem
+    universe_artifact_id: UUID
+    data_bundle_artifact_id: UUID
+    eligibility_artifact_id: UUID
+    engine_artifact_id: UUID
+    auxiliary_signal_dataset_artifact_id: UUID | None
+    decisions: list[StrategyDecisionItem]

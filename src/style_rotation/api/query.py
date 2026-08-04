@@ -7,6 +7,32 @@ from typing import Any
 from sqlalchemy import Engine, bindparam, text
 from sqlalchemy.engine import RowMapping
 
+_STRATEGY_TARGET_SUMMARY_SQL = """
+    SELECT path.artifact_id, product.artifact_id AS product_artifact_id,
+           definition.product_key, model_dataset.artifact_id AS model_dataset_artifact_id,
+           specification.specification_key AS model_specification_key,
+           variant.variant_key, variant.target_k, schedule.frequency,
+           path.coverage_start, path.coverage_end, path.decision_count, path.position_count
+    FROM strategy.portfolio_target_path path
+    JOIN lineage.artifact artifact ON artifact.artifact_id = path.artifact_id
+                                 AND artifact.status = 'published'
+    JOIN strategy.model_strategy_target_path owner ON owner.portfolio_target_path_id =
+                                                      path.portfolio_target_path_id
+    JOIN strategy.strategy_product_version product ON product.strategy_product_version_id =
+                                                      owner.strategy_product_version_id
+    JOIN strategy.strategy_product_definition definition ON
+         definition.strategy_product_definition_id = product.strategy_product_definition_id
+    JOIN model.model_dataset model_dataset ON
+         model_dataset.model_dataset_id = owner.model_dataset_id
+    JOIN model.model_specification specification ON specification.model_specification_id =
+                                                    model_dataset.model_specification_id
+    JOIN strategy.strategy_variant variant ON
+         variant.strategy_variant_id = product.strategy_variant_id
+    JOIN ops.rebalance_schedule_version schedule ON schedule.rebalance_schedule_version_id =
+                                                    product.rebalance_schedule_version_id
+    WHERE true
+"""
+
 
 class ArtifactQueryService:
     """Read-only, domain-specific queries for the M1D API."""
@@ -1087,6 +1113,285 @@ class ArtifactQueryService:
         result["ablations"] = [dict(row) for row in ablations]
         result["issues"] = [dict(row) for row in issues]
         return result
+
+    def strategy_overview(self) -> dict[str, Any]:
+        """Return published Strategy rules, complete product identities, and target summaries."""
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            rule = (
+                connection.execute(
+                    text("""
+                SELECT definition.artifact_id AS definition_artifact_id,
+                       version.artifact_id AS version_artifact_id,
+                       definition.strategy_key, definition.strategy_family, definition.hypothesis,
+                       version.version_number, version.selection_contract,
+                       version.allocation_contract, version.reserve_contract,
+                       input.compatible_model_output_types, input.candidate_input_policy,
+                       input.missing_input_policy, version.strategy_definition_version_id
+                FROM strategy.strategy_definition_version version
+                JOIN lineage.artifact artifact ON artifact.artifact_id = version.artifact_id
+                                             AND artifact.status = 'published'
+                JOIN strategy.strategy_definition definition ON definition.strategy_definition_id =
+                                                                version.strategy_definition_id
+                JOIN strategy.strategy_input_contract input ON
+                     input.strategy_definition_version_id =
+                     version.strategy_definition_version_id
+                ORDER BY version.version_number DESC LIMIT 1
+            """)
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if rule is None:
+                raise LookupError("Published Strategy rule set not found")
+            definition_version_id = rule["strategy_definition_version_id"]
+            variants = (
+                connection.execute(
+                    text("""
+                SELECT variant.artifact_id, variant.variant_key, variant.template_key,
+                       variant.target_k, variant.research_tier, variant.selection_order,
+                       variant.trend_filter, signal_definition.signal_key AS auxiliary_signal_key,
+                       variant.auxiliary_eligible_state, variant.empty_slot_policy,
+                       variant.tie_policy, variant.slot_weight_rule, variant.reserve_rule
+                FROM strategy.strategy_variant variant
+                JOIN lineage.artifact artifact ON artifact.artifact_id = variant.artifact_id
+                                             AND artifact.status = 'published'
+                LEFT JOIN signal.signal_version signal_version ON signal_version.signal_version_id =
+                                                                 variant.auxiliary_signal_version_id
+                LEFT JOIN signal.signal_definition signal_definition ON
+                     signal_definition.signal_definition_id = signal_version.signal_definition_id
+                WHERE variant.strategy_definition_version_id = :version
+                ORDER BY variant.template_key, variant.target_k
+            """),
+                    {"version": definition_version_id},
+                )
+                .mappings()
+                .all()
+            )
+            schedules = (
+                connection.execute(
+                    text("""
+                SELECT version.artifact_id, definition.schedule_key, version.frequency,
+                       version.decision_timing, version.decision_data_policy
+                FROM ops.rebalance_schedule_version version
+                JOIN lineage.artifact artifact ON artifact.artifact_id = version.artifact_id
+                                             AND artifact.status = 'published'
+                JOIN ops.rebalance_schedule_definition definition ON
+                     definition.rebalance_schedule_definition_id =
+                     version.rebalance_schedule_definition_id
+                ORDER BY version.frequency
+            """)
+                )
+                .mappings()
+                .all()
+            )
+            execution = (
+                connection.execute(
+                    text("""
+                SELECT version.artifact_id, definition.policy_key,
+                       version.delay_common_sessions, version.execution_price,
+                       version.missing_execution_policy
+                FROM ops.execution_policy_version version
+                JOIN lineage.artifact artifact ON artifact.artifact_id = version.artifact_id
+                                             AND artifact.status = 'published'
+                JOIN ops.execution_policy_definition definition ON
+                     definition.execution_policy_definition_id =
+                     version.execution_policy_definition_id
+                ORDER BY version.version_number DESC LIMIT 1
+            """)
+                )
+                .mappings()
+                .one()
+            )
+            products = (
+                connection.execute(
+                    text("""
+                SELECT product.artifact_id, definition.product_key, product.version_number,
+                       specification.specification_key AS model_specification_key,
+                       specification.specification_type AS model_specification_type,
+                       specification.output_type AS model_output_type,
+                       variant.variant_key, variant.target_k, variant.research_tier,
+                       universe_definition.universe_key, schedule_definition.schedule_key,
+                       schedule.frequency, execution_definition.policy_key AS execution_policy_key,
+                       execution.execution_price,
+                       count(target.portfolio_target_path_id)
+                           FILTER (WHERE target_artifact.status = 'published')::integer
+                           AS target_path_count
+                FROM strategy.strategy_product_version product
+                JOIN lineage.artifact artifact ON artifact.artifact_id = product.artifact_id
+                                             AND artifact.status = 'published'
+                JOIN strategy.strategy_product_definition definition ON
+                     definition.strategy_product_definition_id =
+                     product.strategy_product_definition_id
+                JOIN model.model_specification specification ON
+                     specification.model_specification_id = product.model_specification_id
+                JOIN strategy.strategy_variant variant ON variant.strategy_variant_id =
+                                                          product.strategy_variant_id
+                JOIN catalog.universe_version universe ON universe.universe_version_id =
+                                                          product.universe_version_id
+                JOIN catalog.universe_definition universe_definition ON
+                     universe_definition.universe_definition_id = universe.universe_definition_id
+                JOIN ops.rebalance_schedule_version schedule ON
+                     schedule.rebalance_schedule_version_id =
+                     product.rebalance_schedule_version_id
+                JOIN ops.rebalance_schedule_definition schedule_definition ON
+                     schedule_definition.rebalance_schedule_definition_id =
+                     schedule.rebalance_schedule_definition_id
+                JOIN ops.execution_policy_version execution ON
+                     execution.execution_policy_version_id =
+                     product.execution_policy_version_id
+                JOIN ops.execution_policy_definition execution_definition ON
+                     execution_definition.execution_policy_definition_id =
+                     execution.execution_policy_definition_id
+                LEFT JOIN strategy.model_strategy_target_path target ON
+                     target.strategy_product_version_id = product.strategy_product_version_id
+                LEFT JOIN strategy.portfolio_target_path target_path ON
+                     target_path.portfolio_target_path_id = target.portfolio_target_path_id
+                LEFT JOIN lineage.artifact target_artifact ON
+                     target_artifact.artifact_id = target_path.artifact_id
+                GROUP BY product.artifact_id, definition.product_key, product.version_number,
+                         specification.specification_key, specification.specification_type,
+                         specification.output_type, variant.variant_key, variant.target_k,
+                         variant.research_tier, universe_definition.universe_key,
+                         schedule_definition.schedule_key, schedule.frequency,
+                         execution_definition.policy_key, execution.execution_price
+                ORDER BY schedule.frequency, variant.variant_key, specification.specification_key
+            """)
+                )
+                .mappings()
+                .all()
+            )
+            paths = (
+                connection.execute(
+                    text(
+                        _STRATEGY_TARGET_SUMMARY_SQL
+                        + " ORDER BY path.coverage_end DESC, definition.product_key"
+                    )
+                )
+                .mappings()
+                .all()
+            )
+        rule_payload = dict(rule)
+        rule_payload.pop("strategy_definition_version_id")
+        return {
+            "rules": {
+                **rule_payload,
+                "variants": [dict(row) for row in variants],
+                "schedules": [dict(row) for row in schedules],
+                "execution_policy": dict(execution),
+            },
+            "products": [dict(row) for row in products],
+            "target_paths": [dict(row) for row in paths],
+        }
+
+    def strategy_target_path(self, artifact_id: uuid.UUID) -> dict[str, Any]:
+        """Return every candidate decision behind one immutable target path."""
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            path = (
+                connection.execute(
+                    text(_STRATEGY_TARGET_SUMMARY_SQL + " AND path.artifact_id = :artifact"),
+                    {"artifact": artifact_id},
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if path is None:
+                raise LookupError(f"Published Strategy target path not found: {artifact_id}")
+            context = (
+                connection.execute(
+                    text("""
+                SELECT universe.artifact_id AS universe_artifact_id,
+                       bundle.artifact_id AS data_bundle_artifact_id,
+                       eligibility.artifact_id AS eligibility_artifact_id,
+                       engine.artifact_id AS engine_artifact_id,
+                       auxiliary.artifact_id AS auxiliary_signal_dataset_artifact_id
+                FROM strategy.portfolio_target_path path
+                JOIN catalog.universe_version universe ON
+                     universe.universe_version_id = path.universe_version_id
+                JOIN data.data_bundle_version bundle ON
+                     bundle.data_bundle_version_id = path.data_bundle_version_id
+                JOIN catalog.eligibility_snapshot eligibility ON
+                     eligibility.eligibility_snapshot_id = path.eligibility_snapshot_id
+                JOIN ops.engine_version engine ON engine.engine_version_id = path.engine_version_id
+                LEFT JOIN strategy.target_path_auxiliary_input auxiliary_input ON
+                     auxiliary_input.portfolio_target_path_id = path.portfolio_target_path_id
+                LEFT JOIN signal.signal_dataset auxiliary ON
+                     auxiliary.signal_dataset_id = auxiliary_input.signal_dataset_id
+                WHERE path.artifact_id = :artifact
+            """),
+                    {"artifact": artifact_id},
+                )
+                .mappings()
+                .one()
+            )
+            rows = (
+                connection.execute(
+                    text("""
+                SELECT decision.portfolio_decision_id, decision.decision_date, decision.target_k,
+                       decision.actual_holding_count, decision.boundary_tie_count,
+                       decision.reserve_target_weight, asset.asset_key, symbol.symbol,
+                       position.model_score, position.model_rank, position.selection_rank,
+                       position.trend_state, position.strategy_eligible, position.selected,
+                       position.target_weight, position.decision_reason
+                FROM strategy.portfolio_target_path path
+                JOIN strategy.portfolio_decision decision ON decision.portfolio_target_path_id =
+                                                             path.portfolio_target_path_id
+                JOIN strategy.target_asset_position position ON position.portfolio_decision_id =
+                                                                decision.portfolio_decision_id
+                JOIN catalog.asset asset ON asset.asset_id = position.asset_id
+                JOIN LATERAL (
+                    SELECT listing_symbol.symbol
+                    FROM catalog.asset_listing listing
+                    JOIN catalog.listing_symbol ON listing_symbol.asset_listing_id =
+                                                   listing.asset_listing_id
+                    WHERE listing.asset_id = asset.asset_id
+                      AND listing_symbol.symbol_type = 'ticker'
+                      AND (listing.valid_from IS NULL OR
+                           listing.valid_from <= decision.decision_date)
+                      AND (listing.valid_to IS NULL OR listing.valid_to > decision.decision_date)
+                      AND (listing_symbol.valid_from IS NULL OR
+                           listing_symbol.valid_from <= decision.decision_date)
+                      AND (listing_symbol.valid_to IS NULL OR
+                           listing_symbol.valid_to > decision.decision_date)
+                    ORDER BY listing_symbol.valid_from DESC NULLS LAST
+                    LIMIT 1
+                ) symbol ON true
+                WHERE path.artifact_id = :artifact
+                ORDER BY decision.decision_date DESC, position.model_rank, asset.asset_key
+            """),
+                    {"artifact": artifact_id},
+                )
+                .mappings()
+                .all()
+            )
+        decisions: dict[uuid.UUID, dict[str, Any]] = {}
+        position_fields = (
+            "asset_key",
+            "symbol",
+            "model_score",
+            "model_rank",
+            "selection_rank",
+            "trend_state",
+            "strategy_eligible",
+            "selected",
+            "target_weight",
+            "decision_reason",
+        )
+        for row in rows:
+            decision_id = row["portfolio_decision_id"]
+            decisions.setdefault(
+                decision_id,
+                {
+                    "decision_date": row["decision_date"],
+                    "target_k": row["target_k"],
+                    "actual_holding_count": row["actual_holding_count"],
+                    "boundary_tie_count": row["boundary_tie_count"],
+                    "reserve_target_weight": row["reserve_target_weight"],
+                    "positions": [],
+                },
+            )["positions"].append({key: row[key] for key in position_fields})
+        return {"target_path": dict(path), **dict(context), "decisions": list(decisions.values())}
 
     @staticmethod
     def _latest_bundle(connection: Any) -> dict[str, Any] | None:

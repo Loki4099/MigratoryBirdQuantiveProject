@@ -160,6 +160,59 @@ const modelOverview = {
   issues: [{ specification_key: "dimension_equal_weight__momentum_trend+volatility_risk",
     severity: "warning", issue_code: "short_evaluation_sample", message: "Short sample", details: {} }],
 };
+const strategyOverview = {
+  context: health.context, quality: health.quality,
+  rules: {
+    definition_artifact_id: "00000000-0000-0000-0000-000000000040",
+    version_artifact_id: "00000000-0000-0000-0000-000000000041",
+    strategy_key: "us_style_cross_sectional_rotation",
+    strategy_family: "cross_sectional_top_k_rotation",
+    hypothesis: "Higher-scored candidates may outperform.", version_number: 1,
+    selection_contract: "rank_model_scores", allocation_contract: "equal_slot_budget",
+    reserve_contract: "unused_slot_budget_to_synthetic_reserve",
+    compatible_model_output_types: ["continuous_score", "directional_score"],
+    candidate_input_policy: "complete_eligible_universe", missing_input_policy: "fail_formal_run",
+    variants: [{ artifact_id: "00000000-0000-0000-0000-000000000042",
+      variant_key: "top_k_equal_weight__k2", template_key: "top_k_equal_weight",
+      target_k: 2, research_tier: "canonical", selection_order: "rank_then_select",
+      trend_filter: "none", auxiliary_signal_key: null, auxiliary_eligible_state: null,
+      empty_slot_policy: "not_applicable", tie_policy: "proportional_share_of_remaining_slot_budget",
+      slot_weight_rule: "1 / K", reserve_rule: "unused_slot_budget_to_synthetic_reserve" }],
+    schedules: [{ artifact_id: "00000000-0000-0000-0000-000000000043",
+      schedule_key: "weekly_last_common_session_close", frequency: "weekly",
+      decision_timing: "last_common_session_close", decision_data_policy: "include_decision_close" }],
+    execution_policy: { artifact_id: "00000000-0000-0000-0000-000000000044",
+      policy_key: "next_common_session_open", delay_common_sessions: 1,
+      execution_price: "adjusted_open", missing_execution_policy: "fail_formal_run" },
+  },
+  products: [{ artifact_id: "00000000-0000-0000-0000-000000000045", product_key: "product-a",
+    version_number: 1, model_specification_key: "dimension_equal_weight__momentum_trend",
+    model_specification_type: "dimension_subset_equal_weight", model_output_type: "continuous_score",
+    variant_key: "top_k_equal_weight__k2", target_k: 2, research_tier: "canonical",
+    universe_key: "us_style_rotation_core", schedule_key: "weekly_last_common_session_close",
+    frequency: "weekly", execution_policy_key: "next_common_session_open",
+    execution_price: "adjusted_open", target_path_count: 1 }],
+  target_paths: [{ artifact_id: "00000000-0000-0000-0000-000000000046",
+    product_artifact_id: "00000000-0000-0000-0000-000000000045", product_key: "product-a",
+    model_dataset_artifact_id: "00000000-0000-0000-0000-000000000047",
+    model_specification_key: "dimension_equal_weight__momentum_trend",
+    variant_key: "top_k_equal_weight__k2", target_k: 2, frequency: "weekly",
+    coverage_start: "2026-01-02", coverage_end: "2026-01-09", decision_count: 2,
+    position_count: 8 }],
+};
+const strategyTarget = {
+  context: health.context, quality: health.quality, target_path: strategyOverview.target_paths[0],
+  universe_artifact_id: "00000000-0000-0000-0000-000000000048",
+  data_bundle_artifact_id: "00000000-0000-0000-0000-000000000049",
+  eligibility_artifact_id: "00000000-0000-0000-0000-000000000050",
+  engine_artifact_id: "00000000-0000-0000-0000-000000000051",
+  auxiliary_signal_dataset_artifact_id: null,
+  decisions: [{ decision_date: "2026-01-09", target_k: 2, actual_holding_count: 2,
+    boundary_tie_count: 0, reserve_target_weight: 0,
+    positions: [{ asset_key: "iwd", symbol: "IWD", model_score: 0.8, model_rank: 1,
+      selection_rank: 1, trend_state: null, strategy_eligible: true, selected: true,
+      target_weight: 0.5, decision_reason: "selected_by_rank" }] }],
+};
 
 function renderRoute(path: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -171,7 +224,7 @@ beforeEach(async () => {
   await i18n.changeLanguage("zh-CN");
   vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
     const url = String(input);
-    const payload = url.includes("models/overview") ? modelOverview : url.includes("signals/overview") ? signalOverview : url.includes("factors/overview") ? factorOverview : url.includes("data/overview") ? dataOverview : url.includes("health") ? health : url.includes("capabilities") ? capabilities : artifacts;
+    const payload = url.includes("strategies/targets") ? strategyTarget : url.includes("strategies/overview") ? strategyOverview : url.includes("models/overview") ? modelOverview : url.includes("signals/overview") ? signalOverview : url.includes("factors/overview") ? factorOverview : url.includes("data/overview") ? dataOverview : url.includes("health") ? health : url.includes("capabilities") ? capabilities : artifacts;
     return new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } });
   });
 });
@@ -180,7 +233,7 @@ test("renders real foundation data without inventing future research results", a
   renderRoute("/?lang=zh-CN");
   expect(await screen.findByText("从可追溯的研究对象开始")).toBeInTheDocument();
   expect(screen.getByText("20260802_02_v02_lineage")).toBeInTheDocument();
-  expect(screen.getByText("策略产品")).toBeInTheDocument();
+  expect(screen.getByText("策略实验")).toBeInTheDocument();
 });
 
 test("language switch keeps the route and translates fixed UI text", async () => {
@@ -233,4 +286,14 @@ test("model page displays composition, controlled ablation, and no strategy rank
   expect(screen.getByText("Controlled dimension ablation")).toBeInTheDocument();
   expect(screen.getByText("Model redundancy alerts")).toBeInTheDocument();
   expect(screen.queryByText(/Sharpe/i)).not.toBeInTheDocument();
+});
+
+test("strategy page separates rules, products, and target decisions without performance", async () => {
+  await i18n.changeLanguage("en");
+  renderRoute("/strategies?lang=en");
+  expect(await screen.findByRole("heading", { name: "Strategy rules and target weights" })).toBeInTheDocument();
+  expect(screen.getAllByText("top_k_equal_weight__k2").length).toBeGreaterThan(0);
+  expect(await screen.findByText("selected_by_rank")).toBeInTheDocument();
+  expect(screen.getByText("50%")).toBeInTheDocument();
+  expect(screen.queryByText(/Sharpe ratio/i)).not.toBeInTheDocument();
 });

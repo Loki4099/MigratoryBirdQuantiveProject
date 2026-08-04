@@ -36,6 +36,8 @@ from style_rotation.api.schemas import (
     QualitySummary,
     SignalDiagnosticItem,
     SignalOverviewResponse,
+    StrategyOverviewResponse,
+    StrategyTargetPathResponse,
 )
 from style_rotation.architecture import DOMAIN_BOUNDARIES
 from style_rotation.config.settings import get_settings
@@ -74,6 +76,8 @@ class ArtifactReader(Protocol):
     def factor_overview(self) -> dict[str, Any]: ...
     def signal_overview(self, frequency: str) -> dict[str, Any]: ...
     def model_overview(self, frequency: str) -> dict[str, Any]: ...
+    def strategy_overview(self) -> dict[str, Any]: ...
+    def strategy_target_path(self, artifact_id: uuid.UUID) -> dict[str, Any]: ...
 
 
 def _context() -> ApiContext:
@@ -159,7 +163,7 @@ def create_app(
 
     @app.get("/api/v2/capabilities", response_model=CapabilitiesResponse, tags=["system"])
     def capabilities() -> CapabilitiesResponse:
-        available = {"catalog", "data", "factor", "signal", "model", "lineage", "ops"}
+        available = {"catalog", "data", "factor", "signal", "model", "strategy", "lineage", "ops"}
         return CapabilitiesResponse(
             context=_context(),
             quality=QualitySummary(state="ok"),
@@ -182,12 +186,55 @@ def create_app(
                 "factor_overview",
                 "signal_overview",
                 "model_overview",
+                "strategy_overview",
+                "strategy_target_path",
                 "artifacts",
                 "lineage",
             ],
             interface_states=list(INTERFACE_STATES),
             languages=["zh-CN", "en"],
         )
+
+    @app.get(
+        "/api/v2/strategies/overview",
+        response_model=StrategyOverviewResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["strategy"],
+    )
+    def strategy_overview(
+        response: Response,
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> StrategyOverviewResponse | Response:
+        payload = StrategyOverviewResponse.model_validate(
+            {
+                "context": _context(),
+                "quality": QualitySummary(state="ok"),
+                **reader.strategy_overview(),
+            }
+        )
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
+
+    @app.get(
+        "/api/v2/strategies/targets/{artifact_id}",
+        response_model=StrategyTargetPathResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["strategy"],
+    )
+    def strategy_target_path(
+        artifact_id: uuid.UUID,
+        response: Response,
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> StrategyTargetPathResponse | Response:
+        payload = StrategyTargetPathResponse.model_validate(
+            {
+                "context": _context(),
+                "quality": QualitySummary(state="ok"),
+                **reader.strategy_target_path(artifact_id),
+            }
+        )
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
 
     @app.get(
         "/api/v2/artifacts",

@@ -281,6 +281,129 @@ class FakeArtifactReader:
             ],
         }
 
+    def strategy_overview(self) -> dict[str, Any]:
+        identifiers = [uuid.uuid4() for _ in range(10)]
+        return {
+            "rules": {
+                "definition_artifact_id": identifiers[0],
+                "version_artifact_id": identifiers[1],
+                "strategy_key": "us_style_cross_sectional_rotation",
+                "strategy_family": "cross_sectional_top_k_rotation",
+                "hypothesis": "Higher-scored candidates may outperform.",
+                "version_number": 1,
+                "selection_contract": "rank_model_scores",
+                "allocation_contract": "equal_slot_budget",
+                "reserve_contract": "unused_slot_budget_to_synthetic_reserve",
+                "compatible_model_output_types": ["continuous_score", "directional_score"],
+                "candidate_input_policy": "complete_eligible_universe",
+                "missing_input_policy": "fail_formal_run",
+                "variants": [
+                    {
+                        "artifact_id": identifiers[2],
+                        "variant_key": "top_k_equal_weight__k2",
+                        "template_key": "top_k_equal_weight",
+                        "target_k": 2,
+                        "research_tier": "canonical",
+                        "selection_order": "rank_then_select",
+                        "trend_filter": "none",
+                        "auxiliary_signal_key": None,
+                        "auxiliary_eligible_state": None,
+                        "empty_slot_policy": "not_applicable",
+                        "tie_policy": "proportional_share_of_remaining_slot_budget",
+                        "slot_weight_rule": "1 / K",
+                        "reserve_rule": "unused_slot_budget_to_synthetic_reserve",
+                    }
+                ],
+                "schedules": [
+                    {
+                        "artifact_id": identifiers[3],
+                        "schedule_key": "weekly_last_common_session_close",
+                        "frequency": "weekly",
+                        "decision_timing": "last_common_session_close",
+                        "decision_data_policy": "include_decision_close",
+                    }
+                ],
+                "execution_policy": {
+                    "artifact_id": identifiers[4],
+                    "policy_key": "next_common_session_open",
+                    "delay_common_sessions": 1,
+                    "execution_price": "adjusted_open",
+                    "missing_execution_policy": "fail_formal_run",
+                },
+            },
+            "products": [
+                {
+                    "artifact_id": identifiers[5],
+                    "product_key": "product-a",
+                    "version_number": 1,
+                    "model_specification_key": "dimension_equal_weight__momentum_trend",
+                    "model_specification_type": "dimension_subset_equal_weight",
+                    "model_output_type": "continuous_score",
+                    "variant_key": "top_k_equal_weight__k2",
+                    "target_k": 2,
+                    "research_tier": "canonical",
+                    "universe_key": "us_style_rotation_core",
+                    "schedule_key": "weekly_last_common_session_close",
+                    "frequency": "weekly",
+                    "execution_policy_key": "next_common_session_open",
+                    "execution_price": "adjusted_open",
+                    "target_path_count": 1,
+                }
+            ],
+            "target_paths": [
+                {
+                    "artifact_id": identifiers[6],
+                    "product_artifact_id": identifiers[5],
+                    "product_key": "product-a",
+                    "model_dataset_artifact_id": identifiers[7],
+                    "model_specification_key": "dimension_equal_weight__momentum_trend",
+                    "variant_key": "top_k_equal_weight__k2",
+                    "target_k": 2,
+                    "frequency": "weekly",
+                    "coverage_start": date(2026, 1, 2),
+                    "coverage_end": date(2026, 1, 9),
+                    "decision_count": 2,
+                    "position_count": 8,
+                }
+            ],
+        }
+
+    def strategy_target_path(self, artifact_id: uuid.UUID) -> dict[str, Any]:
+        overview = self.strategy_overview()
+        target = overview["target_paths"][0]
+        target["artifact_id"] = artifact_id
+        return {
+            "target_path": target,
+            "universe_artifact_id": uuid.uuid4(),
+            "data_bundle_artifact_id": uuid.uuid4(),
+            "eligibility_artifact_id": uuid.uuid4(),
+            "engine_artifact_id": uuid.uuid4(),
+            "auxiliary_signal_dataset_artifact_id": None,
+            "decisions": [
+                {
+                    "decision_date": date(2026, 1, 9),
+                    "target_k": 2,
+                    "actual_holding_count": 2,
+                    "boundary_tie_count": 0,
+                    "reserve_target_weight": 0,
+                    "positions": [
+                        {
+                            "asset_key": "iwd",
+                            "symbol": "IWD",
+                            "model_score": 0.8,
+                            "model_rank": 1,
+                            "selection_rank": 1,
+                            "trend_state": None,
+                            "strategy_eligible": True,
+                            "selected": True,
+                            "target_weight": 0.5,
+                            "decision_reason": "selected_by_rank",
+                        }
+                    ],
+                }
+            ],
+        }
+
 
 def _client() -> tuple[TestClient, FakeArtifactReader]:
     reader = FakeArtifactReader()
@@ -423,6 +546,26 @@ def test_model_overview_exposes_composition_diagnostics_and_controlled_ablation(
         if item["key"] == "model"
     )
     assert model_domain["availability"] == "available"
+
+
+def test_strategy_api_separates_rules_products_and_target_decisions() -> None:
+    client, _reader = _client()
+    overview = client.get("/api/v2/strategies/overview")
+    assert overview.status_code == 200
+    payload = overview.json()
+    assert payload["rules"]["variants"][0]["target_k"] == 2
+    assert payload["products"][0]["target_path_count"] == 1
+    assert "sharpe" not in overview.text.lower()
+    target_id = payload["target_paths"][0]["artifact_id"]
+    detail = client.get(f"/api/v2/strategies/targets/{target_id}")
+    assert detail.status_code == 200
+    assert detail.json()["decisions"][0]["positions"][0]["decision_reason"] == "selected_by_rank"
+    strategy_domain = next(
+        item
+        for item in client.get("/api/v2/capabilities").json()["domains"]
+        if item["key"] == "strategy"
+    )
+    assert strategy_domain["availability"] == "available"
 
 
 def test_committed_openapi_contract_matches_application() -> None:

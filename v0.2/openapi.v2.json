@@ -2666,6 +2666,649 @@
         "title": "SourceSnapshotItem",
         "type": "object"
       },
+      "StrategyDecisionItem": {
+        "additionalProperties": false,
+        "properties": {
+          "actual_holding_count": {
+            "title": "Actual Holding Count",
+            "type": "integer"
+          },
+          "boundary_tie_count": {
+            "title": "Boundary Tie Count",
+            "type": "integer"
+          },
+          "decision_date": {
+            "format": "date",
+            "title": "Decision Date",
+            "type": "string"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/StrategyTargetPositionItem"
+            },
+            "title": "Positions",
+            "type": "array"
+          },
+          "reserve_target_weight": {
+            "title": "Reserve Target Weight",
+            "type": "number"
+          },
+          "target_k": {
+            "title": "Target K",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "decision_date",
+          "target_k",
+          "actual_holding_count",
+          "boundary_tie_count",
+          "reserve_target_weight",
+          "positions"
+        ],
+        "title": "StrategyDecisionItem",
+        "type": "object"
+      },
+      "StrategyExecutionPolicyItem": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "format": "uuid",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "delay_common_sessions": {
+            "title": "Delay Common Sessions",
+            "type": "integer"
+          },
+          "execution_price": {
+            "title": "Execution Price",
+            "type": "string"
+          },
+          "missing_execution_policy": {
+            "title": "Missing Execution Policy",
+            "type": "string"
+          },
+          "policy_key": {
+            "title": "Policy Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "policy_key",
+          "delay_common_sessions",
+          "execution_price",
+          "missing_execution_policy"
+        ],
+        "title": "StrategyExecutionPolicyItem",
+        "type": "object"
+      },
+      "StrategyOverviewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/StrategyProductItem"
+            },
+            "title": "Products",
+            "type": "array"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/StrategyRuleSetItem"
+          },
+          "target_paths": {
+            "items": {
+              "$ref": "#/components/schemas/StrategyTargetPathItem"
+            },
+            "title": "Target Paths",
+            "type": "array"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "rules",
+          "products",
+          "target_paths"
+        ],
+        "title": "StrategyOverviewResponse",
+        "type": "object"
+      },
+      "StrategyProductItem": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "format": "uuid",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "execution_policy_key": {
+            "title": "Execution Policy Key",
+            "type": "string"
+          },
+          "execution_price": {
+            "title": "Execution Price",
+            "type": "string"
+          },
+          "frequency": {
+            "enum": [
+              "weekly",
+              "monthly"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "model_output_type": {
+            "title": "Model Output Type",
+            "type": "string"
+          },
+          "model_specification_key": {
+            "title": "Model Specification Key",
+            "type": "string"
+          },
+          "model_specification_type": {
+            "title": "Model Specification Type",
+            "type": "string"
+          },
+          "product_key": {
+            "title": "Product Key",
+            "type": "string"
+          },
+          "research_tier": {
+            "title": "Research Tier",
+            "type": "string"
+          },
+          "schedule_key": {
+            "title": "Schedule Key",
+            "type": "string"
+          },
+          "target_k": {
+            "title": "Target K",
+            "type": "integer"
+          },
+          "target_path_count": {
+            "title": "Target Path Count",
+            "type": "integer"
+          },
+          "universe_key": {
+            "title": "Universe Key",
+            "type": "string"
+          },
+          "variant_key": {
+            "title": "Variant Key",
+            "type": "string"
+          },
+          "version_number": {
+            "title": "Version Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "product_key",
+          "version_number",
+          "model_specification_key",
+          "model_specification_type",
+          "model_output_type",
+          "variant_key",
+          "target_k",
+          "research_tier",
+          "universe_key",
+          "schedule_key",
+          "frequency",
+          "execution_policy_key",
+          "execution_price",
+          "target_path_count"
+        ],
+        "title": "StrategyProductItem",
+        "type": "object"
+      },
+      "StrategyRuleSetItem": {
+        "additionalProperties": false,
+        "properties": {
+          "allocation_contract": {
+            "title": "Allocation Contract",
+            "type": "string"
+          },
+          "candidate_input_policy": {
+            "title": "Candidate Input Policy",
+            "type": "string"
+          },
+          "compatible_model_output_types": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Compatible Model Output Types",
+            "type": "array"
+          },
+          "definition_artifact_id": {
+            "format": "uuid",
+            "title": "Definition Artifact Id",
+            "type": "string"
+          },
+          "execution_policy": {
+            "$ref": "#/components/schemas/StrategyExecutionPolicyItem"
+          },
+          "hypothesis": {
+            "title": "Hypothesis",
+            "type": "string"
+          },
+          "missing_input_policy": {
+            "title": "Missing Input Policy",
+            "type": "string"
+          },
+          "reserve_contract": {
+            "title": "Reserve Contract",
+            "type": "string"
+          },
+          "schedules": {
+            "items": {
+              "$ref": "#/components/schemas/StrategyScheduleItem"
+            },
+            "title": "Schedules",
+            "type": "array"
+          },
+          "selection_contract": {
+            "title": "Selection Contract",
+            "type": "string"
+          },
+          "strategy_family": {
+            "title": "Strategy Family",
+            "type": "string"
+          },
+          "strategy_key": {
+            "title": "Strategy Key",
+            "type": "string"
+          },
+          "variants": {
+            "items": {
+              "$ref": "#/components/schemas/StrategyVariantItem"
+            },
+            "title": "Variants",
+            "type": "array"
+          },
+          "version_artifact_id": {
+            "format": "uuid",
+            "title": "Version Artifact Id",
+            "type": "string"
+          },
+          "version_number": {
+            "title": "Version Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "definition_artifact_id",
+          "version_artifact_id",
+          "strategy_key",
+          "strategy_family",
+          "hypothesis",
+          "version_number",
+          "selection_contract",
+          "allocation_contract",
+          "reserve_contract",
+          "compatible_model_output_types",
+          "candidate_input_policy",
+          "missing_input_policy",
+          "variants",
+          "schedules",
+          "execution_policy"
+        ],
+        "title": "StrategyRuleSetItem",
+        "type": "object"
+      },
+      "StrategyScheduleItem": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "format": "uuid",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "decision_data_policy": {
+            "title": "Decision Data Policy",
+            "type": "string"
+          },
+          "decision_timing": {
+            "title": "Decision Timing",
+            "type": "string"
+          },
+          "frequency": {
+            "enum": [
+              "weekly",
+              "monthly"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "schedule_key": {
+            "title": "Schedule Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "schedule_key",
+          "frequency",
+          "decision_timing",
+          "decision_data_policy"
+        ],
+        "title": "StrategyScheduleItem",
+        "type": "object"
+      },
+      "StrategyTargetPathItem": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "format": "uuid",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "coverage_end": {
+            "format": "date",
+            "title": "Coverage End",
+            "type": "string"
+          },
+          "coverage_start": {
+            "format": "date",
+            "title": "Coverage Start",
+            "type": "string"
+          },
+          "decision_count": {
+            "title": "Decision Count",
+            "type": "integer"
+          },
+          "frequency": {
+            "enum": [
+              "weekly",
+              "monthly"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "model_dataset_artifact_id": {
+            "format": "uuid",
+            "title": "Model Dataset Artifact Id",
+            "type": "string"
+          },
+          "model_specification_key": {
+            "title": "Model Specification Key",
+            "type": "string"
+          },
+          "position_count": {
+            "title": "Position Count",
+            "type": "integer"
+          },
+          "product_artifact_id": {
+            "format": "uuid",
+            "title": "Product Artifact Id",
+            "type": "string"
+          },
+          "product_key": {
+            "title": "Product Key",
+            "type": "string"
+          },
+          "target_k": {
+            "title": "Target K",
+            "type": "integer"
+          },
+          "variant_key": {
+            "title": "Variant Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "product_artifact_id",
+          "product_key",
+          "model_dataset_artifact_id",
+          "model_specification_key",
+          "variant_key",
+          "target_k",
+          "frequency",
+          "coverage_start",
+          "coverage_end",
+          "decision_count",
+          "position_count"
+        ],
+        "title": "StrategyTargetPathItem",
+        "type": "object"
+      },
+      "StrategyTargetPathResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "auxiliary_signal_dataset_artifact_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auxiliary Signal Dataset Artifact Id"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "data_bundle_artifact_id": {
+            "format": "uuid",
+            "title": "Data Bundle Artifact Id",
+            "type": "string"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/StrategyDecisionItem"
+            },
+            "title": "Decisions",
+            "type": "array"
+          },
+          "eligibility_artifact_id": {
+            "format": "uuid",
+            "title": "Eligibility Artifact Id",
+            "type": "string"
+          },
+          "engine_artifact_id": {
+            "format": "uuid",
+            "title": "Engine Artifact Id",
+            "type": "string"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "target_path": {
+            "$ref": "#/components/schemas/StrategyTargetPathItem"
+          },
+          "universe_artifact_id": {
+            "format": "uuid",
+            "title": "Universe Artifact Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "target_path",
+          "universe_artifact_id",
+          "data_bundle_artifact_id",
+          "eligibility_artifact_id",
+          "engine_artifact_id",
+          "auxiliary_signal_dataset_artifact_id",
+          "decisions"
+        ],
+        "title": "StrategyTargetPathResponse",
+        "type": "object"
+      },
+      "StrategyTargetPositionItem": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_key": {
+            "title": "Asset Key",
+            "type": "string"
+          },
+          "decision_reason": {
+            "title": "Decision Reason",
+            "type": "string"
+          },
+          "model_rank": {
+            "title": "Model Rank",
+            "type": "number"
+          },
+          "model_score": {
+            "title": "Model Score",
+            "type": "number"
+          },
+          "selected": {
+            "title": "Selected",
+            "type": "boolean"
+          },
+          "selection_rank": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selection Rank"
+          },
+          "strategy_eligible": {
+            "title": "Strategy Eligible",
+            "type": "boolean"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "target_weight": {
+            "title": "Target Weight",
+            "type": "number"
+          },
+          "trend_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trend State"
+          }
+        },
+        "required": [
+          "asset_key",
+          "symbol",
+          "model_score",
+          "model_rank",
+          "selection_rank",
+          "trend_state",
+          "strategy_eligible",
+          "selected",
+          "target_weight",
+          "decision_reason"
+        ],
+        "title": "StrategyTargetPositionItem",
+        "type": "object"
+      },
+      "StrategyVariantItem": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "format": "uuid",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "auxiliary_eligible_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auxiliary Eligible State"
+          },
+          "auxiliary_signal_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auxiliary Signal Key"
+          },
+          "empty_slot_policy": {
+            "title": "Empty Slot Policy",
+            "type": "string"
+          },
+          "research_tier": {
+            "title": "Research Tier",
+            "type": "string"
+          },
+          "reserve_rule": {
+            "title": "Reserve Rule",
+            "type": "string"
+          },
+          "selection_order": {
+            "title": "Selection Order",
+            "type": "string"
+          },
+          "slot_weight_rule": {
+            "title": "Slot Weight Rule",
+            "type": "string"
+          },
+          "target_k": {
+            "title": "Target K",
+            "type": "integer"
+          },
+          "template_key": {
+            "title": "Template Key",
+            "type": "string"
+          },
+          "tie_policy": {
+            "title": "Tie Policy",
+            "type": "string"
+          },
+          "trend_filter": {
+            "title": "Trend Filter",
+            "type": "string"
+          },
+          "variant_key": {
+            "title": "Variant Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "variant_key",
+          "template_key",
+          "target_k",
+          "research_tier",
+          "selection_order",
+          "trend_filter",
+          "auxiliary_signal_key",
+          "auxiliary_eligible_state",
+          "empty_slot_policy",
+          "tie_policy",
+          "slot_weight_rule",
+          "reserve_rule"
+        ],
+        "title": "StrategyVariantItem",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -3330,6 +3973,120 @@
         "summary": "Signal Overview",
         "tags": [
           "signal"
+        ]
+      }
+    },
+    "/api/v2/strategies/overview": {
+      "get": {
+        "operationId": "strategy_overview_api_v2_strategies_overview_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "if-none-match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-None-Match"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyOverviewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Not modified"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Strategy Overview",
+        "tags": [
+          "strategy"
+        ]
+      }
+    },
+    "/api/v2/strategies/targets/{artifact_id}": {
+      "get": {
+        "operationId": "strategy_target_path_api_v2_strategies_targets__artifact_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "if-none-match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-None-Match"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyTargetPathResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Not modified"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Strategy Target Path",
+        "tags": [
+          "strategy"
         ]
       }
     }
