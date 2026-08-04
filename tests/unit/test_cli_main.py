@@ -105,6 +105,35 @@ class UnifiedCliTests(unittest.TestCase):
         self.assertEqual(result, 0)
         command.assert_called_once_with("strategy.json")
 
+    def test_strategy_product_requires_complete_product_identity(self) -> None:
+        ids = [f"00000000-0000-0000-0000-00000000000{index}" for index in range(1, 4)]
+        with patch("style_rotation.cli.main._strategy_publish_product", return_value=0) as command:
+            result = main(
+                [
+                    "strategy",
+                    "publish-product",
+                    "--strategy-catalog-artifact-id",
+                    ids[0],
+                    "--model-catalog-artifact-id",
+                    ids[1],
+                    "--universe-artifact-id",
+                    ids[2],
+                    "--model-specification-key",
+                    "dimension_equal_weight__momentum_trend",
+                    "--strategy-variant-key",
+                    "top_k_equal_weight__k2",
+                    "--schedule-key",
+                    "weekly_last_common_session_close",
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with(
+            *ids,
+            "dimension_equal_weight__momentum_trend",
+            "top_k_equal_weight__k2",
+            "weekly_last_common_session_close",
+        )
+
     def test_model_engine_command_requires_explicit_commit(self) -> None:
         with patch("style_rotation.cli.main._model_bootstrap_engine", return_value=0) as command:
             result = main(

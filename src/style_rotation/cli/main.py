@@ -66,6 +66,7 @@ from style_rotation.signal.diagnostic_publication import SignalDiagnosticPublica
 from style_rotation.signal.engine import build_signal_engine_spec, publish_signal_engine
 from style_rotation.signal.publication import SignalDatasetPublicationService
 from style_rotation.signal.service import publish_signal_catalog
+from style_rotation.strategy.product_service import publish_strategy_product
 from style_rotation.strategy.service import publish_strategy_catalog
 
 
@@ -345,6 +346,27 @@ def _model_bootstrap(catalog_file: str) -> int:
 def _strategy_bootstrap(catalog_file: str) -> int:
     result = publish_strategy_catalog(
         create_postgres_engine(get_settings().database_url), Path(catalog_file)
+    )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _strategy_publish_product(
+    strategy_catalog_artifact_id: str,
+    model_catalog_artifact_id: str,
+    universe_artifact_id: str,
+    model_specification_key: str,
+    strategy_variant_key: str,
+    schedule_key: str,
+) -> int:
+    result = publish_strategy_product(
+        create_postgres_engine(get_settings().database_url),
+        uuid.UUID(strategy_catalog_artifact_id),
+        uuid.UUID(model_catalog_artifact_id),
+        uuid.UUID(universe_artifact_id),
+        model_specification_key,
+        strategy_variant_key,
+        schedule_key,
     )
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0
@@ -1094,6 +1116,25 @@ def build_parser() -> argparse.ArgumentParser:
     )
     strategy_bootstrap_parser.set_defaults(
         handler=lambda args: _strategy_bootstrap(args.catalog_file)
+    )
+    strategy_product_parser = strategy_subparsers.add_parser(
+        "publish-product", help="Publish one complete immutable Strategy Product identity"
+    )
+    strategy_product_parser.add_argument("--strategy-catalog-artifact-id", required=True)
+    strategy_product_parser.add_argument("--model-catalog-artifact-id", required=True)
+    strategy_product_parser.add_argument("--universe-artifact-id", required=True)
+    strategy_product_parser.add_argument("--model-specification-key", required=True)
+    strategy_product_parser.add_argument("--strategy-variant-key", required=True)
+    strategy_product_parser.add_argument("--schedule-key", required=True)
+    strategy_product_parser.set_defaults(
+        handler=lambda args: _strategy_publish_product(
+            args.strategy_catalog_artifact_id,
+            args.model_catalog_artifact_id,
+            args.universe_artifact_id,
+            args.model_specification_key,
+            args.strategy_variant_key,
+            args.schedule_key,
+        )
     )
 
     for command in PLANNED_COMMANDS:
