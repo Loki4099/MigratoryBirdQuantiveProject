@@ -49,6 +49,12 @@ from style_rotation.experiment.engine import (
     build_accounting_engine_spec,
     publish_accounting_engine,
 )
+from style_rotation.experiment.execution import ExperimentExecutionService
+from style_rotation.experiment.intervals import IntervalResolutionError
+from style_rotation.experiment.orchestration_engine import (
+    build_orchestration_engine_spec,
+    publish_orchestration_engine,
+)
 from style_rotation.experiment.performance_engine import (
     build_performance_engine_spec,
     publish_performance_engine,
@@ -994,6 +1000,90 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
         with pytest.raises(DBAPIError):
             connection.execute(
                 text("UPDATE experiment.experiment_suite_cell SET ordinal = 9")
+            )
+        connection.rollback()
+
+    orchestration_spec = build_orchestration_engine_spec(
+        "a" * 40,
+        PROJECT_ROOT / "requirements.lock",
+        "20260804_24_v02_exp_result",
+    )
+    orchestration_engine = publish_orchestration_engine(engine, orchestration_spec)
+    assert publish_orchestration_engine(engine, orchestration_spec).reused is True
+    execution_service = ExperimentExecutionService(engine)
+    accepted_full = execution_service.execute(
+        suite.specifications[0].artifact_id, orchestration_engine.artifact_id
+    )
+    accepted_excluded = execution_service.execute(
+        suite.specifications[1].artifact_id, orchestration_engine.artifact_id
+    )
+    accepted_full_reused = execution_service.execute(
+        suite.specifications[0].artifact_id, orchestration_engine.artifact_id
+    )
+    assert accepted_full.reused is False
+    assert accepted_full.availability_status == "eligible"
+    assert accepted_excluded.availability_status == "excluded"
+    assert accepted_excluded.quality_status == "not_applicable"
+    assert accepted_full_reused.reused is True
+    assert accepted_full_reused.result_artifact_id == accepted_full.result_artifact_id
+    assert accepted_full_reused.run_attempt_id == accepted_full.run_attempt_id
+    failure_suite = publish_experiment_suite(
+        engine,
+        suite_key="pre_path_asof_failure",
+        name="Pre-Path As-Of Failure",
+        description="Valid specification whose execution cannot resolve a NAV interval.",
+        cells=(
+            ExperimentCellRequest(
+                "spy_5bps_before_path",
+                target_path.artifact_id,
+                benchmark_catalog.benchmarks[0].version_artifact_id,
+                cost_catalog.scenarios[1].artifact_id,
+                metric_catalog.artifact_id,
+                accounting_engine.artifact_id,
+                benchmark_engine.artifact_id,
+                performance_engine.artifact_id,
+                "full_history",
+                generated.sessions[0].session_date,
+            ),
+        ),
+    )
+    with pytest.raises(IntervalResolutionError, match="precedes the continuous path"):
+        execution_service.execute(
+            failure_suite.specifications[0].artifact_id,
+            orchestration_engine.artifact_id,
+        )
+    with engine.connect() as connection:
+        execution_counts = connection.execute(
+            text(
+                "SELECT (SELECT count(*) FROM ops.run_attempt WHERE run_type = "
+                "'experiment_specification'), (SELECT count(*) FROM "
+                "experiment.result_publication), "
+                "(SELECT count(*) FROM ops.quality_check_result), "
+                "(SELECT count(*) FROM ops.run_error), "
+                "(SELECT count(*) FROM ops.run_event WHERE run_attempt_id IN "
+                "(SELECT run_attempt_id FROM ops.run_attempt WHERE run_type = "
+                "'experiment_specification'))"
+            )
+        ).one()
+        run_states = connection.execute(
+            text(
+                "SELECT status, count(*) FROM ops.run_attempt WHERE run_type = "
+                "'experiment_specification' GROUP BY status"
+            )
+        ).all()
+        warning_checks = connection.execute(
+            text(
+                "SELECT count(*) FROM ops.quality_check_result WHERE check_key = "
+                "'interval_availability' AND status = 'warning'"
+            )
+        ).scalar_one()
+    assert execution_counts == (3, 2, 6, 1, 25)
+    assert dict(run_states) == {"completed": 2, "failed": 1}
+    assert warning_checks == 1
+    with engine.connect() as connection:
+        with pytest.raises(DBAPIError):
+            connection.execute(
+                text("UPDATE experiment.result_publication SET quality_status = 'normal'")
             )
         connection.rollback()
 
