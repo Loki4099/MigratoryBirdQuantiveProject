@@ -26,6 +26,8 @@ from style_rotation.api.schemas import (
     DatasetPublicationItem,
     DependencySummary,
     DomainCapability,
+    ExperimentOverviewResponse,
+    ExperimentResultResponse,
     FactorDatasetDiagnosticItem,
     FactorOverviewResponse,
     HealthResponse,
@@ -78,6 +80,8 @@ class ArtifactReader(Protocol):
     def model_overview(self, frequency: str) -> dict[str, Any]: ...
     def strategy_overview(self) -> dict[str, Any]: ...
     def strategy_target_path(self, artifact_id: uuid.UUID) -> dict[str, Any]: ...
+    def experiment_overview(self) -> dict[str, Any]: ...
+    def experiment_result(self, artifact_id: uuid.UUID) -> dict[str, Any]: ...
 
 
 def _context() -> ApiContext:
@@ -163,7 +167,10 @@ def create_app(
 
     @app.get("/api/v2/capabilities", response_model=CapabilitiesResponse, tags=["system"])
     def capabilities() -> CapabilitiesResponse:
-        available = {"catalog", "data", "factor", "signal", "model", "strategy", "lineage", "ops"}
+        available = {
+            "catalog", "data", "factor", "signal", "model", "strategy", "experiment",
+            "lineage", "ops",
+        }
         return CapabilitiesResponse(
             context=_context(),
             quality=QualitySummary(state="ok"),
@@ -188,12 +195,59 @@ def create_app(
                 "model_overview",
                 "strategy_overview",
                 "strategy_target_path",
+                "experiment_overview",
+                "experiment_result",
                 "artifacts",
                 "lineage",
             ],
             interface_states=list(INTERFACE_STATES),
             languages=["zh-CN", "en"],
         )
+
+    @app.get(
+        "/api/v2/experiments/overview",
+        response_model=ExperimentOverviewResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["experiment"],
+    )
+    def experiment_overview(
+        response: Response,
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> ExperimentOverviewResponse | Response:
+        result = reader.experiment_overview()
+        codes: list[str] = []
+        if any(item["status"] == "failed" for item in result["specifications"]):
+            codes.append("experiment.failed_cells")
+        if any(
+            item["availability_status"] == "excluded"
+            for item in result["specifications"]
+        ):
+            codes.append("experiment.excluded_cells")
+        payload = ExperimentOverviewResponse.model_validate({
+            "context": _context(),
+            "quality": QualitySummary(state="warning" if codes else "ok", codes=codes),
+            **result,
+        })
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
+
+    @app.get(
+        "/api/v2/experiments/results/{artifact_id}",
+        response_model=ExperimentResultResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["experiment"],
+    )
+    def experiment_result(
+        artifact_id: uuid.UUID,
+        response: Response,
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> ExperimentResultResponse | Response:
+        payload = ExperimentResultResponse.model_validate({
+            "context": _context(), "quality": QualitySummary(state="ok"),
+            **reader.experiment_result(artifact_id),
+        })
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
 
     @app.get(
         "/api/v2/strategies/overview",

@@ -9,6 +9,7 @@ import { ArtifactsPage } from "./pages/ArtifactsPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DataPage } from "./pages/DataPage";
 import { FactorsPage } from "./pages/FactorsPage";
+import { ExperimentsPage } from "./pages/ExperimentsPage";
 import { PlannedPage } from "./pages/PlannedPage";
 import { SignalsPage } from "./pages/SignalsPage";
 import { ModelsPage } from "./pages/ModelsPage";
@@ -29,7 +30,7 @@ export function AppRoutes() {
         <Route path="signals" element={<SignalsPage />} />
         <Route path="models" element={<ModelsPage />} />
         <Route path="strategies" element={<StrategiesPage />} />
-        <Route path="experiments" element={<PlannedPage titleKey="nav.experiments" milestone="M7" />} />
+        <Route path="experiments" element={<ExperimentsPage />} />
         <Route path="compare" element={<PlannedPage titleKey="nav.compare" milestone="M8" />} />
         <Route path="artifacts" element={<ArtifactsPage />} />
         <Route path="artifacts/:artifactId" element={<ArtifactDetailPage />} />

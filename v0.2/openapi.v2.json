@@ -1089,6 +1089,597 @@
         "title": "EligibilitySnapshotItem",
         "type": "object"
       },
+      "ExperimentArtifactLinkItem": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "format": "uuid",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "artifact_key": {
+            "title": "Artifact Key",
+            "type": "string"
+          },
+          "artifact_type": {
+            "title": "Artifact Type",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "role",
+          "artifact_type",
+          "artifact_key"
+        ],
+        "title": "ExperimentArtifactLinkItem",
+        "type": "object"
+      },
+      "ExperimentMetricItem": {
+        "additionalProperties": false,
+        "properties": {
+          "metric_key": {
+            "title": "Metric Key",
+            "type": "string"
+          },
+          "metric_scope": {
+            "enum": [
+              "absolute",
+              "relative"
+            ],
+            "title": "Metric Scope",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "observation_count": {
+            "title": "Observation Count",
+            "type": "integer"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Code"
+          },
+          "series_role": {
+            "enum": [
+              "strategy",
+              "benchmark",
+              "relative"
+            ],
+            "title": "Series Role",
+            "type": "string"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "value_status": {
+            "title": "Value Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "series_role",
+          "metric_scope",
+          "metric_key",
+          "name",
+          "unit",
+          "value",
+          "value_status",
+          "reason_code",
+          "observation_count"
+        ],
+        "title": "ExperimentMetricItem",
+        "type": "object"
+      },
+      "ExperimentOverviewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "specifications": {
+            "items": {
+              "$ref": "#/components/schemas/ExperimentSpecificationItem"
+            },
+            "title": "Specifications",
+            "type": "array"
+          },
+          "suites": {
+            "items": {
+              "$ref": "#/components/schemas/ExperimentSuiteItem"
+            },
+            "title": "Suites",
+            "type": "array"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "suites",
+          "specifications"
+        ],
+        "title": "ExperimentOverviewResponse",
+        "type": "object"
+      },
+      "ExperimentQualityCheckItem": {
+        "additionalProperties": false,
+        "properties": {
+          "check_key": {
+            "title": "Check Key",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "scope_key": {
+            "title": "Scope Key",
+            "type": "string"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "check_key",
+          "scope_key",
+          "status",
+          "severity",
+          "message"
+        ],
+        "title": "ExperimentQualityCheckItem",
+        "type": "object"
+      },
+      "ExperimentResultResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "artifacts": {
+            "items": {
+              "$ref": "#/components/schemas/ExperimentArtifactLinkItem"
+            },
+            "title": "Artifacts",
+            "type": "array"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/ExperimentRunEventItem"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "interval_result_artifact_id": {
+            "format": "uuid",
+            "title": "Interval Result Artifact Id",
+            "type": "string"
+          },
+          "metric_value_count": {
+            "title": "Metric Value Count",
+            "type": "integer"
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/ExperimentMetricItem"
+            },
+            "title": "Metrics",
+            "type": "array"
+          },
+          "normalization_nav_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Normalization Nav Date"
+          },
+          "observation_count": {
+            "title": "Observation Count",
+            "type": "integer"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "quality_checks": {
+            "items": {
+              "$ref": "#/components/schemas/ExperimentQualityCheckItem"
+            },
+            "title": "Quality Checks",
+            "type": "array"
+          },
+          "requested_end": {
+            "format": "date",
+            "title": "Requested End",
+            "type": "string"
+          },
+          "requested_start": {
+            "format": "date",
+            "title": "Requested Start",
+            "type": "string"
+          },
+          "resolved_end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved End"
+          },
+          "resolved_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved Start"
+          },
+          "result_artifact_id": {
+            "format": "uuid",
+            "title": "Result Artifact Id",
+            "type": "string"
+          },
+          "run_attempt_id": {
+            "format": "uuid",
+            "title": "Run Attempt Id",
+            "type": "string"
+          },
+          "run_status": {
+            "title": "Run Status",
+            "type": "string"
+          },
+          "specification": {
+            "$ref": "#/components/schemas/ExperimentSpecificationItem"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "result_artifact_id",
+          "specification",
+          "interval_result_artifact_id",
+          "requested_start",
+          "requested_end",
+          "resolved_start",
+          "resolved_end",
+          "normalization_nav_date",
+          "observation_count",
+          "metric_value_count",
+          "run_attempt_id",
+          "run_status",
+          "started_at",
+          "completed_at",
+          "metrics",
+          "events",
+          "quality_checks",
+          "artifacts"
+        ],
+        "title": "ExperimentResultResponse",
+        "type": "object"
+      },
+      "ExperimentRunEventItem": {
+        "additionalProperties": false,
+        "properties": {
+          "event_type": {
+            "title": "Event Type",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "sequence_number": {
+            "title": "Sequence Number",
+            "type": "integer"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sequence_number",
+          "event_type",
+          "severity",
+          "message",
+          "occurred_at"
+        ],
+        "title": "ExperimentRunEventItem",
+        "type": "object"
+      },
+      "ExperimentSpecificationItem": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "format": "uuid",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "as_of_date": {
+            "format": "date",
+            "title": "As Of Date",
+            "type": "string"
+          },
+          "attempt_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attempt Number"
+          },
+          "availability_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Availability Status"
+          },
+          "benchmark_category": {
+            "title": "Benchmark Category",
+            "type": "string"
+          },
+          "benchmark_key": {
+            "title": "Benchmark Key",
+            "type": "string"
+          },
+          "cell_key": {
+            "title": "Cell Key",
+            "type": "string"
+          },
+          "core_metrics": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Core Metrics",
+            "type": "object"
+          },
+          "cost_bps_per_side": {
+            "title": "Cost Bps Per Side",
+            "type": "number"
+          },
+          "error_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Summary"
+          },
+          "frequency": {
+            "enum": [
+              "weekly",
+              "monthly"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "initialization_policy": {
+            "title": "Initialization Policy",
+            "type": "string"
+          },
+          "model_specification_key": {
+            "title": "Model Specification Key",
+            "type": "string"
+          },
+          "ordinal": {
+            "title": "Ordinal",
+            "type": "integer"
+          },
+          "product_key": {
+            "title": "Product Key",
+            "type": "string"
+          },
+          "quality_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quality Status"
+          },
+          "result_artifact_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Artifact Id"
+          },
+          "simulation_end": {
+            "format": "date",
+            "title": "Simulation End",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "accepted",
+              "failed",
+              "running",
+              "pending"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "suite_artifact_id": {
+            "format": "uuid",
+            "title": "Suite Artifact Id",
+            "type": "string"
+          },
+          "template_key": {
+            "title": "Template Key",
+            "type": "string"
+          },
+          "variant_key": {
+            "title": "Variant Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "result_artifact_id",
+          "suite_artifact_id",
+          "cell_key",
+          "ordinal",
+          "product_key",
+          "model_specification_key",
+          "variant_key",
+          "frequency",
+          "benchmark_key",
+          "benchmark_category",
+          "cost_bps_per_side",
+          "template_key",
+          "initialization_policy",
+          "as_of_date",
+          "simulation_end",
+          "status",
+          "availability_status",
+          "quality_status",
+          "attempt_number",
+          "error_summary",
+          "core_metrics"
+        ],
+        "title": "ExperimentSpecificationItem",
+        "type": "object"
+      },
+      "ExperimentSuiteItem": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "format": "uuid",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "specification_count": {
+            "title": "Specification Count",
+            "type": "integer"
+          },
+          "suite_key": {
+            "title": "Suite Key",
+            "type": "string"
+          },
+          "version_number": {
+            "title": "Version Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "suite_key",
+          "version_number",
+          "name",
+          "description",
+          "specification_count"
+        ],
+        "title": "ExperimentSuiteItem",
+        "type": "object"
+      },
       "FactorCorrelationItem": {
         "additionalProperties": false,
         "properties": {
@@ -3768,6 +4359,120 @@
         "summary": "Data Overview",
         "tags": [
           "data"
+        ]
+      }
+    },
+    "/api/v2/experiments/overview": {
+      "get": {
+        "operationId": "experiment_overview_api_v2_experiments_overview_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "if-none-match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-None-Match"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentOverviewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Not modified"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Experiment Overview",
+        "tags": [
+          "experiment"
+        ]
+      }
+    },
+    "/api/v2/experiments/results/{artifact_id}": {
+      "get": {
+        "operationId": "experiment_result_api_v2_experiments_results__artifact_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "if-none-match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-None-Match"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentResultResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Not modified"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Experiment Result",
+        "tags": [
+          "experiment"
         ]
       }
     },

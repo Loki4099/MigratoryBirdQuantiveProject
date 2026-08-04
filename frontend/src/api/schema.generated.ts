@@ -123,6 +123,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/experiments/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Experiment Overview */
+        get: operations["experiment_overview_api_v2_experiments_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/experiments/results/{artifact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Experiment Result */
+        get: operations["experiment_result_api_v2_experiments_results__artifact_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/factors/overview": {
         parameters: {
             query?: never;
@@ -643,6 +677,225 @@ export interface components {
             snapshot_key: string;
             /** Warmup Observations */
             warmup_observations: number;
+        };
+        /** ExperimentArtifactLinkItem */
+        ExperimentArtifactLinkItem: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /** Artifact Key */
+            artifact_key: string;
+            /** Artifact Type */
+            artifact_type: string;
+            /** Role */
+            role: string;
+        };
+        /** ExperimentMetricItem */
+        ExperimentMetricItem: {
+            /** Metric Key */
+            metric_key: string;
+            /**
+             * Metric Scope
+             * @enum {string}
+             */
+            metric_scope: "absolute" | "relative";
+            /** Name */
+            name: string;
+            /** Observation Count */
+            observation_count: number;
+            /** Reason Code */
+            reason_code: string | null;
+            /**
+             * Series Role
+             * @enum {string}
+             */
+            series_role: "strategy" | "benchmark" | "relative";
+            /** Unit */
+            unit: string;
+            /** Value */
+            value: number | null;
+            /** Value Status */
+            value_status: string;
+        };
+        /** ExperimentOverviewResponse */
+        ExperimentOverviewResponse: {
+            context: components["schemas"]["ApiContext"];
+            quality: components["schemas"]["QualitySummary"];
+            /** Specifications */
+            specifications: components["schemas"]["ExperimentSpecificationItem"][];
+            /** Suites */
+            suites: components["schemas"]["ExperimentSuiteItem"][];
+        };
+        /** ExperimentQualityCheckItem */
+        ExperimentQualityCheckItem: {
+            /** Check Key */
+            check_key: string;
+            /** Message */
+            message: string;
+            /** Scope Key */
+            scope_key: string;
+            /** Severity */
+            severity: string;
+            /** Status */
+            status: string;
+        };
+        /** ExperimentResultResponse */
+        ExperimentResultResponse: {
+            /** Artifacts */
+            artifacts: components["schemas"]["ExperimentArtifactLinkItem"][];
+            /** Completed At */
+            completed_at: string | null;
+            context: components["schemas"]["ApiContext"];
+            /** Events */
+            events: components["schemas"]["ExperimentRunEventItem"][];
+            /**
+             * Interval Result Artifact Id
+             * Format: uuid
+             */
+            interval_result_artifact_id: string;
+            /** Metric Value Count */
+            metric_value_count: number;
+            /** Metrics */
+            metrics: components["schemas"]["ExperimentMetricItem"][];
+            /** Normalization Nav Date */
+            normalization_nav_date: string | null;
+            /** Observation Count */
+            observation_count: number;
+            quality: components["schemas"]["QualitySummary"];
+            /** Quality Checks */
+            quality_checks: components["schemas"]["ExperimentQualityCheckItem"][];
+            /**
+             * Requested End
+             * Format: date
+             */
+            requested_end: string;
+            /**
+             * Requested Start
+             * Format: date
+             */
+            requested_start: string;
+            /** Resolved End */
+            resolved_end: string | null;
+            /** Resolved Start */
+            resolved_start: string | null;
+            /**
+             * Result Artifact Id
+             * Format: uuid
+             */
+            result_artifact_id: string;
+            /**
+             * Run Attempt Id
+             * Format: uuid
+             */
+            run_attempt_id: string;
+            /** Run Status */
+            run_status: string;
+            specification: components["schemas"]["ExperimentSpecificationItem"];
+            /** Started At */
+            started_at: string | null;
+        };
+        /** ExperimentRunEventItem */
+        ExperimentRunEventItem: {
+            /** Event Type */
+            event_type: string;
+            /** Message */
+            message: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Sequence Number */
+            sequence_number: number;
+            /** Severity */
+            severity: string;
+        };
+        /** ExperimentSpecificationItem */
+        ExperimentSpecificationItem: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /**
+             * As Of Date
+             * Format: date
+             */
+            as_of_date: string;
+            /** Attempt Number */
+            attempt_number: number | null;
+            /** Availability Status */
+            availability_status: string | null;
+            /** Benchmark Category */
+            benchmark_category: string;
+            /** Benchmark Key */
+            benchmark_key: string;
+            /** Cell Key */
+            cell_key: string;
+            /** Core Metrics */
+            core_metrics: {
+                [key: string]: number | null;
+            };
+            /** Cost Bps Per Side */
+            cost_bps_per_side: number;
+            /** Error Summary */
+            error_summary: string | null;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /** Initialization Policy */
+            initialization_policy: string;
+            /** Model Specification Key */
+            model_specification_key: string;
+            /** Ordinal */
+            ordinal: number;
+            /** Product Key */
+            product_key: string;
+            /** Quality Status */
+            quality_status: string | null;
+            /** Result Artifact Id */
+            result_artifact_id: string | null;
+            /**
+             * Simulation End
+             * Format: date
+             */
+            simulation_end: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "accepted" | "failed" | "running" | "pending";
+            /**
+             * Suite Artifact Id
+             * Format: uuid
+             */
+            suite_artifact_id: string;
+            /** Template Key */
+            template_key: string;
+            /** Variant Key */
+            variant_key: string;
+        };
+        /** ExperimentSuiteItem */
+        ExperimentSuiteItem: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /** Description */
+            description: string;
+            /** Name */
+            name: string;
+            /** Specification Count */
+            specification_count: number;
+            /** Suite Key */
+            suite_key: string;
+            /** Version Number */
+            version_number: number;
         };
         /** FactorCorrelationItem */
         FactorCorrelationItem: {
@@ -1829,6 +2082,84 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DataOverviewResponse"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    experiment_overview_api_v2_experiments_overview_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "if-none-match"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentOverviewResponse"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    experiment_result_api_v2_experiments_results__artifact_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "if-none-match"?: string | null;
+            };
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentResultResponse"];
                 };
             };
             /** @description Not modified */

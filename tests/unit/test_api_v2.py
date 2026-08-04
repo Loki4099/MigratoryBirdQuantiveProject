@@ -404,6 +404,60 @@ class FakeArtifactReader:
             ],
         }
 
+    def experiment_overview(self) -> dict[str, Any]:
+        suite_id, specification_id, result_id = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
+        return {
+            "suites": [{
+                "artifact_id": suite_id, "suite_key": "formal-v02", "version_number": 1,
+                "name": "Formal v0.2 experiments", "description": "Comparable cells",
+                "specification_count": 1,
+            }],
+            "specifications": [{
+                "artifact_id": specification_id, "result_artifact_id": result_id,
+                "suite_artifact_id": suite_id, "cell_key": "weekly-k2-5bps-full",
+                "ordinal": 0, "product_key": "product-a",
+                "model_specification_key": "dimension_equal_weight__momentum_trend",
+                "variant_key": "top_k_equal_weight__k2", "frequency": "weekly",
+                "benchmark_key": "spy_buy_and_hold", "benchmark_category": "product_primary",
+                "cost_bps_per_side": 5, "template_key": "full_history",
+                "initialization_policy": "carry_in", "as_of_date": date(2026, 1, 9),
+                "simulation_end": date(2026, 1, 9), "status": "accepted",
+                "availability_status": "eligible", "quality_status": "normal",
+                "attempt_number": 1, "error_summary": None,
+                "core_metrics": {"strategy.cagr": 0.12, "benchmark.cagr": 0.09,
+                                 "strategy.sharpe_ratio": 1.1,
+                                 "strategy.maximum_drawdown": -0.08},
+            }],
+        }
+
+    def experiment_result(self, artifact_id: uuid.UUID) -> dict[str, Any]:
+        specification = self.experiment_overview()["specifications"][0]
+        specification["result_artifact_id"] = artifact_id
+        run_id = uuid.uuid4()
+        return {
+            "result_artifact_id": artifact_id, "specification": specification,
+            "interval_result_artifact_id": uuid.uuid4(),
+            "requested_start": date(2025, 1, 2), "requested_end": date(2026, 1, 9),
+            "resolved_start": date(2025, 1, 2), "resolved_end": date(2026, 1, 9),
+            "normalization_nav_date": date(2025, 1, 2), "observation_count": 252,
+            "metric_value_count": 36, "run_attempt_id": run_id, "run_status": "completed",
+            "started_at": datetime(2026, 1, 10, tzinfo=UTC),
+            "completed_at": datetime(2026, 1, 10, tzinfo=UTC),
+            "metrics": [{"series_role": "strategy", "metric_scope": "absolute",
+                         "metric_key": "cagr", "name": "CAGR", "unit": "annual_ratio",
+                         "value": 0.12, "value_status": "defined", "reason_code": None,
+                         "observation_count": 252}],
+            "events": [{"sequence_number": 1, "event_type": "run_started",
+                        "severity": "info", "message": "Started",
+                        "occurred_at": datetime(2026, 1, 10, tzinfo=UTC)}],
+            "quality_checks": [{"check_key": "outputs_published", "scope_key": "global",
+                                "status": "passed", "severity": "info",
+                                "message": "All outputs published"}],
+            "artifacts": [{"artifact_id": artifact_id, "role": "output",
+                           "artifact_type": "experiment_result",
+                           "artifact_key": "result-a"}],
+        }
+
 
 def _client() -> tuple[TestClient, FakeArtifactReader]:
     reader = FakeArtifactReader()
@@ -566,6 +620,25 @@ def test_strategy_api_separates_rules_products_and_target_decisions() -> None:
         if item["key"] == "strategy"
     )
     assert strategy_domain["availability"] == "available"
+
+
+def test_experiment_api_exposes_performance_only_at_strategy_aggregation_layer() -> None:
+    client, _reader = _client()
+    overview = client.get("/api/v2/experiments/overview")
+    assert overview.status_code == 200
+    payload = overview.json()
+    assert payload["specifications"][0]["status"] == "accepted"
+    assert payload["specifications"][0]["core_metrics"]["strategy.cagr"] == 0.12
+    result_id = payload["specifications"][0]["result_artifact_id"]
+    detail = client.get(f"/api/v2/experiments/results/{result_id}")
+    assert detail.status_code == 200
+    assert detail.json()["metrics"][0]["metric_key"] == "cagr"
+    assert detail.json()["quality_checks"][0]["status"] == "passed"
+    experiment_domain = next(
+        item for item in client.get("/api/v2/capabilities").json()["domains"]
+        if item["key"] == "experiment"
+    )
+    assert experiment_domain["availability"] == "available"
 
 
 def test_committed_openapi_contract_matches_application() -> None:

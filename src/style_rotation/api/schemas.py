@@ -630,3 +630,102 @@ class StrategyTargetPathResponse(ApiModel):
     engine_artifact_id: UUID
     auxiliary_signal_dataset_artifact_id: UUID | None
     decisions: list[StrategyDecisionItem]
+
+
+class ExperimentSuiteItem(ApiModel):
+    artifact_id: UUID
+    suite_key: str
+    version_number: int
+    name: str
+    description: str
+    specification_count: int
+
+
+class ExperimentSpecificationItem(ApiModel):
+    artifact_id: UUID
+    result_artifact_id: UUID | None
+    suite_artifact_id: UUID
+    cell_key: str
+    ordinal: int
+    product_key: str
+    model_specification_key: str
+    variant_key: str
+    frequency: Literal["weekly", "monthly"]
+    benchmark_key: str
+    benchmark_category: str
+    cost_bps_per_side: float
+    template_key: str
+    initialization_policy: str
+    as_of_date: date
+    simulation_end: date
+    status: Literal["accepted", "failed", "running", "pending"]
+    availability_status: str | None
+    quality_status: str | None
+    attempt_number: int | None
+    error_summary: str | None
+    core_metrics: dict[str, float | None]
+
+
+class ExperimentOverviewResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    suites: list[ExperimentSuiteItem]
+    specifications: list[ExperimentSpecificationItem]
+
+
+class ExperimentMetricItem(ApiModel):
+    series_role: Literal["strategy", "benchmark", "relative"]
+    metric_scope: Literal["absolute", "relative"]
+    metric_key: str
+    name: str
+    unit: str
+    value: float | None
+    value_status: str
+    reason_code: str | None
+    observation_count: int
+
+
+class ExperimentRunEventItem(ApiModel):
+    sequence_number: int
+    event_type: str
+    severity: str
+    message: str
+    occurred_at: datetime
+
+
+class ExperimentQualityCheckItem(ApiModel):
+    check_key: str
+    scope_key: str
+    status: str
+    severity: str
+    message: str
+
+
+class ExperimentArtifactLinkItem(ApiModel):
+    artifact_id: UUID
+    role: str
+    artifact_type: str
+    artifact_key: str
+
+
+class ExperimentResultResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    result_artifact_id: UUID
+    specification: ExperimentSpecificationItem
+    interval_result_artifact_id: UUID
+    requested_start: date
+    requested_end: date
+    resolved_start: date | None
+    resolved_end: date | None
+    normalization_nav_date: date | None
+    observation_count: int
+    metric_value_count: int
+    run_attempt_id: UUID
+    run_status: str
+    started_at: datetime | None
+    completed_at: datetime | None
+    metrics: list[ExperimentMetricItem]
+    events: list[ExperimentRunEventItem]
+    quality_checks: list[ExperimentQualityCheckItem]
+    artifacts: list[ExperimentArtifactLinkItem]

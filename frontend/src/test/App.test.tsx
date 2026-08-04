@@ -213,6 +213,35 @@ const strategyTarget = {
       selection_rank: 1, trend_state: null, strategy_eligible: true, selected: true,
       target_weight: 0.5, decision_reason: "selected_by_rank" }] }],
 };
+const experimentOverview = {
+  context: health.context, quality: health.quality,
+  suites: [{ artifact_id: "00000000-0000-0000-0000-000000000060", suite_key: "formal-v02",
+    version_number: 1, name: "Formal v0.2", description: "Comparable cells", specification_count: 1 }],
+  specifications: [{ artifact_id: "00000000-0000-0000-0000-000000000061",
+    result_artifact_id: "00000000-0000-0000-0000-000000000062",
+    suite_artifact_id: "00000000-0000-0000-0000-000000000060", cell_key: "weekly-full-5bps",
+    ordinal: 0, product_key: "product-a", model_specification_key: "dimension_equal_weight__momentum_trend",
+    variant_key: "top_k_equal_weight__k2", frequency: "weekly", benchmark_key: "spy_buy_and_hold",
+    benchmark_category: "product_primary", cost_bps_per_side: 5, template_key: "full_history",
+    initialization_policy: "carry_in", as_of_date: "2026-01-09", simulation_end: "2026-01-09",
+    status: "accepted", availability_status: "eligible", quality_status: "normal", attempt_number: 1,
+    error_summary: null, core_metrics: { "strategy.cagr": 0.12, "benchmark.cagr": 0.09,
+      "strategy.sharpe_ratio": 1.1, "strategy.maximum_drawdown": -0.08 } }],
+};
+const experimentResult = {
+  context: health.context, quality: health.quality, result_artifact_id: "00000000-0000-0000-0000-000000000062",
+  specification: experimentOverview.specifications[0], interval_result_artifact_id: "00000000-0000-0000-0000-000000000063",
+  requested_start: "2025-01-02", requested_end: "2026-01-09", resolved_start: "2025-01-02",
+  resolved_end: "2026-01-09", normalization_nav_date: "2025-01-02", observation_count: 252,
+  metric_value_count: 36, run_attempt_id: "00000000-0000-0000-0000-000000000064", run_status: "completed",
+  started_at: "2026-01-10T00:00:00Z", completed_at: "2026-01-10T00:01:00Z",
+  metrics: [{ series_role: "strategy", metric_scope: "absolute", metric_key: "cagr", name: "CAGR",
+    unit: "annual_ratio", value: 0.12, value_status: "defined", reason_code: null, observation_count: 252 }],
+  events: [{ sequence_number: 1, event_type: "run_started", severity: "info", message: "Started",
+    occurred_at: "2026-01-10T00:00:00Z" }],
+  quality_checks: [{ check_key: "outputs_published", scope_key: "global", status: "passed",
+    severity: "info", message: "All outputs published" }], artifacts: [],
+};
 
 function renderRoute(path: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -224,7 +253,7 @@ beforeEach(async () => {
   await i18n.changeLanguage("zh-CN");
   vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
     const url = String(input);
-    const payload = url.includes("strategies/targets") ? strategyTarget : url.includes("strategies/overview") ? strategyOverview : url.includes("models/overview") ? modelOverview : url.includes("signals/overview") ? signalOverview : url.includes("factors/overview") ? factorOverview : url.includes("data/overview") ? dataOverview : url.includes("health") ? health : url.includes("capabilities") ? capabilities : artifacts;
+    const payload = url.includes("experiments/results") ? experimentResult : url.includes("experiments/overview") ? experimentOverview : url.includes("strategies/targets") ? strategyTarget : url.includes("strategies/overview") ? strategyOverview : url.includes("models/overview") ? modelOverview : url.includes("signals/overview") ? signalOverview : url.includes("factors/overview") ? factorOverview : url.includes("data/overview") ? dataOverview : url.includes("health") ? health : url.includes("capabilities") ? capabilities : artifacts;
     return new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } });
   });
 });
@@ -296,4 +325,14 @@ test("strategy page separates rules, products, and target decisions without perf
   expect(await screen.findByText("selected_by_rank")).toBeInTheDocument();
   expect(screen.getByText("50%")).toBeInTheDocument();
   expect(screen.queryByText(/Sharpe ratio/i)).not.toBeInTheDocument();
+});
+
+test("experiment page joins comparable cells, performance, and run audit", async () => {
+  await i18n.changeLanguage("en");
+  renderRoute("/experiments?lang=en");
+  expect(await screen.findByRole("heading", { name: "Strategy experiments and traceable performance" })).toBeInTheDocument();
+  expect(screen.getByText("12%")).toBeInTheDocument();
+  expect(screen.getByText("9%")).toBeInTheDocument();
+  expect(await screen.findByText("All outputs published")).toBeInTheDocument();
+  expect(screen.getByText("Complete performance metrics")).toBeInTheDocument();
 });

@@ -1393,6 +1393,198 @@ class ArtifactQueryService:
             )["positions"].append({key: row[key] for key in position_fields})
         return {"target_path": dict(path), **dict(context), "decisions": list(decisions.values())}
 
+    def experiment_overview(self) -> dict[str, Any]:
+        """Return published experiment cells and their latest auditable state."""
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            suites = connection.execute(text("""
+                SELECT suite.artifact_id, suite.suite_key, suite.version_number, suite.name,
+                       suite.description, suite.specification_count
+                FROM experiment.experiment_suite suite
+                JOIN lineage.artifact artifact ON artifact.artifact_id = suite.artifact_id
+                WHERE artifact.status = 'published'
+                ORDER BY suite.version_number DESC, suite.suite_key
+            """)).mappings().all()
+            specifications = self._experiment_specifications(connection)
+            result_ids = [row["interval_performance_result_id"] for row in specifications
+                          if row["interval_performance_result_id"] is not None]
+            core_by_result: dict[uuid.UUID, dict[str, float | None]] = {
+                result_id: {} for result_id in result_ids
+            }
+            if result_ids:
+                metrics = connection.execute(text("""
+                    SELECT value.interval_performance_result_id, value.series_role,
+                           definition.metric_key, value.metric_value
+                    FROM experiment.performance_metric_value value
+                    JOIN experiment.performance_metric_definition definition ON
+                         definition.performance_metric_definition_id =
+                         value.performance_metric_definition_id
+                    WHERE value.interval_performance_result_id IN :result_ids
+                      AND ((value.series_role IN ('strategy','benchmark') AND
+                            definition.metric_key IN ('cagr','sharpe_ratio','maximum_drawdown'))
+                           OR (value.series_role = 'relative' AND
+                               definition.metric_key = 'annualized_relative_wealth_growth'))
+                """).bindparams(bindparam("result_ids", expanding=True)),
+                    {"result_ids": tuple(result_ids)}).mappings().all()
+                for metric in metrics:
+                    key = f"{metric['series_role']}.{metric['metric_key']}"
+                    value = metric["metric_value"]
+                    core_by_result[metric["interval_performance_result_id"]][key] = (
+                        float(value) if value is not None else None
+                    )
+        items = []
+        for source in specifications:
+            row = dict(source)
+            result_id = row.pop("interval_performance_result_id")
+            run_status = row.pop("run_status")
+            row.pop("run_attempt_id")
+            if row["result_artifact_id"] is not None:
+                row["status"] = "accepted"
+            elif run_status == "failed":
+                row["status"] = "failed"
+            elif run_status in {"queued", "running"}:
+                row["status"] = "running"
+            else:
+                row["status"] = "pending"
+            row["core_metrics"] = core_by_result.get(result_id, {})
+            items.append(row)
+        return {"suites": [dict(row) for row in suites], "specifications": items}
+
+    def experiment_result(self, artifact_id: uuid.UUID) -> dict[str, Any]:
+        """Return one accepted result with metrics, run events, checks, and artifacts."""
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            rows = self._experiment_specifications(connection, result_artifact_id=artifact_id)
+            if not rows:
+                raise LookupError(f"Published Experiment result not found: {artifact_id}")
+            specification = dict(rows[0])
+            interval_id = specification.pop("interval_performance_result_id")
+            specification.pop("run_status")
+            specification["status"] = "accepted"
+            specification["core_metrics"] = {}
+            interval = connection.execute(text("""
+                SELECT result.artifact_id AS interval_result_artifact_id,
+                       result.requested_start, result.requested_end, result.resolved_start,
+                       result.resolved_end, result.normalization_nav_date,
+                       result.observation_count, result.metric_value_count
+                FROM experiment.interval_performance_result result
+                WHERE result.interval_performance_result_id = :result
+            """), {"result": interval_id}).mappings().one()
+            metrics = connection.execute(text("""
+                SELECT value.series_role, definition.metric_scope, definition.metric_key,
+                       definition.name, definition.unit, value.metric_value AS value,
+                       value.value_status, value.reason_code, value.observation_count
+                FROM experiment.performance_metric_value value
+                JOIN experiment.performance_metric_definition definition ON
+                     definition.performance_metric_definition_id =
+                     value.performance_metric_definition_id
+                WHERE value.interval_performance_result_id = :result
+                ORDER BY CASE value.series_role WHEN 'strategy' THEN 0
+                         WHEN 'benchmark' THEN 1 ELSE 2 END, definition.ordinal
+            """), {"result": interval_id}).mappings().all()
+            run_id = specification["run_attempt_id"]
+            run = connection.execute(text("""
+                SELECT status AS run_status, started_at, completed_at
+                FROM ops.run_attempt WHERE run_attempt_id = :run
+            """), {"run": run_id}).mappings().one()
+            events = connection.execute(text("""
+                SELECT sequence_number, event_type, severity, message, occurred_at
+                FROM ops.run_event WHERE run_attempt_id = :run ORDER BY sequence_number
+            """), {"run": run_id}).mappings().all()
+            checks = connection.execute(text("""
+                SELECT check_key, scope_key, status, severity, message
+                FROM ops.quality_check_result WHERE run_attempt_id = :run
+                ORDER BY check_key, scope_key
+            """), {"run": run_id}).mappings().all()
+            artifacts = connection.execute(text("""
+                SELECT link.artifact_id, link.role, artifact.artifact_type,
+                       artifact.artifact_key
+                FROM ops.run_artifact link
+                JOIN lineage.artifact artifact ON artifact.artifact_id = link.artifact_id
+                WHERE link.run_attempt_id = :run
+                ORDER BY link.role, artifact.artifact_type, artifact.artifact_key
+            """), {"run": run_id}).mappings().all()
+        specification.pop("run_attempt_id")
+        specification["attempt_number"] = specification.get("attempt_number")
+        return {
+            "result_artifact_id": artifact_id,
+            "specification": specification,
+            **dict(interval),
+            "run_attempt_id": run_id,
+            **dict(run),
+            "metrics": [dict(row) for row in metrics],
+            "events": [dict(row) for row in events],
+            "quality_checks": [dict(row) for row in checks],
+            "artifacts": [dict(row) for row in artifacts],
+        }
+
+    @staticmethod
+    def _experiment_specifications(
+        connection: Any, *, result_artifact_id: uuid.UUID | None = None
+    ) -> list[Any]:
+        result_filter = (
+            " AND publication.artifact_id = :result_artifact" if result_artifact_id else ""
+        )
+        statement = text("""
+            SELECT specification.artifact_id, publication.artifact_id AS result_artifact_id,
+                   suite.artifact_id AS suite_artifact_id, cell.cell_key, cell.ordinal,
+                   product_definition.product_key, model_specification.specification_key AS
+                   model_specification_key, variant.variant_key, schedule.frequency,
+                   benchmark_definition.benchmark_key,
+                   benchmark_definition.category AS benchmark_category,
+                   cost.cost_bps_per_side, specification.template_key,
+                   specification.initialization_policy, specification.as_of_date,
+                   specification.simulation_end, publication.availability_status,
+                   publication.quality_status, latest.run_attempt_id,
+                   latest.attempt_number, latest.status AS run_status, latest.error_summary,
+                   publication.interval_performance_result_id
+            FROM experiment.experiment_suite_cell cell
+            JOIN experiment.experiment_suite suite ON suite.experiment_suite_id =
+                                                     cell.experiment_suite_id
+            JOIN lineage.artifact suite_artifact ON suite_artifact.artifact_id = suite.artifact_id
+                                                AND suite_artifact.status = 'published'
+            JOIN experiment.experiment_specification specification ON
+                 specification.experiment_specification_id = cell.experiment_specification_id
+            JOIN lineage.artifact specification_artifact ON
+                 specification_artifact.artifact_id = specification.artifact_id
+                 AND specification_artifact.status = 'published'
+            JOIN strategy.model_strategy_target_path model_path ON
+                 model_path.portfolio_target_path_id = specification.strategy_target_path_id
+            JOIN strategy.strategy_product_version product ON
+                 product.strategy_product_version_id = model_path.strategy_product_version_id
+            JOIN strategy.strategy_product_definition product_definition ON
+                 product_definition.strategy_product_definition_id =
+                 product.strategy_product_definition_id
+            JOIN model.model_specification model_specification ON
+                 model_specification.model_specification_id = product.model_specification_id
+            JOIN strategy.strategy_variant variant ON variant.strategy_variant_id =
+                                                      product.strategy_variant_id
+            JOIN ops.rebalance_schedule_version schedule ON
+                 schedule.rebalance_schedule_version_id = product.rebalance_schedule_version_id
+            JOIN experiment.benchmark_version benchmark ON benchmark.benchmark_version_id =
+                                                           specification.benchmark_version_id
+            JOIN experiment.benchmark_definition benchmark_definition ON
+                 benchmark_definition.benchmark_definition_id = benchmark.benchmark_definition_id
+            JOIN experiment.cost_scenario cost ON cost.cost_scenario_id =
+                                                  specification.cost_scenario_id
+            LEFT JOIN experiment.result_publication publication ON
+                 publication.experiment_specification_id = specification.experiment_specification_id
+            LEFT JOIN lineage.artifact publication_artifact ON
+                 publication_artifact.artifact_id = publication.artifact_id
+                 AND publication_artifact.status = 'published'
+            LEFT JOIN LATERAL (
+                SELECT attempt.run_attempt_id, attempt.attempt_number, attempt.status,
+                       attempt.error_summary
+                FROM ops.run_attempt attempt
+                WHERE attempt.root_artifact_id = specification.artifact_id
+                  AND attempt.run_type = 'experiment_specification'
+                ORDER BY attempt.attempt_number DESC LIMIT 1
+            ) latest ON true
+            WHERE (publication.artifact_id IS NULL OR publication_artifact.artifact_id IS NOT NULL)
+        """ + result_filter + " ORDER BY suite.version_number DESC, cell.ordinal")
+        parameters = {"result_artifact": result_artifact_id} if result_artifact_id else {}
+        return list(connection.execute(statement, parameters).mappings().all())
+
     @staticmethod
     def _latest_bundle(connection: Any) -> dict[str, Any] | None:
         row = (

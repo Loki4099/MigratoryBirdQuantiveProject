@@ -1087,6 +1087,36 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
             )
         connection.rollback()
 
+    experiment_client = TestClient(create_app(ArtifactQueryService(engine)))
+    experiment_overview = experiment_client.get("/api/v2/experiments/overview")
+    assert experiment_overview.status_code == 200, experiment_overview.text
+    experiment_payload = experiment_overview.json()
+    assert len(experiment_payload["suites"]) == 3
+    assert len(experiment_payload["specifications"]) == 4
+    assert sum(
+        item["status"] == "accepted" for item in experiment_payload["specifications"]
+    ) == 3
+    assert sum(
+        item["status"] == "failed" for item in experiment_payload["specifications"]
+    ) == 1
+    eligible_cell = next(
+        item for item in experiment_payload["specifications"]
+        if item["availability_status"] == "eligible"
+    )
+    assert eligible_cell["core_metrics"]["strategy.cagr"] is not None
+    assert eligible_cell["core_metrics"]["benchmark.cagr"] is not None
+    experiment_detail = experiment_client.get(
+        f"/api/v2/experiments/results/{eligible_cell['result_artifact_id']}"
+    )
+    assert experiment_detail.status_code == 200, experiment_detail.text
+    detail_payload = experiment_detail.json()
+    assert detail_payload["run_status"] == "completed"
+    assert len(detail_payload["metrics"]) == 36
+    assert len(detail_payload["quality_checks"]) == 3
+    assert detail_payload["events"][0]["sequence_number"] == 1
+    assert any(item["role"] == "input" for item in detail_payload["artifacts"])
+    assert any(item["role"] == "output" for item in detail_payload["artifacts"])
+
     evaluation_spec = build_signal_evaluation_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
