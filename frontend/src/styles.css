@@ -435,3 +435,47 @@ h2 { font-size: 17px; }
   .page-heading { display: block; }
   .page-heading > .quality-badge { margin-top: 15px; }
 }
+.skip-link { position: fixed; z-index: 1000; left: 12px; top: 10px; padding: 9px 13px; border-radius: 4px; background: var(--ink); color: white; transform: translateY(-160%); transition: transform .15s ease; }
+.skip-link:focus { transform: translateY(0); }
+:where(a, button, input, select, summary, [tabindex]):focus-visible { outline: 3px solid #c7832f; outline-offset: 3px; }
+main:focus { outline: none; }
+.research-key { display: inline-flex; flex-direction: column; gap: 2px; min-width: 0; vertical-align: middle; }
+.research-key > span { overflow-wrap: anywhere; }
+.research-key > code { color: var(--muted); font: 7px Consolas, monospace; text-transform: none; letter-spacing: 0; overflow-wrap: anywhere; }
+.formula-display { min-height: 116px; margin: 15px 0 17px; padding: 13px 14px; border-left: 3px solid var(--green-soft); background: #f5f5ef; }
+.formula-display .formula-notation { display: flex; flex-direction: column; gap: 5px; }
+.formula-display .formula-notation span { color: var(--muted); font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
+.formula-display .formula-notation strong { color: var(--ink); font: 600 13px/1.45 "Cambria Math", "Times New Roman", serif; overflow-wrap: anywhere; }
+.factor-card .formula-display > p { min-height: auto; margin: 9px 0; color: var(--muted); font-size: 9px; line-height: 1.6; }
+.formula-display details { color: var(--green); font-size: 8px; }
+.formula-display summary { cursor: pointer; }
+.formula-display details code { display: block; margin-top: 7px; color: var(--muted); line-height: 1.55; white-space: normal; overflow-wrap: anywhere; }
+.formula-raw { display: block; min-height: 48px; margin: 15px 0; padding: 12px; background: #f5f5ef; white-space: normal; overflow-wrap: anywhere; }
+.decision-reasons { display: flex; flex-wrap: wrap; gap: 7px 18px; }
+.experiment-metrics span code { display: block; margin-top: 3px; color: var(--muted); font-size: 7px; }
+
+/* M9 readability baseline: research content must remain legible without browser zoom. */
+.scope-strip span, .factor-card-title span, .signal-card-heading span,
+.signal-stat-grid span, .model-card .signal-stat-grid span,
+.strategy-rule-summary span, .strategy-variant-grid header span,
+.strategy-variant-grid dt, .strategy-product-list span,
+.experiment-table-head, .ranking-head { font-size: 10px; }
+.factor-card-title strong, .signal-card-heading strong,
+.model-card .signal-card-heading strong, .strategy-rule-summary strong,
+.strategy-variant-grid header strong, .strategy-product-list strong { font-size: 12px; line-height: 1.45; }
+.factor-stat-grid span, .signal-tags code, .factor-parameters code,
+.model-composition, .strategy-variant-grid dl div,
+.strategy-product-list code, .strategy-product-list dt,
+.strategy-product-list dd { font-size: 10px; line-height: 1.45; }
+.factor-stat-grid strong, .signal-stat-grid strong { font-size: 12px; }
+.signal-card > p, .model-card > p, .strategy-rule-summary p,
+.scope-note, .factor-issue-list p { font-size: 11px; line-height: 1.65; }
+.correlation-list strong, .correlation-list span,
+.signal-pair-list strong, .signal-pair-list span,
+.ablation-list strong, .ablation-list span { font-size: 10px; line-height: 1.4; }
+.signal-pair-list dt, .ablation-list dt { font-size: 9px; }
+.signal-pair-list dd, .ablation-list dd { font-size: 11px; }
+.research-key > code { font-size: 9px; }
+.formula-display .formula-notation span, .formula-display details { font-size: 10px; }
+.factor-card .formula-display > p { font-size: 11px; }
+.formula-display .formula-notation strong { font-size: 15px; }

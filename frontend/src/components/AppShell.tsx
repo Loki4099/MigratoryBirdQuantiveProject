@@ -32,12 +32,13 @@ export function AppShell() {
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">{t("common.skipToContent")}</a>
       <aside className="sidebar">
         <div className="brand-lockup">
           <div className="fledgling-mark" aria-hidden="true"><span /></div>
           <div><strong>{t("brand.name")}</strong><small>{t("brand.stage")}</small></div>
         </div>
-        <nav aria-label="Primary navigation">
+        <nav aria-label={t("common.primaryNavigation")}>
           {navigation.map((group) => (
             <section className="nav-group" key={group.label}>
               <p>{t(group.label)}</p>
@@ -56,12 +57,13 @@ export function AppShell() {
       <div className="workspace">
         <header className="topbar">
           <span className="topbar-context">US STYLE ROTATION · v0.2</span>
-          <div className="language-switch" aria-label="Language">
+          <div className="language-switch" aria-label={t("common.language")}>
             {(["zh-CN", "en"] as const).map((item) => (
               <button
                 className={language === item ? "active" : ""}
                 key={item}
                 onClick={() => void setLanguage(item)}
+                aria-pressed={language === item}
                 type="button"
               >
                 {item === "zh-CN" ? "中文" : "EN"}
@@ -69,7 +71,7 @@ export function AppShell() {
             ))}
           </div>
         </header>
-        <main><Outlet /></main>
+        <main id="main-content" tabIndex={-1}><Outlet /></main>
       </div>
     </div>
   );

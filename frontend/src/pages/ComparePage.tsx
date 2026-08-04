@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 
 import { api } from "../api/client";
 import { EmptyState, ErrorState, LoadingState, QualityBadge } from "../components/QueryState";
+import { ResearchKey, researchLabel } from "../components/ResearchText";
 
 const percentageMetrics = new Set([
   "cumulative_return", "cagr", "annualized_volatility", "maximum_drawdown",
@@ -20,7 +21,7 @@ function displayMetric(metric: { metric_key: string; value: number | null; value
 }
 
 export function ComparePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const overview = useQuery({ queryKey: ["experiments", "overview"], queryFn: api.experimentOverview });
   const candidates = useMemo(() => {
     const seen = new Set<string>();
@@ -52,18 +53,18 @@ export function ComparePage() {
     <header className="page-heading"><div><p className="eyebrow">PRODUCT / CONTROLLED VIEW</p><h1>{t("compare.title")}</h1><p>{t("compare.subtitle")}</p></div>{comparison.data && <QualityBadge state={comparison.data.quality.state} />}</header>
     <section className="catalog-section">
       <div className="section-heading"><div><p className="eyebrow">ACCEPTED RESULTS</p><h2>{t("compare.select")}</h2></div><span className="model-result-count">{active.length} / 6</span></div>
-      <div className="compare-selector">{candidates.map((item) => <label key={item.result_artifact_id}><input type="checkbox" checked={active.includes(item.result_artifact_id as string)} onChange={() => toggle(item.result_artifact_id as string)} /><span><strong>{item.model_specification_key}</strong><small>{item.variant_key} · {item.frequency} · {item.cost_bps_per_side} bps · {item.template_key}</small></span></label>)}</div>
+      <div className="compare-selector">{candidates.map((item) => <label key={item.result_artifact_id}><input type="checkbox" checked={active.includes(item.result_artifact_id as string)} onChange={() => toggle(item.result_artifact_id as string)} /><span><strong><ResearchKey value={item.model_specification_key} /></strong><small>{researchLabel(item.variant_key, i18n.resolvedLanguage)} · {researchLabel(item.frequency, i18n.resolvedLanguage)} · {item.cost_bps_per_side} bps · {researchLabel(item.template_key, i18n.resolvedLanguage)}</small></span></label>)}</div>
       {candidates.length < 2 && <p className="factor-empty-note">{t("compare.needTwo")}</p>}
     </section>
     {comparison.isLoading && <LoadingState />}
     {comparison.error && <ErrorState error={comparison.error} retry={() => void comparison.refetch()} />}
     {comparison.data && <section className="catalog-section">
-      <div className="section-heading"><div><p className="eyebrow">COMPARISON CLASSIFICATION</p><h2>{t(`compare.${comparison.data.mode}`)}</h2></div><label className="experiment-filter">{t("compare.metric")}<select value={metricKey} onChange={(event) => setMetricKey(event.target.value)}>{metricOptions.map((metric) => <option key={`${metric.series_role}.${metric.metric_key}`} value={`${metric.series_role}.${metric.metric_key}`}>{metric.series_role} · {metric.name}</option>)}</select></label></div>
+      <div className="section-heading"><div><p className="eyebrow">COMPARISON CLASSIFICATION</p><h2>{t(`compare.${comparison.data.mode}`)}</h2></div><label className="experiment-filter">{t("compare.metric")}<select value={metricKey} onChange={(event) => setMetricKey(event.target.value)}>{metricOptions.map((metric) => <option key={`${metric.series_role}.${metric.metric_key}`} value={`${metric.series_role}.${metric.metric_key}`}>{researchLabel(metric.series_role, i18n.resolvedLanguage)} · {researchLabel(metric.metric_key, i18n.resolvedLanguage)}</option>)}</select></label></div>
       <p className={`compare-verdict ${comparison.data.mode}`}>{comparison.data.mode === "controlled" ? t("compare.controlledNote", { dimension: comparison.data.changed_dimensions.join(", ") }) : comparison.data.mode === "identical" ? t("compare.identicalNote") : t("compare.sideNote")}</p>
       {comparison.data.blocking_context_fields.length > 0 && <p className="scope-note">{t("compare.blockers")}: <code>{comparison.data.blocking_context_fields.join(", ")}</code></p>}
       <div className="compare-grid">{comparison.data.entries.map((entry) => {
         const metric = entry.metrics.find((item) => `${item.series_role}.${item.metric_key}` === metricKey) ?? entry.metrics[0];
-        return <article key={entry.result_artifact_id}><span>{entry.template_key} · {entry.cost_bps_per_side} bps</span><h3>{entry.model_specification_key}</h3><p>{entry.variant_key} · K={entry.target_k} · {entry.frequency}</p><strong>{metric ? displayMetric(metric) : "—"}</strong><small>{metric?.name ?? t("common.noData")} · {entry.resolved_start ?? "—"} → {entry.resolved_end ?? "—"}</small><Link className="arrow-link" to={`/experiments?result=${entry.result_artifact_id}`}>{t("compare.open")} →</Link></article>;
+        return <article key={entry.result_artifact_id}><span>{researchLabel(entry.template_key, i18n.resolvedLanguage)} · {entry.cost_bps_per_side} bps</span><h3>{researchLabel(entry.model_specification_key, i18n.resolvedLanguage)}</h3><p>{researchLabel(entry.variant_key, i18n.resolvedLanguage)} · K={entry.target_k} · {researchLabel(entry.frequency, i18n.resolvedLanguage)}</p><strong>{metric ? displayMetric(metric) : "—"}</strong><small>{metric ? researchLabel(metric.metric_key, i18n.resolvedLanguage) : t("common.noData")} · {entry.resolved_start ?? "—"} → {entry.resolved_end ?? "—"}</small><Link className="arrow-link" to={`/experiments?result=${entry.result_artifact_id}`}>{t("compare.open")} →</Link></article>;
       })}</div>
       <p className="scope-note">{t("compare.disclaimer")}</p>
     </section>}

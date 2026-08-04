@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 import { api } from "../api/client";
 import { EmptyState, ErrorState, LoadingState, QualityBadge } from "../components/QueryState";
+import { FormulaDisplay, ResearchKey } from "../components/ResearchText";
 
 function number(value: number | null, digits = 4) {
   if (value === null) return "—";
@@ -57,10 +58,10 @@ export function FactorsPage() {
           {data.datasets.map((dataset) => (
             <article className="factor-card" key={dataset.factor_dataset_artifact_id}>
               <div className="factor-card-title">
-                <div><span>{dataset.measurement_family}</span><strong>{dataset.variant_key}</strong></div>
+                <div><ResearchKey value={dataset.measurement_family} /><strong>{dataset.variant_key}</strong></div>
                 <QualityBadge state={dataset.quality.state} />
               </div>
-              <p>{dataset.formula}</p>
+              <FormulaDisplay factorKey={dataset.factor_key} formula={dataset.formula} />
               <div className="distribution-track" aria-label={`${dataset.variant_key} p05 p95`}>
                 <i style={distributionStyle(dataset.minimum, dataset.p05, dataset.p95, dataset.maximum)} />
                 <b style={{ left: `${dataset.maximum === dataset.minimum ? 50 : ((dataset.median - dataset.minimum) / (dataset.maximum - dataset.minimum)) * 100}%` }} />
@@ -73,7 +74,7 @@ export function FactorsPage() {
               </div>
               <div className="factor-parameters">
                 {Object.entries(dataset.parameters).map(([key, value]) => <code key={key}>{key}={String(value)}</code>)}
-                <code>{dataset.preset_type}</code>
+                <ResearchKey value={dataset.preset_type} />
               </div>
             </article>
           ))}

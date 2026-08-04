@@ -352,6 +352,9 @@ test("factor page displays measurement diagnostics without strategy performance"
   expect((await screen.findAllByText("total_return__w20")).length).toBeGreaterThan(0);
   expect(screen.getByText("Redundancy alerts")).toBeInTheDocument();
   expect(screen.getAllByText("ρ 0.91")).toHaveLength(2);
+  expect(screen.getByText("Pₜ ÷ Pₜ₋w − 1")).toBeInTheDocument();
+  expect(screen.getByText("Show exact calculation definition")).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Skip to main content" })).toHaveAttribute("href", "#main-content");
   expect(screen.queryByText(/Sharpe/i)).not.toBeInTheDocument();
 });
 

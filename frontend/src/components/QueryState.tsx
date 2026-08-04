@@ -18,10 +18,10 @@ export function ErrorState({ error, retry }: { error: Error; retry?: () => void 
 
 export function EmptyState() {
   const { t } = useTranslation();
-  return <div className="state-card empty">{t("common.noData")}</div>;
+  return <div className="state-card empty" role="status">{t("common.noData")}</div>;
 }
 
 export function QualityBadge({ state, children }: { state: string; children?: ReactNode }) {
   const { t } = useTranslation();
-  return <span className={`quality-badge quality-${state}`}><i />{children ?? t(`states.${state}`)}</span>;
+  return <span className={`quality-badge quality-${state}`}><i aria-hidden="true" />{children ?? t(`states.${state}`)}</span>;
 }

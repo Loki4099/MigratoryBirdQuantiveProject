@@ -4,6 +4,7 @@ import { Link, useSearchParams } from "react-router-dom";
 
 import { api } from "../api/client";
 import { EmptyState, ErrorState, LoadingState, QualityBadge } from "../components/QueryState";
+import { ResearchKey, researchLabel, researchRationale } from "../components/ResearchText";
 
 type Frequency = "weekly" | "monthly";
 
@@ -21,7 +22,7 @@ function percent(input: number | null, digits = 1) {
 }
 
 export function SignalsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [search, setSearch] = useSearchParams();
   const frequency: Frequency = search.get("frequency") === "monthly" ? "monthly" : "weekly";
   const overview = useQuery({
@@ -68,7 +69,7 @@ export function SignalsPage() {
 
       <section className="scope-strip signal-scope-strip">
         <div><span>{t("signal.context")}</span><strong>{data.coverage_start} → {data.coverage_end}</strong></div>
-        <div><span>{t("signal.target")}</span><strong>{data.target_key}</strong></div>
+        <div><span>{t("signal.target")}</span><strong>{researchLabel(data.target_key, i18n.resolvedLanguage)}</strong></div>
         <div><span>{t("signal.periods")}</span><strong>{data.common_period_count}</strong></div>
         <div><span>{t("signal.signals")}</span><strong>{data.signal_count}</strong></div>
         <div><span>{t("signal.highPairs")}</span><strong>{highPairs.length} / {data.pair_count}</strong></div>
@@ -84,13 +85,13 @@ export function SignalsPage() {
           {data.signals.map((signal) => (
             <article className="signal-card" key={signal.signal_dataset_artifact_id}>
               <div className="signal-card-heading">
-                <div><span>{signal.economic_family} · {signal.research_tier}</span><strong>{signal.signal_key}</strong></div>
+                <div><span><ResearchKey value={signal.economic_family} /> · <ResearchKey value={signal.research_tier} /></span><strong>{signal.signal_key}</strong></div>
                 <QualityBadge state={signal.quality.state} />
               </div>
-              <p>{signal.rationale}</p>
+              <p>{researchRationale(signal.rationale, i18n.resolvedLanguage)}</p>
               <div className="signal-tags">
-                <code>{t("signal.direction")}: {signal.direction}</code>
-                <code>{t("signal.output")}: {signal.output_type}</code>
+                <code>{t("signal.direction")}: <ResearchKey value={signal.direction} /></code>
+                <code>{t("signal.output")}: <ResearchKey value={signal.output_type} /></code>
                 <code>{signal.factor_variant_key}</code>
               </div>
               <div className="signal-stat-grid">
