@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError
 
 from style_rotation.api.app import create_app
 from style_rotation.api.query import ArtifactQueryService
@@ -32,6 +33,10 @@ from style_rotation.data.forward_return_publication import (
 )
 from style_rotation.data.publication import CanonicalDataPublicationService
 from style_rotation.data.service import SnapshotInput, SourceSnapshotService, publish_data_contracts
+from style_rotation.experiment.cost_publication import (
+    NetCostPathPublicationService,
+    publish_cost_catalog,
+)
 from style_rotation.experiment.engine import (
     build_accounting_engine_spec,
     publish_accounting_engine,
@@ -621,6 +626,86 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
         session_dates.index(execution) == session_dates.index(decision) + 1
         for decision, execution in execution_lags
     )
+
+    cost_catalog = publish_cost_catalog(engine)
+    cost_catalog_reused = publish_cost_catalog(engine)
+    assert len(cost_catalog.scenarios) == 3
+    assert {item.cost_bps_per_side for item in cost_catalog.scenarios} == {
+        Decimal("2"),
+        Decimal("5"),
+        Decimal("10"),
+    }
+    assert all(item.reused for item in cost_catalog_reused.scenarios)
+    net_service = NetCostPathPublicationService(engine)
+    net_paths = tuple(
+        net_service.publish(gross_path.artifact_id, scenario.artifact_id)
+        for scenario in cost_catalog.scenarios
+    )
+    net_reused = tuple(
+        net_service.publish(gross_path.artifact_id, scenario.artifact_id)
+        for scenario in cost_catalog.scenarios
+    )
+    assert all(item.reused for item in net_reused)
+    assert [item.artifact_id for item in net_paths] == [item.artifact_id for item in net_reused]
+    assert all(item.nav_count == gross_path.nav_count for item in net_paths)
+    assert all(item.execution_cost_count == gross_path.execution_count for item in net_paths)
+    final_net_by_bps: dict[Decimal, Decimal] = {}
+    with engine.connect() as connection:
+        net_counts = connection.execute(
+            text(
+                "SELECT (SELECT count(*) FROM experiment.cost_model_definition), "
+                "(SELECT count(*) FROM experiment.cost_model_version), "
+                "(SELECT count(*) FROM experiment.cost_scenario), "
+                "(SELECT count(*) FROM experiment.net_cost_path), "
+                "(SELECT count(*) FROM experiment.net_daily_nav), "
+                "(SELECT count(*) FROM experiment.execution_cost)"
+            )
+        ).one()
+        cost_reconciliation = connection.execute(
+            text(
+                "SELECT max(abs(cost.cost_amount - cost.net_pretrade_nav * "
+                "cost.cost_fraction)) FROM experiment.execution_cost cost"
+            )
+        ).scalar_one()
+        final_rows = connection.execute(
+            text(
+                "SELECT scenario.cost_bps_per_side, nav.net_nav FROM experiment.net_cost_path path "
+                "JOIN experiment.cost_scenario scenario ON scenario.cost_scenario_id = "
+                "path.cost_scenario_id JOIN experiment.net_daily_nav nav ON "
+                "nav.net_cost_path_id = path.net_cost_path_id WHERE nav.nav_date = "
+                "path.effective_nav_end ORDER BY scenario.cost_bps_per_side"
+            )
+        ).all()
+        gross_after_net = connection.execute(
+            text(
+                "SELECT gross_nav FROM experiment.gross_daily_nav WHERE "
+                "gross_portfolio_path_id = (SELECT gross_portfolio_path_id FROM "
+                "experiment.gross_portfolio_path) ORDER BY nav_date DESC LIMIT 1"
+            )
+        ).scalar_one()
+    assert net_counts == (
+        1,
+        1,
+        3,
+        3,
+        gross_path.nav_count * 3,
+        gross_path.execution_count * 3,
+    )
+    assert Decimal(cost_reconciliation) <= Decimal("0.000000000000000000000001")
+    final_net_by_bps.update((Decimal(bps), Decimal(nav)) for bps, nav in final_rows)
+    assert final_net_by_bps[Decimal("2")] > final_net_by_bps[Decimal("5")]
+    assert final_net_by_bps[Decimal("5")] > final_net_by_bps[Decimal("10")]
+    assert all(nav < Decimal(gross_after_net) for nav in final_net_by_bps.values())
+    with engine.connect() as connection:
+        with pytest.raises(DBAPIError):
+            connection.execute(
+                text(
+                    "UPDATE experiment.net_daily_nav SET net_nav = net_nav + 1 "
+                    "WHERE net_cost_path_id = (SELECT net_cost_path_id FROM "
+                    "experiment.net_cost_path LIMIT 1)"
+                )
+            )
+        connection.rollback()
 
     evaluation_spec = build_signal_evaluation_engine_spec(
         "a" * 40,

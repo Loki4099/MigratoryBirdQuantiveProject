@@ -37,6 +37,10 @@ from style_rotation.data.providers.snapshots import (
 )
 from style_rotation.data.publication import CanonicalDataPublicationService
 from style_rotation.data.service import publish_data_contracts
+from style_rotation.experiment.cost_publication import (
+    NetCostPathPublicationService,
+    publish_cost_catalog,
+)
 from style_rotation.experiment.engine import (
     build_accounting_engine_spec,
     publish_accounting_engine,
@@ -446,6 +450,22 @@ def _experiment_publish_gross(
     result = GrossPathPublicationService(
         create_postgres_engine(get_settings().database_url)
     ).publish(uuid.UUID(target_path_artifact_id), uuid.UUID(accounting_engine_artifact_id))
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _experiment_bootstrap_cost_model(version_number: int) -> int:
+    result = publish_cost_catalog(
+        create_postgres_engine(get_settings().database_url), version_number=version_number
+    )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _experiment_publish_net(gross_path_artifact_id: str, cost_scenario_artifact_id: str) -> int:
+    result = NetCostPathPublicationService(
+        create_postgres_engine(get_settings().database_url)
+    ).publish(uuid.UUID(gross_path_artifact_id), uuid.UUID(cost_scenario_artifact_id))
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0
 
@@ -1267,6 +1287,24 @@ def build_parser() -> argparse.ArgumentParser:
     gross_parser.set_defaults(
         handler=lambda args: _experiment_publish_gross(
             args.target_path_artifact_id, args.accounting_engine_artifact_id
+        )
+    )
+    cost_model_parser = experiment_subparsers.add_parser(
+        "bootstrap-cost-model",
+        help="Publish the formal linear cost model and 2/5/10 bps scenarios",
+    )
+    cost_model_parser.add_argument("--version", type=int, default=1)
+    cost_model_parser.set_defaults(
+        handler=lambda args: _experiment_bootstrap_cost_model(args.version)
+    )
+    net_parser = experiment_subparsers.add_parser(
+        "publish-net", help="Calculate and publish one immutable Net Cost Path"
+    )
+    net_parser.add_argument("--gross-path-artifact-id", required=True)
+    net_parser.add_argument("--cost-scenario-artifact-id", required=True)
+    net_parser.set_defaults(
+        handler=lambda args: _experiment_publish_net(
+            args.gross_path_artifact_id, args.cost_scenario_artifact_id
         )
     )
 

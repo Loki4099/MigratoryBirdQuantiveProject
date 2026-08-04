@@ -110,3 +110,32 @@ class GrossAccountingResult:
     daily_reserve_positions: tuple[DailyReservePosition, ...]
     executions: tuple[PortfolioExecution, ...]
     trades: tuple[PortfolioTrade, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class NetDailyNav:
+    nav_date: date
+    net_daily_return: Decimal
+    net_nav: Decimal
+    gross_nav: Decimal
+    daily_cost_amount: Decimal
+
+
+@dataclass(frozen=True, slots=True)
+class ExecutionCost:
+    decision_date: date
+    execution_date: date
+    net_pretrade_nav: Decimal
+    gross_traded_notional: Decimal
+    cost_fraction: Decimal
+    cost_amount: Decimal
+
+
+@dataclass(frozen=True, slots=True)
+class NetCostResult:
+    effective_nav_start: date
+    effective_nav_end: date
+    cost_bps_per_side: Decimal
+    cumulative_cost_amount: Decimal
+    daily_nav: tuple[NetDailyNav, ...]
+    execution_costs: tuple[ExecutionCost, ...]

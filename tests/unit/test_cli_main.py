@@ -42,6 +42,22 @@ class UnifiedCliTests(unittest.TestCase):
         self.assertEqual(result, 0)
         command.assert_called_once_with(*ids)
 
+    def test_experiment_publish_net_requires_gross_and_cost_scenario(self) -> None:
+        ids = [f"00000000-0000-0000-0000-00000000000{index}" for index in range(1, 3)]
+        with patch("style_rotation.cli.main._experiment_publish_net", return_value=0) as command:
+            result = main(
+                [
+                    "experiment",
+                    "publish-net",
+                    "--gross-path-artifact-id",
+                    ids[0],
+                    "--cost-scenario-artifact-id",
+                    ids[1],
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with(*ids)
+
     def test_version_flag_uses_v02_package_version(self) -> None:
         output = StringIO()
         with self.assertRaisesRegex(SystemExit, "0"), redirect_stdout(output):
