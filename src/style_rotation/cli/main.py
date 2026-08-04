@@ -23,6 +23,14 @@ from style_rotation.data.bundle import (
     publish_reserve_model,
 )
 from style_rotation.data.calendar import CalendarPublicationService, XNYSCalendarGenerator
+from style_rotation.data.forward_return_engine import (
+    build_forward_return_engine_spec,
+    publish_forward_return_engine,
+)
+from style_rotation.data.forward_return_publication import (
+    ForwardReturnDatasetPublicationService,
+    publish_forward_return_catalog,
+)
 from style_rotation.data.providers.snapshots import (
     FredCsvSnapshotAdapter,
     YahooYFinanceSnapshotAdapter,
@@ -351,6 +359,54 @@ def _signal_publish(
     return 0
 
 
+def _forward_return_bootstrap(catalog_file: str) -> int:
+    result = publish_forward_return_catalog(
+        create_postgres_engine(get_settings().database_url), Path(catalog_file)
+    )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _forward_return_bootstrap_engine(
+    git_commit: str, dependency_lock_file: str, version_number: int
+) -> int:
+    settings = get_settings()
+    status = database_status(settings.database_url)
+    if status.current_revision is None:
+        raise ValueError("Database must be migrated before publishing a forward-return engine")
+    spec = build_forward_return_engine_spec(
+        git_commit,
+        Path(dependency_lock_file),
+        status.current_revision,
+        version_number=version_number,
+    )
+    result = publish_forward_return_engine(create_postgres_engine(settings.database_url), spec)
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _forward_return_publish(
+    catalog_artifact_id: str,
+    universe_artifact_id: str,
+    bundle_artifact_id: str,
+    engine_artifact_id: str,
+    start: date,
+    end: date,
+) -> int:
+    results = ForwardReturnDatasetPublicationService(
+        create_postgres_engine(get_settings().database_url)
+    ).publish(
+        uuid.UUID(catalog_artifact_id),
+        uuid.UUID(universe_artifact_id),
+        uuid.UUID(bundle_artifact_id),
+        uuid.UUID(engine_artifact_id),
+        requested_start=start,
+        requested_end=end,
+    )
+    print(json.dumps([item.to_dict() for item in results], indent=2, ensure_ascii=False))
+    return 0
+
+
 def _publish_reserve(
     rate_dataset_artifact_id: str,
     calendar_artifact_id: str,
@@ -603,6 +659,44 @@ def build_parser() -> argparse.ArgumentParser:
             args.end_inclusive,
             args.warmup_observations,
             args.version_number,
+        )
+    )
+    target_parser = data_subparsers.add_parser(
+        "bootstrap-forward-returns", help="Materialize versioned forward-return targets"
+    )
+    target_parser.add_argument(
+        "--catalog-file", default="v0.2/catalogs/forward_returns.v0.2.0.json"
+    )
+    target_parser.set_defaults(handler=lambda args: _forward_return_bootstrap(args.catalog_file))
+    target_engine_parser = data_subparsers.add_parser(
+        "bootstrap-forward-return-engine",
+        help="Publish the deterministic forward-return engine version",
+    )
+    target_engine_parser.add_argument("--git-commit", required=True)
+    target_engine_parser.add_argument("--dependency-lock-file", default="requirements.lock")
+    target_engine_parser.add_argument("--version", type=int, default=1)
+    target_engine_parser.set_defaults(
+        handler=lambda args: _forward_return_bootstrap_engine(
+            args.git_commit, args.dependency_lock_file, args.version
+        )
+    )
+    target_publish_parser = data_subparsers.add_parser(
+        "publish-forward-returns", help="Calculate immutable forward-return datasets"
+    )
+    target_publish_parser.add_argument("--catalog-artifact-id", required=True)
+    target_publish_parser.add_argument("--universe-artifact-id", required=True)
+    target_publish_parser.add_argument("--bundle-artifact-id", required=True)
+    target_publish_parser.add_argument("--engine-artifact-id", required=True)
+    target_publish_parser.add_argument("--start", required=True, type=_parse_date)
+    target_publish_parser.add_argument("--end", required=True, type=_parse_date)
+    target_publish_parser.set_defaults(
+        handler=lambda args: _forward_return_publish(
+            args.catalog_artifact_id,
+            args.universe_artifact_id,
+            args.bundle_artifact_id,
+            args.engine_artifact_id,
+            args.start,
+            args.end,
         )
     )
 

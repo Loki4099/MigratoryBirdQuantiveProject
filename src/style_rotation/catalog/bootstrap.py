@@ -13,12 +13,14 @@ CATALOG_FILES = (
     "signals.v0.2.0.json",
     "models.v0.2.0.json",
     "strategies.v0.2.0.json",
+    "forward_returns.v0.2.0.json",
 )
 CATALOG_DEPENDENCIES = {
     "factor": (),
     "signal": ("factor",),
     "model": ("signal",),
     "strategy": ("model", "signal"),
+    "forward_return": (),
 }
 
 

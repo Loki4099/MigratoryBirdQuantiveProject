@@ -22,6 +22,14 @@ from style_rotation.data.bundle import (
     publish_reserve_model,
 )
 from style_rotation.data.calendar import CalendarPublicationService, XNYSCalendarGenerator
+from style_rotation.data.forward_return_engine import (
+    build_forward_return_engine_spec,
+    publish_forward_return_engine,
+)
+from style_rotation.data.forward_return_publication import (
+    ForwardReturnDatasetPublicationService,
+    publish_forward_return_catalog,
+)
 from style_rotation.data.publication import CanonicalDataPublicationService
 from style_rotation.data.service import SnapshotInput, SourceSnapshotService, publish_data_contracts
 from style_rotation.factor.diagnostic_publication import FactorDiagnosticPublicationService
@@ -87,6 +95,9 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     signal_catalog = publish_signal_catalog(
         engine, PROJECT_ROOT / "v0.2" / "catalogs" / "signals.v0.2.0.json"
     )
+    target_catalog = publish_forward_return_catalog(
+        engine, PROJECT_ROOT / "v0.2" / "catalogs" / "forward_returns.v0.2.0.json"
+    )
 
     generated = XNYSCalendarGenerator().generate(date(2024, 1, 2), date(2025, 3, 31))
     assert len(generated.sessions) > 260
@@ -141,6 +152,53 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
         calendar.artifact_id,
         version_number=1,
     )
+    forward_engine_spec = build_forward_return_engine_spec(
+        "a" * 40,
+        PROJECT_ROOT / "requirements.lock",
+        "20260804_12_v02_forward_ret",
+    )
+    forward_engine = publish_forward_return_engine(engine, forward_engine_spec)
+    assert publish_forward_return_engine(engine, forward_engine_spec).reused is True
+    forward_service = ForwardReturnDatasetPublicationService(engine)
+    forward_start = generated.sessions[20].session_date
+    forward_end = generated.sessions[-1].session_date
+    forward = forward_service.publish(
+        target_catalog.release_artifact_id,
+        uuid.UUID(scope[1]["artifact_id"]),
+        bundle.artifact_id,
+        forward_engine.artifact_id,
+        requested_start=forward_start,
+        requested_end=forward_end,
+    )
+    forward_reused = forward_service.publish(
+        target_catalog.release_artifact_id,
+        uuid.UUID(scope[1]["artifact_id"]),
+        bundle.artifact_id,
+        forward_engine.artifact_id,
+        requested_start=forward_start,
+        requested_end=forward_end,
+    )
+    assert {item.target_key for item in forward} == {
+        "weekly_next_open_to_next_open",
+        "monthly_next_open_to_next_open",
+    }
+    assert all(item.row_count > 0 and item.row_count % 5 == 0 for item in forward)
+    assert not any(item.reused for item in forward)
+    assert all(item.reused for item in forward_reused)
+    assert [item.artifact_id for item in forward] == [item.artifact_id for item in forward_reused]
+    with engine.connect() as connection:
+        forward_counts = connection.execute(
+            text(
+                "SELECT (SELECT count(*) FROM data.forward_return_dataset), "
+                "(SELECT count(*) FROM data.forward_return_value), "
+                "(SELECT count(DISTINCT value.asset_id) FROM data.forward_return_value value), "
+                "(SELECT count(*) FROM lineage.artifact_dependency dependency "
+                "JOIN lineage.artifact artifact ON artifact.artifact_id = "
+                "dependency.artifact_id WHERE artifact.artifact_type = "
+                "'forward_return_dataset')"
+            )
+        ).one()
+    assert forward_counts == (2, sum(item.row_count for item in forward), 5, 12)
     requested_start = generated.sessions[252].session_date
     requested_end = generated.sessions[259].session_date
     eligibility = EligibilityPublicationService(engine).publish(
@@ -155,7 +213,7 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     engine_spec = build_factor_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260803_11_v02_signal_data",
+        "20260804_12_v02_forward_ret",
     )
     factor_engine = publish_factor_engine(engine, engine_spec)
     assert publish_factor_engine(engine, engine_spec).reused is True
@@ -210,7 +268,7 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     signal_engine_spec = build_signal_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260803_11_v02_signal_data",
+        "20260804_12_v02_forward_ret",
     )
     signal_engine = publish_signal_engine(engine, signal_engine_spec)
     assert publish_signal_engine(engine, signal_engine_spec).reused is True
@@ -303,7 +361,7 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     diagnostic_spec = build_factor_diagnostic_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260803_11_v02_signal_data",
+        "20260804_12_v02_forward_ret",
     )
     diagnostic_engine = publish_factor_diagnostic_engine(engine, diagnostic_spec)
     diagnostic_service = FactorDiagnosticPublicationService(engine)
@@ -363,6 +421,12 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
         engine.begin() as connection,
     ):
         connection.execute(text("UPDATE signal.signal_value SET score = 0"))
+
+    with (
+        pytest.raises(Exception, match="only change while their artifact is draft"),
+        engine.begin() as connection,
+    ):
+        connection.execute(text("UPDATE data.forward_return_value SET forward_return = 0"))
 
     short = EligibilityPublicationService(engine).publish(
         uuid.UUID(scope[1]["artifact_id"]),

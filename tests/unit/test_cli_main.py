@@ -57,6 +57,30 @@ class UnifiedCliTests(unittest.TestCase):
         self.assertEqual(result, 0)
         command.assert_called_once_with(date(2026, 1, 1), date(2026, 12, 31), 1)
 
+    def test_forward_return_publish_requires_exact_context_and_dates(self) -> None:
+        ids = [f"00000000-0000-0000-0000-00000000000{index}" for index in range(1, 5)]
+        with patch("style_rotation.cli.main._forward_return_publish", return_value=0) as command:
+            result = main(
+                [
+                    "data",
+                    "publish-forward-returns",
+                    "--catalog-artifact-id",
+                    ids[0],
+                    "--universe-artifact-id",
+                    ids[1],
+                    "--bundle-artifact-id",
+                    ids[2],
+                    "--engine-artifact-id",
+                    ids[3],
+                    "--start",
+                    "2020-01-01",
+                    "--end",
+                    "2025-12-31",
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with(*ids, date(2020, 1, 1), date(2025, 12, 31))
+
     def test_factor_bootstrap_uses_explicit_catalog_file(self) -> None:
         with patch("style_rotation.cli.main._factor_bootstrap", return_value=0) as command:
             result = main(["factor", "bootstrap", "--catalog-file", "factor.json"])

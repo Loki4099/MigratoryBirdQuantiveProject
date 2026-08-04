@@ -724,3 +724,107 @@ class ReserveReturnModelVersion(CreatedAtMixin, Base):
     day_count_basis: Mapped[str] = mapped_column(String(40), nullable=False)
     warning_after_days: Mapped[int] = mapped_column(Integer, nullable=False)
     error_after_days: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class ForwardReturnDefinition(CreatedAtMixin, Base):
+    __tablename__ = "forward_return_definition"
+    __table_args__ = ({"schema": "data"},)
+
+    forward_return_definition_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True
+    )
+    artifact_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("lineage.artifact.artifact_id", ondelete="RESTRICT"),
+        nullable=False,
+        unique=True,
+    )
+    target_key: Mapped[str] = mapped_column(String(140), nullable=False, unique=True)
+
+
+class ForwardReturnVersion(CreatedAtMixin, Base):
+    __tablename__ = "forward_return_version"
+    __table_args__ = (
+        UniqueConstraint(
+            "forward_return_definition_id",
+            "version_number",
+            name="uq_forward_return_version_definition_version",
+        ),
+        {"schema": "data"},
+    )
+
+    forward_return_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True
+    )
+    forward_return_definition_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.forward_return_definition.forward_return_definition_id"),
+        nullable=False,
+    )
+    artifact_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("lineage.artifact.artifact_id"), nullable=False, unique=True
+    )
+    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    frequency: Mapped[str] = mapped_column(String(20), nullable=False)
+    decision_rule: Mapped[str] = mapped_column(String(80), nullable=False)
+    decision_time: Mapped[str] = mapped_column(String(40), nullable=False)
+    execution_policy: Mapped[str] = mapped_column(String(100), nullable=False)
+    start_price: Mapped[str] = mapped_column(String(40), nullable=False)
+    end_price: Mapped[str] = mapped_column(String(80), nullable=False)
+    execution_lag_sessions: Mapped[int] = mapped_column(Integer, nullable=False)
+    overlap_policy: Mapped[str] = mapped_column(String(80), nullable=False)
+    calendar_key: Mapped[str] = mapped_column(String(40), nullable=False)
+    included_member_roles: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+
+
+class ForwardReturnDataset(CreatedAtMixin, Base):
+    __tablename__ = "forward_return_dataset"
+    __table_args__ = ({"schema": "data"},)
+
+    forward_return_dataset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True
+    )
+    artifact_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("lineage.artifact.artifact_id"), nullable=False, unique=True
+    )
+    forward_return_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("data.forward_return_version.forward_return_version_id")
+    )
+    universe_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("catalog.universe_version.universe_version_id")
+    )
+    data_bundle_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("data.data_bundle_version.data_bundle_version_id")
+    )
+    market_dataset_publication_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("data.dataset_publication.dataset_publication_id")
+    )
+    calendar_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("catalog.calendar_version.calendar_version_id")
+    )
+    engine_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ops.engine_version.engine_version_id")
+    )
+    requested_start: Mapped[date] = mapped_column(Date, nullable=False)
+    requested_end: Mapped[date] = mapped_column(Date, nullable=False)
+    coverage_start: Mapped[date] = mapped_column(Date, nullable=False)
+    coverage_end: Mapped[date] = mapped_column(Date, nullable=False)
+    row_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
+
+
+class ForwardReturnValue(Base):
+    __tablename__ = "forward_return_value"
+    __table_args__ = ({"schema": "data"},)
+
+    forward_return_dataset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("data.forward_return_dataset.forward_return_dataset_id"),
+        primary_key=True,
+    )
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("catalog.asset.asset_id"), primary_key=True
+    )
+    decision_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    start_date: Mapped[date] = mapped_column(Date, nullable=False)
+    end_date: Mapped[date] = mapped_column(Date, nullable=False)
+    forward_return: Mapped[Decimal] = mapped_column(Numeric(28, 18), nullable=False)

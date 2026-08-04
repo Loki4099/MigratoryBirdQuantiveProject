@@ -8,6 +8,7 @@
 - `signals.v0.2.0.json`：27个signal template，展开为51个signal；
 - `models.v0.2.0.json`：5个代表性维度、31个非空维度子集模式和模型生成规则；
 - `strategies.v0.2.0.json`：3个策略模板、K=1/2/3、周/月频及兼容性策略。
+- `forward_returns.v0.2.0.json`：周频/月频两种并行的下一执行开盘到下一执行开盘评价目标。
 
 运行：
 
@@ -29,6 +30,7 @@
 | Concrete model specifications | 86 |
 | Strategy variant configurations | 9 |
 | Schedule versions | 2 |
+| Forward-return targets | 2 |
 
 ## 数量含义
 

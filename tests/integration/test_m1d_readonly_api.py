@@ -24,7 +24,9 @@ def test_real_catalogs_flow_through_readonly_api_and_built_frontend() -> None:
     reset_database(DATABASE_URL, "style_rotation_test", "test")
     engine = create_postgres_engine(DATABASE_URL)
     results = publish_catalogs(ArtifactService(engine), PROJECT_ROOT / "v0.2" / "catalogs")
-    strategy_id = results[-1]["artifact_id"]
+    strategy_id = next(
+        item["artifact_id"] for item in results if item["catalog_type"] == "strategy"
+    )
     client = TestClient(
         create_app(
             ArtifactQueryService(engine),
@@ -34,16 +36,17 @@ def test_real_catalogs_flow_through_readonly_api_and_built_frontend() -> None:
 
     health = client.get("/api/v2/health")
     assert health.status_code == 200
-    assert health.json()["database_revision"] == "20260803_11_v02_signal_data"
+    assert health.json()["database_revision"] == "20260804_12_v02_forward_ret"
 
     artifacts = client.get("/api/v2/artifacts?status=published&limit=100")
     assert artifacts.status_code == 200
-    assert artifacts.json()["total"] == 4
+    assert artifacts.json()["total"] == 5
     assert {item["artifact_key"] for item in artifacts.json()["items"]} == {
         "factor_catalog",
         "signal_catalog",
         "model_catalog",
         "strategy_catalog",
+        "forward_return_catalog",
     }
 
     detail = client.get(f"/api/v2/artifacts/{strategy_id}")

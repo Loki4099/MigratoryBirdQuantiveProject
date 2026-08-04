@@ -41,6 +41,7 @@ def validate() -> dict[str, int]:
     signals = _load("signals.v0.2.0.json")
     models = _load("models.v0.2.0.json")
     strategies = _load("strategies.v0.2.0.json")
+    forward_returns = _load("forward_returns.v0.2.0.json")
 
     definitions = factors["definitions"]
     definition_keys = [item["key"] for item in definitions]
@@ -145,6 +146,16 @@ def validate() -> dict[str, int]:
     if len(strategies["schedule_versions"]) != 2:
         raise AssertionError("Exactly weekly and monthly schedules are required in v0.2.0")
 
+    targets = forward_returns["definitions"]
+    target_keys = [item["key"] for item in targets]
+    _unique(target_keys, "forward-return target keys")
+    if {item["frequency"] for item in targets} != {"weekly", "monthly"}:
+        raise AssertionError(
+            "Exactly one weekly and one monthly forward-return target are required"
+        )
+    if any(item["included_member_roles"] != ["candidate", "benchmark"] for item in targets):
+        raise AssertionError("v0.2 forward returns must cover candidates and the benchmark")
+
     return {
         "factor_definitions": len(definition_keys),
         "factor_variants": len(variant_keys),
@@ -156,6 +167,7 @@ def validate() -> dict[str, int]:
         "concrete_model_specifications": concrete_model_specifications,
         "strategy_variant_configurations": strategy_configurations,
         "schedule_versions": len(strategies["schedule_versions"]),
+        "forward_return_targets": len(targets),
     }
 
 
