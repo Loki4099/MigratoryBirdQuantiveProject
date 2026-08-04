@@ -49,6 +49,11 @@ from style_rotation.factor.service import publish_factor_catalog
 from style_rotation.lineage.service import ArtifactService
 from style_rotation.persistence.database import database_status, reset_database, upgrade_database
 from style_rotation.persistence.session import create_postgres_engine
+from style_rotation.signal.diagnostic_engine import (
+    build_signal_evaluation_engine_spec,
+    publish_signal_evaluation_engine,
+)
+from style_rotation.signal.diagnostic_publication import SignalDiagnosticPublicationService
 from style_rotation.signal.engine import build_signal_engine_spec, publish_signal_engine
 from style_rotation.signal.publication import SignalDatasetPublicationService
 from style_rotation.signal.service import publish_signal_catalog
@@ -356,6 +361,42 @@ def _signal_publish(
         uuid.UUID(signal_engine_artifact_id),
     )
     print(json.dumps([item.to_dict() for item in results], indent=2, ensure_ascii=False))
+    return 0
+
+
+def _signal_bootstrap_evaluation_engine(
+    git_commit: str, dependency_lock_file: str, version_number: int
+) -> int:
+    settings = get_settings()
+    status = database_status(settings.database_url)
+    if status.current_revision is None:
+        raise ValueError("Database must be migrated before publishing an evaluation engine")
+    spec = build_signal_evaluation_engine_spec(
+        git_commit,
+        Path(dependency_lock_file),
+        status.current_revision,
+        version_number=version_number,
+    )
+    result = publish_signal_evaluation_engine(create_postgres_engine(settings.database_url), spec)
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _signal_evaluate(
+    signal_catalog_artifact_id: str,
+    forward_return_artifact_id: str,
+    signal_engine_artifact_id: str,
+    evaluation_engine_artifact_id: str,
+) -> int:
+    result = SignalDiagnosticPublicationService(
+        create_postgres_engine(get_settings().database_url)
+    ).publish(
+        uuid.UUID(signal_catalog_artifact_id),
+        uuid.UUID(forward_return_artifact_id),
+        uuid.UUID(signal_engine_artifact_id),
+        uuid.UUID(evaluation_engine_artifact_id),
+    )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0
 
 
@@ -837,6 +878,35 @@ def build_parser() -> argparse.ArgumentParser:
             args.eligibility_artifact_id,
             args.factor_engine_artifact_id,
             args.signal_engine_artifact_id,
+        )
+    )
+    signal_evaluation_engine_parser = signal_subparsers.add_parser(
+        "bootstrap-evaluation-engine",
+        help="Publish the deterministic Signal evaluation engine version",
+    )
+    signal_evaluation_engine_parser.add_argument("--git-commit", required=True)
+    signal_evaluation_engine_parser.add_argument(
+        "--dependency-lock-file", default="requirements.lock"
+    )
+    signal_evaluation_engine_parser.add_argument("--version", type=int, default=1)
+    signal_evaluation_engine_parser.set_defaults(
+        handler=lambda args: _signal_bootstrap_evaluation_engine(
+            args.git_commit, args.dependency_lock_file, args.version
+        )
+    )
+    signal_evaluate_parser = signal_subparsers.add_parser(
+        "evaluate", help="Publish Signal IC, spread, stability, event, and redundancy diagnostics"
+    )
+    signal_evaluate_parser.add_argument("--signal-catalog-artifact-id", required=True)
+    signal_evaluate_parser.add_argument("--forward-return-artifact-id", required=True)
+    signal_evaluate_parser.add_argument("--signal-engine-artifact-id", required=True)
+    signal_evaluate_parser.add_argument("--evaluation-engine-artifact-id", required=True)
+    signal_evaluate_parser.set_defaults(
+        handler=lambda args: _signal_evaluate(
+            args.signal_catalog_artifact_id,
+            args.forward_return_artifact_id,
+            args.signal_engine_artifact_id,
+            args.evaluation_engine_artifact_id,
         )
     )
 

@@ -134,6 +134,26 @@ class UnifiedCliTests(unittest.TestCase):
         self.assertEqual(result, 0)
         command.assert_called_once_with(*ids)
 
+    def test_signal_evaluate_requires_target_and_both_engines(self) -> None:
+        ids = [f"00000000-0000-0000-0000-00000000000{index}" for index in range(1, 5)]
+        with patch("style_rotation.cli.main._signal_evaluate", return_value=0) as command:
+            result = main(
+                [
+                    "signal",
+                    "evaluate",
+                    "--signal-catalog-artifact-id",
+                    ids[0],
+                    "--forward-return-artifact-id",
+                    ids[1],
+                    "--signal-engine-artifact-id",
+                    ids[2],
+                    "--evaluation-engine-artifact-id",
+                    ids[3],
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with(*ids)
+
     def test_factor_engine_command_requires_explicit_commit(self) -> None:
         with patch("style_rotation.cli.main._factor_bootstrap_engine", return_value=0) as command:
             result = main(

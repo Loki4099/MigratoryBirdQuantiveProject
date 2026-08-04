@@ -44,6 +44,11 @@ from style_rotation.factor.service import publish_factor_catalog
 from style_rotation.lineage.service import ArtifactService
 from style_rotation.persistence.database import reset_database
 from style_rotation.persistence.session import create_postgres_engine
+from style_rotation.signal.diagnostic_engine import (
+    build_signal_evaluation_engine_spec,
+    publish_signal_evaluation_engine,
+)
+from style_rotation.signal.diagnostic_publication import SignalDiagnosticPublicationService
 from style_rotation.signal.engine import build_signal_engine_spec, publish_signal_engine
 from style_rotation.signal.publication import SignalDatasetPublicationService
 from style_rotation.signal.service import publish_signal_catalog
@@ -155,7 +160,7 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     forward_engine_spec = build_forward_return_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260804_12_v02_forward_ret",
+        "20260804_13_v02_signal_eval",
     )
     forward_engine = publish_forward_return_engine(engine, forward_engine_spec)
     assert publish_forward_return_engine(engine, forward_engine_spec).reused is True
@@ -199,8 +204,8 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
             )
         ).one()
     assert forward_counts == (2, sum(item.row_count for item in forward), 5, 12)
-    requested_start = generated.sessions[252].session_date
-    requested_end = generated.sessions[259].session_date
+    requested_start = generated.sessions[270].session_date
+    requested_end = generated.sessions[277].session_date
     eligibility = EligibilityPublicationService(engine).publish(
         uuid.UUID(scope[1]["artifact_id"]),
         uuid.UUID(scope[2]["artifact_id"]),
@@ -213,7 +218,7 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     engine_spec = build_factor_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260804_12_v02_forward_ret",
+        "20260804_13_v02_signal_eval",
     )
     factor_engine = publish_factor_engine(engine, engine_spec)
     assert publish_factor_engine(engine, engine_spec).reused is True
@@ -262,13 +267,13 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
             {"day": requested_start},
         ).scalar_one()
     assert counts == (28, 1120, 140)
-    expected = (100 + 252 * 0.05 + (252 % 13) * 0.03) / 100 - 1
+    expected = (100 + 270 * 0.05 + (270 % 13) * 0.03) / (100 + 18 * 0.05 + (18 % 13) * 0.03) - 1
     assert math.isclose(sample, expected, rel_tol=0, abs_tol=1e-12)
 
     signal_engine_spec = build_signal_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260804_12_v02_forward_ret",
+        "20260804_13_v02_signal_eval",
     )
     signal_engine = publish_signal_engine(engine, signal_engine_spec)
     assert publish_signal_engine(engine, signal_engine_spec).reused is True
@@ -356,12 +361,58 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
         Decimal("1.000000000000000000"),
     ]
     assert threshold_values == [(Decimal("1.000000000000000000"), "positive", None)] * 4
-    assert crossover_start == generated.sessions[253].session_date
+    assert crossover_start == generated.sessions[271].session_date
+
+    evaluation_spec = build_signal_evaluation_engine_spec(
+        "a" * 40,
+        PROJECT_ROOT / "requirements.lock",
+        "20260804_13_v02_signal_eval",
+    )
+    evaluation_engine = publish_signal_evaluation_engine(engine, evaluation_spec)
+    evaluation_service = SignalDiagnosticPublicationService(engine)
+    evaluations = tuple(
+        evaluation_service.publish(
+            signal_catalog.release_artifact_id,
+            item.artifact_id,
+            signal_engine.artifact_id,
+            evaluation_engine.artifact_id,
+        )
+        for item in forward
+    )
+    evaluations_reused = tuple(
+        evaluation_service.publish(
+            signal_catalog.release_artifact_id,
+            item.artifact_id,
+            signal_engine.artifact_id,
+            evaluation_engine.artifact_id,
+        )
+        for item in forward
+    )
+    assert {item.frequency for item in evaluations} == {"weekly", "monthly"}
+    assert {item.signal_count for item in evaluations} == {51}
+    assert {item.pair_count for item in evaluations} == {1275}
+    assert all(item.reused for item in evaluations_reused)
+    assert [item.artifact_id for item in evaluations] == [
+        item.artifact_id for item in evaluations_reused
+    ]
+    with engine.connect() as connection:
+        evaluation_counts = connection.execute(
+            text(
+                "SELECT (SELECT count(*) FROM signal.signal_evaluation), "
+                "(SELECT count(*) FROM signal.signal_evaluation_period), "
+                "(SELECT count(*) FROM signal.signal_evaluation_metric), "
+                "(SELECT count(*) FROM signal.signal_pair_diagnostic), "
+                "(SELECT count(*) FROM lineage.artifact_dependency dependency "
+                "JOIN lineage.artifact artifact ON artifact.artifact_id = "
+                "dependency.artifact_id WHERE artifact.artifact_type = 'signal_evaluation')"
+            )
+        ).one()
+    assert evaluation_counts == (2, 153, 204, 2550, 116)
 
     diagnostic_spec = build_factor_diagnostic_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260804_12_v02_forward_ret",
+        "20260804_13_v02_signal_eval",
     )
     diagnostic_engine = publish_factor_diagnostic_engine(engine, diagnostic_spec)
     diagnostic_service = FactorDiagnosticPublicationService(engine)
@@ -427,6 +478,12 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
         engine.begin() as connection,
     ):
         connection.execute(text("UPDATE data.forward_return_value SET forward_return = 0"))
+
+    with (
+        pytest.raises(Exception, match="only change while their artifact is draft"),
+        engine.begin() as connection,
+    ):
+        connection.execute(text("UPDATE signal.signal_evaluation_metric SET period_count = 1"))
 
     short = EligibilityPublicationService(engine).publish(
         uuid.UUID(scope[1]["artifact_id"]),

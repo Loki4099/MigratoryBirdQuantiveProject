@@ -10,6 +10,7 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     Date,
+    Float,
     ForeignKey,
     Integer,
     Numeric,
@@ -176,6 +177,135 @@ class SignalQualityIssue(CreatedAtMixin, Base):
         UUID(as_uuid=True), ForeignKey("catalog.asset.asset_id", ondelete="RESTRICT")
     )
     observation_date: Mapped[date | None] = mapped_column(Date)
+    severity: Mapped[str] = mapped_column(String(20), nullable=False)
+    issue_code: Mapped[str] = mapped_column(String(120), nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    details: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+
+
+class SignalEvaluation(CreatedAtMixin, Base):
+    __tablename__ = "signal_evaluation"
+    __table_args__ = ({"schema": "signal"},)
+
+    signal_evaluation_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    artifact_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("lineage.artifact.artifact_id"), unique=True
+    )
+    signal_catalog_artifact_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("lineage.artifact.artifact_id")
+    )
+    universe_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("catalog.universe_version.universe_version_id")
+    )
+    data_bundle_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("data.data_bundle_version.data_bundle_version_id")
+    )
+    eligibility_snapshot_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("catalog.eligibility_snapshot.eligibility_snapshot_id")
+    )
+    signal_engine_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ops.engine_version.engine_version_id")
+    )
+    evaluation_engine_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ops.engine_version.engine_version_id")
+    )
+    forward_return_dataset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("data.forward_return_dataset.forward_return_dataset_id")
+    )
+    frequency: Mapped[str] = mapped_column(String(20), nullable=False)
+    coverage_start: Mapped[date] = mapped_column(Date, nullable=False)
+    coverage_end: Mapped[date] = mapped_column(Date, nullable=False)
+    signal_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    period_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    pair_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    high_correlation_threshold: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class SignalEvaluationPeriod(Base):
+    __tablename__ = "signal_evaluation_period"
+    __table_args__ = ({"schema": "signal"},)
+
+    signal_evaluation_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("signal.signal_evaluation.signal_evaluation_id"),
+        primary_key=True,
+    )
+    signal_dataset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("signal.signal_dataset.signal_dataset_id"), primary_key=True
+    )
+    decision_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    rank_ic: Mapped[float | None] = mapped_column(Float)
+    rank_ic_reason: Mapped[str | None] = mapped_column(String(100))
+    top_bottom_spread: Mapped[float] = mapped_column(Float, nullable=False)
+    active_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    event_count: Mapped[int | None] = mapped_column(Integer)
+
+
+class SignalEvaluationMetric(Base):
+    __tablename__ = "signal_evaluation_metric"
+    __table_args__ = ({"schema": "signal"},)
+
+    signal_evaluation_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("signal.signal_evaluation.signal_evaluation_id"),
+        primary_key=True,
+    )
+    signal_dataset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("signal.signal_dataset.signal_dataset_id"), primary_key=True
+    )
+    window_key: Mapped[str] = mapped_column(String(30), primary_key=True)
+    window_start: Mapped[date] = mapped_column(Date, nullable=False)
+    window_end: Mapped[date] = mapped_column(Date, nullable=False)
+    period_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    valid_ic_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    undefined_ic_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    mean_rank_ic: Mapped[float | None] = mapped_column(Float)
+    median_rank_ic: Mapped[float | None] = mapped_column(Float)
+    positive_ic_ratio: Mapped[float | None] = mapped_column(Float)
+    information_ratio: Mapped[float | None] = mapped_column(Float)
+    mean_top_bottom_spread: Mapped[float] = mapped_column(Float, nullable=False)
+    event_rate: Mapped[float | None] = mapped_column(Float)
+    event_asset_concentration: Mapped[float | None] = mapped_column(Float)
+    non_neutral_rate: Mapped[float] = mapped_column(Float, nullable=False)
+    mean_top2_turnover: Mapped[float | None] = mapped_column(Float)
+
+
+class SignalPairDiagnostic(Base):
+    __tablename__ = "signal_pair_diagnostic"
+    __table_args__ = ({"schema": "signal"},)
+
+    signal_evaluation_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("signal.signal_evaluation.signal_evaluation_id"),
+        primary_key=True,
+    )
+    left_signal_dataset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("signal.signal_dataset.signal_dataset_id"), primary_key=True
+    )
+    right_signal_dataset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("signal.signal_dataset.signal_dataset_id"), primary_key=True
+    )
+    score_observation_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    score_spearman: Mapped[float | None] = mapped_column(Float)
+    spread_period_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    spread_correlation: Mapped[float | None] = mapped_column(Float)
+    mean_top2_overlap: Mapped[float] = mapped_column(Float, nullable=False)
+    high_correlation: Mapped[bool] = mapped_column(Boolean, nullable=False)
+
+
+class SignalDiagnosticIssue(CreatedAtMixin, Base):
+    __tablename__ = "signal_diagnostic_issue"
+    __table_args__ = ({"schema": "signal"},)
+
+    signal_diagnostic_issue_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True
+    )
+    signal_evaluation_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("signal.signal_evaluation.signal_evaluation_id")
+    )
+    signal_dataset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("signal.signal_dataset.signal_dataset_id")
+    )
     severity: Mapped[str] = mapped_column(String(20), nullable=False)
     issue_code: Mapped[str] = mapped_column(String(120), nullable=False)
     message: Mapped[str] = mapped_column(Text, nullable=False)
