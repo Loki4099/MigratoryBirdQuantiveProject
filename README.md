@@ -4,7 +4,7 @@ Versioned research platform for explainable US style rotation across IWF, IWD, I
 
 ## Status
 
-v0.2 is being rebuilt in short, independently verified milestones. M0 through M4 and M5A are complete. The platform now has immutable publication, typed market data, deterministic Factor/Signal calculation and diagnostics, a read-only bilingual Signals API/UI, and 86 immutable Model specifications built from exact Signal versions. Model calculation/diagnostics, strategies, and experiments follow in later milestones.
+v0.2 is being rebuilt in short, independently verified milestones. M0 through M4 and M5A–M5B are complete. The platform now has immutable publication, typed market data, deterministic Factor/Signal calculation and diagnostics, a read-only bilingual Signals API/UI, 86 immutable Model specifications, and deterministic Model datasets with exact Signal-dataset input mappings. Model diagnostics/API/UI, strategies, and experiments follow in later milestones.
 
 The authoritative plan is [v0.2/正式开发方案.md](v0.2/正式开发方案.md). Detailed decisions and database rationale are stored in [v0.2/设计决策记录.md](v0.2/设计决策记录.md) and [v0.2/数据库设计.md](v0.2/数据库设计.md).
 
@@ -94,6 +94,8 @@ style-rotation data publish-forward-returns --catalog-artifact-id <uuid> --unive
 style-rotation signal bootstrap-evaluation-engine --git-commit <hex-commit> --dependency-lock-file requirements.lock --version 1
 style-rotation signal evaluate --signal-catalog-artifact-id <uuid> --forward-return-artifact-id <uuid> --signal-engine-artifact-id <uuid> --evaluation-engine-artifact-id <uuid>
 style-rotation model bootstrap --catalog-file v0.2/catalogs/models.v0.2.0.json
+style-rotation model bootstrap-engine --git-commit <hex-commit> --dependency-lock-file requirements.lock --version 1
+style-rotation model publish --model-catalog-artifact-id <uuid> --signal-catalog-artifact-id <uuid> --bundle-artifact-id <uuid> --eligibility-artifact-id <uuid> --signal-engine-artifact-id <uuid> --model-engine-artifact-id <uuid>
 style-rotation artifact list
 style-rotation lineage show <artifact-uuid>
 ```

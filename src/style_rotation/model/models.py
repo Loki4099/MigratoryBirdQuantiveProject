@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import uuid
+from datetime import date
 from decimal import Decimal
 
 from sqlalchemy import (
+    BigInteger,
     CheckConstraint,
+    Date,
     ForeignKey,
     ForeignKeyConstraint,
     Integer,
@@ -172,3 +175,85 @@ class ModelComponent(CreatedAtMixin, Base):
     ordinal: Mapped[int] = mapped_column(Integer)
     input_transform: Mapped[str] = mapped_column(String(40))
     weight: Mapped[Decimal] = mapped_column(Numeric(24, 18))
+
+
+class ModelDataset(CreatedAtMixin, Base):
+    __tablename__ = "model_dataset"
+    __table_args__ = (
+        UniqueConstraint(
+            "model_specification_id",
+            "universe_version_id",
+            "data_bundle_version_id",
+            "eligibility_snapshot_id",
+            "engine_version_id",
+            "input_set_hash",
+            name="uq_model_dataset_exact_inputs",
+        ),
+        {"schema": "model"},
+    )
+
+    model_dataset_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    artifact_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("lineage.artifact.artifact_id"), unique=True
+    )
+    model_specification_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("model.model_specification.model_specification_id")
+    )
+    universe_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("catalog.universe_version.universe_version_id")
+    )
+    data_bundle_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("data.data_bundle_version.data_bundle_version_id")
+    )
+    eligibility_snapshot_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("catalog.eligibility_snapshot.eligibility_snapshot_id")
+    )
+    engine_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ops.engine_version.engine_version_id")
+    )
+    input_set_hash: Mapped[str] = mapped_column(String(64))
+    coverage_start: Mapped[date] = mapped_column(Date)
+    coverage_end: Mapped[date] = mapped_column(Date)
+    row_count: Mapped[int] = mapped_column(BigInteger)
+
+
+class ModelDatasetInput(CreatedAtMixin, Base):
+    __tablename__ = "model_dataset_input"
+    __table_args__ = (
+        UniqueConstraint(
+            "model_dataset_id", "signal_dataset_id", name="uq_model_dataset_signal_input"
+        ),
+        {"schema": "model"},
+    )
+
+    model_dataset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("model.model_dataset.model_dataset_id"),
+        primary_key=True,
+    )
+    model_component_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("model.model_component.model_component_id"),
+        primary_key=True,
+    )
+    signal_dataset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("signal.signal_dataset.signal_dataset_id")
+    )
+
+
+class ModelValue(Base):
+    __tablename__ = "model_value"
+    __table_args__ = ({"schema": "model"},)
+
+    model_dataset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("model.model_dataset.model_dataset_id"),
+        primary_key=True,
+    )
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("catalog.asset.asset_id"), primary_key=True
+    )
+    observation_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    score: Mapped[Decimal] = mapped_column(Numeric(24, 18))
+    direction: Mapped[str] = mapped_column(String(20))
+    confidence: Mapped[Decimal] = mapped_column(Numeric(24, 18))

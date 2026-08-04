@@ -47,6 +47,8 @@ from style_rotation.factor.engine import (
 from style_rotation.factor.publication import FactorDatasetPublicationService
 from style_rotation.factor.service import publish_factor_catalog
 from style_rotation.lineage.service import ArtifactService
+from style_rotation.model.engine import build_model_engine_spec, publish_model_engine
+from style_rotation.model.publication import ModelDatasetPublicationService
 from style_rotation.model.service import publish_model_catalog
 from style_rotation.persistence.database import database_status, reset_database, upgrade_database
 from style_rotation.persistence.session import create_postgres_engine
@@ -330,6 +332,44 @@ def _model_bootstrap(catalog_file: str) -> int:
         create_postgres_engine(get_settings().database_url), Path(catalog_file)
     )
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _model_bootstrap_engine(git_commit: str, dependency_lock_file: str, version_number: int) -> int:
+    settings = get_settings()
+    status = database_status(settings.database_url)
+    if status.current_revision is None:
+        raise ValueError("Database must be migrated before publishing a Model engine")
+    spec = build_model_engine_spec(
+        git_commit,
+        Path(dependency_lock_file),
+        status.current_revision,
+        version_number=version_number,
+    )
+    result = publish_model_engine(create_postgres_engine(settings.database_url), spec)
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _model_publish(
+    model_catalog_artifact_id: str,
+    signal_catalog_artifact_id: str,
+    bundle_artifact_id: str,
+    eligibility_artifact_id: str,
+    signal_engine_artifact_id: str,
+    model_engine_artifact_id: str,
+) -> int:
+    results = ModelDatasetPublicationService(
+        create_postgres_engine(get_settings().database_url)
+    ).publish(
+        uuid.UUID(model_catalog_artifact_id),
+        uuid.UUID(signal_catalog_artifact_id),
+        uuid.UUID(bundle_artifact_id),
+        uuid.UUID(eligibility_artifact_id),
+        uuid.UUID(signal_engine_artifact_id),
+        uuid.UUID(model_engine_artifact_id),
+    )
+    print(json.dumps([item.to_dict() for item in results], indent=2, ensure_ascii=False))
     return 0
 
 
@@ -930,6 +970,36 @@ def build_parser() -> argparse.ArgumentParser:
         "--catalog-file", default="v0.2/catalogs/models.v0.2.0.json"
     )
     model_bootstrap_parser.set_defaults(handler=lambda args: _model_bootstrap(args.catalog_file))
+    model_engine_parser = model_subparsers.add_parser(
+        "bootstrap-engine", help="Publish the deterministic Model engine version"
+    )
+    model_engine_parser.add_argument("--git-commit", required=True)
+    model_engine_parser.add_argument("--dependency-lock-file", default="requirements.lock")
+    model_engine_parser.add_argument("--version", type=int, default=1)
+    model_engine_parser.set_defaults(
+        handler=lambda args: _model_bootstrap_engine(
+            args.git_commit, args.dependency_lock_file, args.version
+        )
+    )
+    model_publish_parser = model_subparsers.add_parser(
+        "publish", help="Calculate and publish every specification in a Model catalog"
+    )
+    model_publish_parser.add_argument("--model-catalog-artifact-id", required=True)
+    model_publish_parser.add_argument("--signal-catalog-artifact-id", required=True)
+    model_publish_parser.add_argument("--bundle-artifact-id", required=True)
+    model_publish_parser.add_argument("--eligibility-artifact-id", required=True)
+    model_publish_parser.add_argument("--signal-engine-artifact-id", required=True)
+    model_publish_parser.add_argument("--model-engine-artifact-id", required=True)
+    model_publish_parser.set_defaults(
+        handler=lambda args: _model_publish(
+            args.model_catalog_artifact_id,
+            args.signal_catalog_artifact_id,
+            args.bundle_artifact_id,
+            args.eligibility_artifact_id,
+            args.signal_engine_artifact_id,
+            args.model_engine_artifact_id,
+        )
+    )
 
     for command in PLANNED_COMMANDS:
         if command.key in {

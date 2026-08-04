@@ -42,6 +42,9 @@ from style_rotation.factor.engine import (
 from style_rotation.factor.publication import FactorDatasetPublicationService
 from style_rotation.factor.service import publish_factor_catalog
 from style_rotation.lineage.service import ArtifactService
+from style_rotation.model.engine import build_model_engine_spec, publish_model_engine
+from style_rotation.model.publication import ModelDatasetPublicationService
+from style_rotation.model.service import publish_model_catalog
 from style_rotation.persistence.database import reset_database
 from style_rotation.persistence.session import create_postgres_engine
 from style_rotation.signal.diagnostic_engine import (
@@ -99,6 +102,9 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     )
     signal_catalog = publish_signal_catalog(
         engine, PROJECT_ROOT / "v0.2" / "catalogs" / "signals.v0.2.0.json"
+    )
+    model_catalog = publish_model_catalog(
+        engine, PROJECT_ROOT / "v0.2" / "catalogs" / "models.v0.2.0.json"
     )
     target_catalog = publish_forward_return_catalog(
         engine, PROJECT_ROOT / "v0.2" / "catalogs" / "forward_returns.v0.2.0.json"
@@ -363,6 +369,81 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     assert threshold_values == [(Decimal("1.000000000000000000"), "positive", None)] * 4
     assert crossover_start == generated.sessions[271].session_date
 
+    model_engine_spec = build_model_engine_spec(
+        "a" * 40,
+        PROJECT_ROOT / "requirements.lock",
+        "20260804_15_v02_model_data",
+    )
+    model_engine = publish_model_engine(engine, model_engine_spec)
+    assert publish_model_engine(engine, model_engine_spec).reused is True
+    model_service = ModelDatasetPublicationService(engine)
+    models = model_service.publish(
+        model_catalog.release_artifact_id,
+        signal_catalog.release_artifact_id,
+        bundle.artifact_id,
+        eligibility.artifact_id,
+        signal_engine.artifact_id,
+        model_engine.artifact_id,
+    )
+    models_reused = model_service.publish(
+        model_catalog.release_artifact_id,
+        signal_catalog.release_artifact_id,
+        bundle.artifact_id,
+        eligibility.artifact_id,
+        signal_engine.artifact_id,
+        model_engine.artifact_id,
+    )
+    assert len(models) == 86
+    assert sum(item.specification_type == "single_signal" for item in models) == 51
+    assert sum(item.specification_type == "directional_vote" for item in models) == 2
+    assert sum(item.input_count for item in models) == 331
+    assert not any(item.reused for item in models)
+    assert all(item.reused for item in models_reused)
+    assert [item.artifact_id for item in models] == [item.artifact_id for item in models_reused]
+    assert sum(item.row_count == 28 for item in models) == 8
+    assert sum(item.row_count == 32 for item in models) == 78
+    with engine.connect() as connection:
+        model_counts = connection.execute(
+            text(
+                "SELECT (SELECT count(*) FROM model.model_dataset), "
+                "(SELECT count(*) FROM model.model_dataset_input), "
+                "(SELECT count(*) FROM model.model_value), "
+                "(SELECT count(*) FROM lineage.artifact_dependency dependency "
+                "JOIN lineage.artifact artifact ON artifact.artifact_id = "
+                "dependency.artifact_id WHERE artifact.artifact_type = 'model_dataset')"
+            )
+        ).one()
+        single_matches_signal = connection.execute(
+            text(
+                "SELECT count(*) FROM model.model_value model_value "
+                "JOIN model.model_dataset model_dataset ON model_dataset.model_dataset_id = "
+                "model_value.model_dataset_id JOIN model.model_specification specification ON "
+                "specification.model_specification_id = model_dataset.model_specification_id "
+                "JOIN signal.signal_value signal_value ON signal_value.asset_id = "
+                "model_value.asset_id AND signal_value.observation_date = "
+                "model_value.observation_date JOIN signal.signal_dataset signal_dataset ON "
+                "signal_dataset.signal_dataset_id = signal_value.signal_dataset_id "
+                "JOIN signal.signal_version signal_version ON signal_version.signal_version_id = "
+                "signal_dataset.signal_version_id JOIN signal.signal_definition definition ON "
+                "definition.signal_definition_id = signal_version.signal_definition_id "
+                "WHERE specification.specification_key = "
+                "'single_signal__return_continuation__total_return__w252' "
+                "AND definition.signal_key = 'return_continuation__total_return__w252' "
+                "AND model_value.score = signal_value.score"
+            )
+        ).scalar_one()
+        invalid_model_values = connection.execute(
+            text(
+                "SELECT count(*) FROM model.model_value WHERE confidence <> abs(score) OR "
+                "(score > 0 AND direction <> 'positive') OR "
+                "(score < 0 AND direction <> 'negative') OR "
+                "(score = 0 AND direction <> 'neutral')"
+            )
+        ).scalar_one()
+    assert model_counts == (86, 331, 2720, 761)
+    assert single_matches_signal == 32
+    assert invalid_model_values == 0
+
     evaluation_spec = build_signal_evaluation_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
@@ -483,6 +564,12 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
         engine.begin() as connection,
     ):
         connection.execute(text("UPDATE signal.signal_value SET score = 0"))
+
+    with (
+        pytest.raises(Exception, match="only change while their artifact is draft"),
+        engine.begin() as connection,
+    ):
+        connection.execute(text("UPDATE model.model_value SET score = 0"))
 
     with (
         pytest.raises(Exception, match="only change while their artifact is draft"),
