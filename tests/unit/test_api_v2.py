@@ -458,6 +458,45 @@ class FakeArtifactReader:
                            "artifact_key": "result-a"}],
         }
 
+    def product_ranking(
+        self, *, cohort_artifact_id: uuid.UUID | None, metric_key: str
+    ) -> dict[str, Any]:
+        cohort_id = cohort_artifact_id or uuid.uuid4()
+        return {
+            "cohorts": [{
+                "artifact_id": cohort_id, "cohort_key": "weekly-full-5bps",
+                "version_number": 1, "name": "Weekly Full 5 bps",
+                "description": "Strict comparison context", "context_fingerprint": "d" * 64,
+                "template_key": "full_history", "initialization_policy": "carry_in",
+                "as_of_date": date(2026, 1, 9),
+                "common_data_ready_date": date(2025, 1, 1),
+                "common_simulation_start": date(2025, 1, 2),
+                "common_metric_start": date(2025, 1, 2),
+                "common_metric_end": date(2026, 1, 9), "currency": "USD",
+                "member_count": 2, "benchmark_key": "spy_buy_and_hold",
+                "cost_bps_per_side": 5, "required_warmup_observations": 253,
+            }],
+            "active_cohort_artifact_id": cohort_id, "selected_metric": metric_key,
+            "ranking_direction": "higher_is_better", "candidate_count": 2,
+            "ranked_count": 1,
+            "entries": [{
+                "rank": 1, "result_artifact_id": uuid.uuid4(),
+                "product_artifact_id": uuid.uuid4(), "product_key": "product-a",
+                "model_specification_key": "dimension_equal_weight__momentum_trend",
+                "variant_key": "top_k_equal_weight__k2", "target_k": 2,
+                "frequency": "weekly", "metric_value": 1.1, "value_status": "defined",
+                "reason_code": None, "observation_count": 252,
+                "core_metrics": {"strategy.cagr": 0.12},
+            }, {
+                "rank": None, "result_artifact_id": uuid.uuid4(),
+                "product_artifact_id": uuid.uuid4(), "product_key": "product-b",
+                "model_specification_key": "single_signal__rsi", "variant_key": "top_k__k2",
+                "target_k": 2, "frequency": "monthly", "metric_value": None,
+                "value_status": "undefined", "reason_code": "insufficient_observations",
+                "observation_count": 20, "core_metrics": {},
+            }],
+        }
+
 
 def _client() -> tuple[TestClient, FakeArtifactReader]:
     reader = FakeArtifactReader()
@@ -639,6 +678,21 @@ def test_experiment_api_exposes_performance_only_at_strategy_aggregation_layer()
         if item["key"] == "experiment"
     )
     assert experiment_domain["availability"] == "available"
+
+
+def test_product_ranking_is_scoped_to_one_immutable_cohort_and_one_metric() -> None:
+    client, _reader = _client()
+    response = client.get("/api/v2/rankings/products?metric=net_sharpe")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["selected_metric"] == "net_sharpe"
+    assert payload["candidate_count"] == 2
+    assert payload["ranked_count"] == 1
+    assert payload["entries"][0]["rank"] == 1
+    assert payload["entries"][1]["rank"] is None
+    assert payload["entries"][1]["reason_code"] == "insufficient_observations"
+    invalid = client.get("/api/v2/rankings/products?metric=black_box_score")
+    assert invalid.status_code == 422
 
 
 def test_committed_openapi_contract_matches_application() -> None:

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { api } from "../api/client";
 import { ErrorState, LoadingState, QualityBadge } from "../components/QueryState";
+import { ProductRanking } from "../components/ProductRanking";
 
 export function DashboardPage() {
   const { t } = useTranslation();
@@ -27,13 +28,14 @@ export function DashboardPage() {
         <article className="stat-card"><span>{t("dashboard.systemHealth")}</span><QualityBadge state="ok" /><strong>{health.data?.database_revision}</strong></article>
         <article className="stat-card"><span>{t("dashboard.publishedObjects")}</span><strong className="stat-number">{artifacts.data?.total ?? 0}</strong><small>{t("dashboard.traceHint")}</small></article>
         <article className="stat-card"><span>{t("dashboard.currentScope")}</span><strong className="stat-number">{available} / {capabilities.data?.domains.length ?? 0}</strong><small>{t("common.available")}</small></article>
-        <article className="stat-card accent"><span>{t("dashboard.nextMilestone")}</span><strong>{t("dashboard.nextValue")}</strong><small>M4</small></article>
+        <article className="stat-card accent"><span>{t("dashboard.nextMilestone")}</span><strong>{t("dashboard.nextValue")}</strong><small>M8B</small></article>
       </section>
       <section className="foundation-strip">
         <div><span>01</span><strong>Canonical identity</strong><small>canonical-json-v2</small></div>
         <div><span>02</span><strong>Immutable publication</strong><small>PostgreSQL enforced</small></div>
         <div><span>03</span><strong>Lineage manifest</strong><small>Complete dependency snapshot</small></div>
       </section>
+      <ProductRanking compact />
     </div>
   );
 }

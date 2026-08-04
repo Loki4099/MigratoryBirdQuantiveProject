@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 
 import { api } from "../api/client";
 import { EmptyState, ErrorState, LoadingState, QualityBadge } from "../components/QueryState";
+import { ProductRanking } from "../components/ProductRanking";
 
 const ratio = (value: number | null | undefined) => value == null ? "—" :
   new Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 2 }).format(value);
@@ -50,6 +51,8 @@ export function ExperimentsPage() {
       <div><span>{t("experiment.accepted")}</span><strong>{accepted}</strong></div>
       <div><span>{t("experiment.failed")}</span><strong>{failed}</strong></div>
     </section>
+
+    <ProductRanking />
 
     <section className="catalog-section">
       <div className="section-heading"><div><p className="eyebrow">COMPARABLE MARKET ASSUMPTIONS</p><h2>{t("experiment.cells")}</h2></div>

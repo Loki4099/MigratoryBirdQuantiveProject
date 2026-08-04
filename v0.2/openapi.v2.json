@@ -397,6 +397,112 @@
         "title": "CapabilitiesResponse",
         "type": "object"
       },
+      "ComparisonCohortItem": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "format": "uuid",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "as_of_date": {
+            "format": "date",
+            "title": "As Of Date",
+            "type": "string"
+          },
+          "benchmark_key": {
+            "title": "Benchmark Key",
+            "type": "string"
+          },
+          "cohort_key": {
+            "title": "Cohort Key",
+            "type": "string"
+          },
+          "common_data_ready_date": {
+            "format": "date",
+            "title": "Common Data Ready Date",
+            "type": "string"
+          },
+          "common_metric_end": {
+            "format": "date",
+            "title": "Common Metric End",
+            "type": "string"
+          },
+          "common_metric_start": {
+            "format": "date",
+            "title": "Common Metric Start",
+            "type": "string"
+          },
+          "common_simulation_start": {
+            "format": "date",
+            "title": "Common Simulation Start",
+            "type": "string"
+          },
+          "context_fingerprint": {
+            "title": "Context Fingerprint",
+            "type": "string"
+          },
+          "cost_bps_per_side": {
+            "title": "Cost Bps Per Side",
+            "type": "number"
+          },
+          "currency": {
+            "const": "USD",
+            "title": "Currency",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "initialization_policy": {
+            "title": "Initialization Policy",
+            "type": "string"
+          },
+          "member_count": {
+            "title": "Member Count",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "required_warmup_observations": {
+            "title": "Required Warmup Observations",
+            "type": "integer"
+          },
+          "template_key": {
+            "title": "Template Key",
+            "type": "string"
+          },
+          "version_number": {
+            "title": "Version Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "cohort_key",
+          "version_number",
+          "name",
+          "description",
+          "context_fingerprint",
+          "template_key",
+          "initialization_policy",
+          "as_of_date",
+          "common_data_ready_date",
+          "common_simulation_start",
+          "common_metric_start",
+          "common_metric_end",
+          "currency",
+          "member_count",
+          "benchmark_key",
+          "cost_bps_per_side",
+          "required_warmup_observations"
+        ],
+        "title": "ComparisonCohortItem",
+        "type": "object"
+      },
       "DataBundleItem": {
         "additionalProperties": false,
         "properties": {
@@ -2719,6 +2825,187 @@
         "title": "ModelWindowMetricItem",
         "type": "object"
       },
+      "ProductRankingEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "core_metrics": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Core Metrics",
+            "type": "object"
+          },
+          "frequency": {
+            "enum": [
+              "weekly",
+              "monthly"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "metric_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metric Value"
+          },
+          "model_specification_key": {
+            "title": "Model Specification Key",
+            "type": "string"
+          },
+          "observation_count": {
+            "title": "Observation Count",
+            "type": "integer"
+          },
+          "product_artifact_id": {
+            "format": "uuid",
+            "title": "Product Artifact Id",
+            "type": "string"
+          },
+          "product_key": {
+            "title": "Product Key",
+            "type": "string"
+          },
+          "rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Code"
+          },
+          "result_artifact_id": {
+            "format": "uuid",
+            "title": "Result Artifact Id",
+            "type": "string"
+          },
+          "target_k": {
+            "title": "Target K",
+            "type": "integer"
+          },
+          "value_status": {
+            "title": "Value Status",
+            "type": "string"
+          },
+          "variant_key": {
+            "title": "Variant Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rank",
+          "result_artifact_id",
+          "product_artifact_id",
+          "product_key",
+          "model_specification_key",
+          "variant_key",
+          "target_k",
+          "frequency",
+          "metric_value",
+          "value_status",
+          "reason_code",
+          "observation_count",
+          "core_metrics"
+        ],
+        "title": "ProductRankingEntry",
+        "type": "object"
+      },
+      "ProductRankingResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "active_cohort_artifact_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Cohort Artifact Id"
+          },
+          "candidate_count": {
+            "title": "Candidate Count",
+            "type": "integer"
+          },
+          "cohorts": {
+            "items": {
+              "$ref": "#/components/schemas/ComparisonCohortItem"
+            },
+            "title": "Cohorts",
+            "type": "array"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/ProductRankingEntry"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "ranked_count": {
+            "title": "Ranked Count",
+            "type": "integer"
+          },
+          "ranking_direction": {
+            "enum": [
+              "higher_is_better",
+              "lower_is_better"
+            ],
+            "title": "Ranking Direction",
+            "type": "string"
+          },
+          "selected_metric": {
+            "title": "Selected Metric",
+            "type": "string"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "cohorts",
+          "active_cohort_artifact_id",
+          "selected_metric",
+          "ranking_direction",
+          "candidate_count",
+          "ranked_count",
+          "entries"
+        ],
+        "title": "ProductRankingResponse",
+        "type": "object"
+      },
       "QualitySummary": {
         "additionalProperties": false,
         "properties": {
@@ -4612,6 +4899,92 @@
         "summary": "Model Overview",
         "tags": [
           "model"
+        ]
+      }
+    },
+    "/api/v2/rankings/products": {
+      "get": {
+        "operationId": "product_ranking_api_v2_rankings_products_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cohort_artifact_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cohort Artifact Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "metric",
+            "required": false,
+            "schema": {
+              "default": "net_sharpe",
+              "enum": [
+                "net_sharpe",
+                "net_cagr",
+                "relative_wealth_growth",
+                "maximum_drawdown",
+                "calmar"
+              ],
+              "title": "Metric",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "if-none-match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-None-Match"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductRankingResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Not modified"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Product Ranking",
+        "tags": [
+          "experiment"
         ]
       }
     },

@@ -15,6 +15,7 @@ export type StrategyOverviewResponse = components["schemas"]["StrategyOverviewRe
 export type StrategyTargetPathResponse = components["schemas"]["StrategyTargetPathResponse"];
 export type ExperimentOverviewResponse = components["schemas"]["ExperimentOverviewResponse"];
 export type ExperimentResultResponse = components["schemas"]["ExperimentResultResponse"];
+export type ProductRankingResponse = components["schemas"]["ProductRankingResponse"];
 
 export class ApiClientError extends Error {
   constructor(
@@ -60,6 +61,11 @@ export const api = {
     getJson<ExperimentOverviewResponse>("/api/v2/experiments/overview"),
   experimentResult: (artifactId: string) =>
     getJson<ExperimentResultResponse>(`/api/v2/experiments/results/${artifactId}`),
+  productRanking: (metric: string, cohortArtifactId = "") => {
+    const search = new URLSearchParams({ metric });
+    if (cohortArtifactId) search.set("cohort_artifact_id", cohortArtifactId);
+    return getJson<ProductRankingResponse>(`/api/v2/rankings/products?${search.toString()}`);
+  },
   artifacts: (statuses = ["published"]) => {
     const search = new URLSearchParams();
     statuses.forEach((status) => search.append("status", status));

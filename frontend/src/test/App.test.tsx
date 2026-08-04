@@ -242,6 +242,26 @@ const experimentResult = {
   quality_checks: [{ check_key: "outputs_published", scope_key: "global", status: "passed",
     severity: "info", message: "All outputs published" }], artifacts: [],
 };
+const productRanking = {
+  context: health.context, quality: health.quality,
+  cohorts: [{ artifact_id: "00000000-0000-0000-0000-000000000070",
+    cohort_key: "weekly-full-5bps", version_number: 1, name: "Weekly Full 5 bps",
+    description: "Strict context", context_fingerprint: "d".repeat(64), template_key: "full_history",
+    initialization_policy: "carry_in", as_of_date: "2026-01-09", common_data_ready_date: "2025-01-01",
+    common_simulation_start: "2025-01-02", common_metric_start: "2025-01-02",
+    common_metric_end: "2026-01-09", currency: "USD", member_count: 1,
+    benchmark_key: "spy_buy_and_hold", cost_bps_per_side: 5, required_warmup_observations: 253 }],
+  active_cohort_artifact_id: "00000000-0000-0000-0000-000000000070",
+  selected_metric: "net_sharpe", ranking_direction: "higher_is_better",
+  candidate_count: 1, ranked_count: 1,
+  entries: [{ rank: 1, result_artifact_id: "00000000-0000-0000-0000-000000000062",
+    product_artifact_id: "00000000-0000-0000-0000-000000000045", product_key: "product-a",
+    model_specification_key: "dimension_equal_weight__momentum_trend",
+    variant_key: "top_k_equal_weight__k2", target_k: 2, frequency: "weekly",
+    metric_value: 1.1, value_status: "defined", reason_code: null, observation_count: 252,
+    core_metrics: { "strategy.cagr": 0.12, "relative.annualized_relative_wealth_growth": 0.03,
+      "strategy.maximum_drawdown": -0.08 } }],
+};
 
 function renderRoute(path: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -253,16 +273,16 @@ beforeEach(async () => {
   await i18n.changeLanguage("zh-CN");
   vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
     const url = String(input);
-    const payload = url.includes("experiments/results") ? experimentResult : url.includes("experiments/overview") ? experimentOverview : url.includes("strategies/targets") ? strategyTarget : url.includes("strategies/overview") ? strategyOverview : url.includes("models/overview") ? modelOverview : url.includes("signals/overview") ? signalOverview : url.includes("factors/overview") ? factorOverview : url.includes("data/overview") ? dataOverview : url.includes("health") ? health : url.includes("capabilities") ? capabilities : artifacts;
+    const payload = url.includes("rankings/products") ? productRanking : url.includes("experiments/results") ? experimentResult : url.includes("experiments/overview") ? experimentOverview : url.includes("strategies/targets") ? strategyTarget : url.includes("strategies/overview") ? strategyOverview : url.includes("models/overview") ? modelOverview : url.includes("signals/overview") ? signalOverview : url.includes("factors/overview") ? factorOverview : url.includes("data/overview") ? dataOverview : url.includes("health") ? health : url.includes("capabilities") ? capabilities : artifacts;
     return new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } });
   });
 });
 
 test("renders real foundation data without inventing future research results", async () => {
   renderRoute("/?lang=zh-CN");
-  expect(await screen.findByText("从可追溯的研究对象开始")).toBeInTheDocument();
+  expect(await screen.findByText("从可追溯研究走向严格策略比较")).toBeInTheDocument();
   expect(screen.getByText("20260802_02_v02_lineage")).toBeInTheDocument();
-  expect(screen.getByText("策略实验")).toBeInTheDocument();
+  expect(await screen.findByText("策略产品排行榜")).toBeInTheDocument();
 });
 
 test("language switch keeps the route and translates fixed UI text", async () => {
@@ -335,4 +355,6 @@ test("experiment page joins comparable cells, performance, and run audit", async
   expect(screen.getByText("9%")).toBeInTheDocument();
   expect(await screen.findByText("All outputs published")).toBeInTheDocument();
   expect(screen.getByText("Complete performance metrics")).toBeInTheDocument();
+  expect(screen.getByText("Strategy Product Ranking")).toBeInTheDocument();
+  expect(screen.getAllByText("1.1").length).toBeGreaterThan(0);
 });

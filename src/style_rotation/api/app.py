@@ -34,6 +34,7 @@ from style_rotation.api.schemas import (
     LineageManifestResponse,
     ModelDiagnosticItem,
     ModelOverviewResponse,
+    ProductRankingResponse,
     QualityState,
     QualitySummary,
     SignalDiagnosticItem,
@@ -82,6 +83,9 @@ class ArtifactReader(Protocol):
     def strategy_target_path(self, artifact_id: uuid.UUID) -> dict[str, Any]: ...
     def experiment_overview(self) -> dict[str, Any]: ...
     def experiment_result(self, artifact_id: uuid.UUID) -> dict[str, Any]: ...
+    def product_ranking(
+        self, *, cohort_artifact_id: uuid.UUID | None, metric_key: str
+    ) -> dict[str, Any]: ...
 
 
 def _context() -> ApiContext:
@@ -197,6 +201,7 @@ def create_app(
                 "strategy_target_path",
                 "experiment_overview",
                 "experiment_result",
+                "product_ranking",
                 "artifacts",
                 "lineage",
             ],
@@ -245,6 +250,33 @@ def create_app(
         payload = ExperimentResultResponse.model_validate({
             "context": _context(), "quality": QualitySummary(state="ok"),
             **reader.experiment_result(artifact_id),
+        })
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
+
+    @app.get(
+        "/api/v2/rankings/products",
+        response_model=ProductRankingResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["experiment"],
+    )
+    def product_ranking(
+        response: Response,
+        cohort_artifact_id: Annotated[uuid.UUID | None, Query()] = None,
+        metric: Annotated[
+            Literal[
+                "net_sharpe", "net_cagr", "relative_wealth_growth",
+                "maximum_drawdown", "calmar",
+            ],
+            Query(),
+        ] = "net_sharpe",
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> ProductRankingResponse | Response:
+        result = reader.product_ranking(
+            cohort_artifact_id=cohort_artifact_id, metric_key=metric
+        )
+        payload = ProductRankingResponse.model_validate({
+            "context": _context(), "quality": QualitySummary(state="ok"), **result,
         })
         cached = _etag_response(payload, response, if_none_match)
         return cached or payload

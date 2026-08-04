@@ -729,3 +729,52 @@ class ExperimentResultResponse(ApiModel):
     events: list[ExperimentRunEventItem]
     quality_checks: list[ExperimentQualityCheckItem]
     artifacts: list[ExperimentArtifactLinkItem]
+
+
+class ComparisonCohortItem(ApiModel):
+    artifact_id: UUID
+    cohort_key: str
+    version_number: int
+    name: str
+    description: str
+    context_fingerprint: str
+    template_key: str
+    initialization_policy: str
+    as_of_date: date
+    common_data_ready_date: date
+    common_simulation_start: date
+    common_metric_start: date
+    common_metric_end: date
+    currency: Literal["USD"]
+    member_count: int
+    benchmark_key: str
+    cost_bps_per_side: float
+    required_warmup_observations: int
+
+
+class ProductRankingEntry(ApiModel):
+    rank: int | None
+    result_artifact_id: UUID
+    product_artifact_id: UUID
+    product_key: str
+    model_specification_key: str
+    variant_key: str
+    target_k: int
+    frequency: Literal["weekly", "monthly"]
+    metric_value: float | None
+    value_status: str
+    reason_code: str | None
+    observation_count: int
+    core_metrics: dict[str, float | None]
+
+
+class ProductRankingResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    cohorts: list[ComparisonCohortItem]
+    active_cohort_artifact_id: UUID | None
+    selected_metric: str
+    ranking_direction: Literal["higher_is_better", "lower_is_better"]
+    candidate_count: int
+    ranked_count: int
+    entries: list[ProductRankingEntry]

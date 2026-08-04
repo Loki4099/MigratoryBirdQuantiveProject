@@ -41,6 +41,10 @@ from style_rotation.experiment.benchmark_publication import (
     BenchmarkTargetPublicationService,
     publish_benchmark_catalog,
 )
+from style_rotation.experiment.comparison import (
+    publish_comparison_cohort,
+    publish_warmup_policy,
+)
 from style_rotation.experiment.cost_publication import (
     NetCostPathPublicationService,
     publish_cost_catalog,
@@ -1006,7 +1010,7 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     orchestration_spec = build_orchestration_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260804_24_v02_exp_result",
+        "20260804_25_v02_cohort",
     )
     orchestration_engine = publish_orchestration_engine(engine, orchestration_spec)
     assert publish_orchestration_engine(engine, orchestration_spec).reused is True
@@ -1087,6 +1091,49 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
             )
         connection.rollback()
 
+    warmup_policy = publish_warmup_policy(engine, required_observations=253)
+    assert publish_warmup_policy(engine, required_observations=253).reused is True
+    comparison_cohort = publish_comparison_cohort(
+        engine,
+        cohort_key="weekly_full_history_spy_5bps",
+        name="Weekly Full-History SPY 5 bps",
+        description="Strictly comparable accepted product results.",
+        warmup_policy_artifact_id=warmup_policy.artifact_id,
+        result_artifact_ids=(accepted_full.result_artifact_id,),
+    )
+    cohort_reused = publish_comparison_cohort(
+        engine,
+        cohort_key="weekly_full_history_spy_5bps",
+        name="Weekly Full-History SPY 5 bps",
+        description="Strictly comparable accepted product results.",
+        warmup_policy_artifact_id=warmup_policy.artifact_id,
+        result_artifact_ids=(accepted_full.result_artifact_id,),
+    )
+    assert comparison_cohort.member_count == 1
+    assert cohort_reused.reused is True
+    assert cohort_reused.artifact_id == comparison_cohort.artifact_id
+    with pytest.raises(ValueError, match="published eligible result"):
+        publish_comparison_cohort(
+            engine,
+            cohort_key="invalid_excluded_member",
+            name="Invalid Excluded Member",
+            description="Excluded results cannot enter Product Ranking.",
+            warmup_policy_artifact_id=warmup_policy.artifact_id,
+            result_artifact_ids=(accepted_excluded.result_artifact_id,),
+        )
+    with engine.connect() as connection:
+        cohort_counts = connection.execute(text(
+            "SELECT (SELECT count(*) FROM experiment.warmup_policy_version), "
+            "(SELECT count(*) FROM experiment.comparison_cohort_version), "
+            "(SELECT count(*) FROM experiment.comparison_cohort_member)"
+        )).one()
+        with pytest.raises(DBAPIError):
+            connection.execute(text(
+                "UPDATE experiment.comparison_cohort_version SET name = 'changed'"
+            ))
+        connection.rollback()
+    assert cohort_counts == (1, 1, 1)
+
     experiment_client = TestClient(create_app(ArtifactQueryService(engine)))
     experiment_overview = experiment_client.get("/api/v2/experiments/overview")
     assert experiment_overview.status_code == 200, experiment_overview.text
@@ -1116,6 +1163,15 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     assert detail_payload["events"][0]["sequence_number"] == 1
     assert any(item["role"] == "input" for item in detail_payload["artifacts"])
     assert any(item["role"] == "output" for item in detail_payload["artifacts"])
+    product_ranking = experiment_client.get("/api/v2/rankings/products?metric=net_sharpe")
+    assert product_ranking.status_code == 200, product_ranking.text
+    ranking_payload = product_ranking.json()
+    assert ranking_payload["active_cohort_artifact_id"] == str(comparison_cohort.artifact_id)
+    assert ranking_payload["candidate_count"] == 1
+    assert ranking_payload["ranked_count"] == 1
+    assert ranking_payload["entries"][0]["rank"] == 1
+    assert ranking_payload["entries"][0]["metric_value"] is not None
+    assert ranking_payload["cohorts"][0]["required_warmup_observations"] == 253
 
     evaluation_spec = build_signal_evaluation_engine_spec(
         "a" * 40,

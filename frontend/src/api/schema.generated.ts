@@ -208,6 +208,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/rankings/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Product Ranking */
+        get: operations["product_ranking_api_v2_rankings_products_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/signals/overview": {
         parameters: {
             query?: never;
@@ -400,6 +417,66 @@ export interface components {
             /** Languages */
             languages: ("zh-CN" | "en")[];
             quality: components["schemas"]["QualitySummary"];
+        };
+        /** ComparisonCohortItem */
+        ComparisonCohortItem: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /**
+             * As Of Date
+             * Format: date
+             */
+            as_of_date: string;
+            /** Benchmark Key */
+            benchmark_key: string;
+            /** Cohort Key */
+            cohort_key: string;
+            /**
+             * Common Data Ready Date
+             * Format: date
+             */
+            common_data_ready_date: string;
+            /**
+             * Common Metric End
+             * Format: date
+             */
+            common_metric_end: string;
+            /**
+             * Common Metric Start
+             * Format: date
+             */
+            common_metric_start: string;
+            /**
+             * Common Simulation Start
+             * Format: date
+             */
+            common_simulation_start: string;
+            /** Context Fingerprint */
+            context_fingerprint: string;
+            /** Cost Bps Per Side */
+            cost_bps_per_side: number;
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "USD";
+            /** Description */
+            description: string;
+            /** Initialization Policy */
+            initialization_policy: string;
+            /** Member Count */
+            member_count: number;
+            /** Name */
+            name: string;
+            /** Required Warmup Observations */
+            required_warmup_observations: number;
+            /** Template Key */
+            template_key: string;
+            /** Version Number */
+            version_number: number;
         };
         /** DataBundleItem */
         DataBundleItem: {
@@ -1328,6 +1405,68 @@ export interface components {
              * Format: date
              */
             window_start: string;
+        };
+        /** ProductRankingEntry */
+        ProductRankingEntry: {
+            /** Core Metrics */
+            core_metrics: {
+                [key: string]: number | null;
+            };
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /** Metric Value */
+            metric_value: number | null;
+            /** Model Specification Key */
+            model_specification_key: string;
+            /** Observation Count */
+            observation_count: number;
+            /**
+             * Product Artifact Id
+             * Format: uuid
+             */
+            product_artifact_id: string;
+            /** Product Key */
+            product_key: string;
+            /** Rank */
+            rank: number | null;
+            /** Reason Code */
+            reason_code: string | null;
+            /**
+             * Result Artifact Id
+             * Format: uuid
+             */
+            result_artifact_id: string;
+            /** Target K */
+            target_k: number;
+            /** Value Status */
+            value_status: string;
+            /** Variant Key */
+            variant_key: string;
+        };
+        /** ProductRankingResponse */
+        ProductRankingResponse: {
+            /** Active Cohort Artifact Id */
+            active_cohort_artifact_id: string | null;
+            /** Candidate Count */
+            candidate_count: number;
+            /** Cohorts */
+            cohorts: components["schemas"]["ComparisonCohortItem"][];
+            context: components["schemas"]["ApiContext"];
+            /** Entries */
+            entries: components["schemas"]["ProductRankingEntry"][];
+            quality: components["schemas"]["QualitySummary"];
+            /** Ranked Count */
+            ranked_count: number;
+            /**
+             * Ranking Direction
+             * @enum {string}
+             */
+            ranking_direction: "higher_is_better" | "lower_is_better";
+            /** Selected Metric */
+            selected_metric: string;
         };
         /** QualitySummary */
         QualitySummary: {
@@ -2258,6 +2397,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ModelOverviewResponse"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    product_ranking_api_v2_rankings_products_get: {
+        parameters: {
+            query?: {
+                cohort_artifact_id?: string | null;
+                metric?: "net_sharpe" | "net_cagr" | "relative_wealth_growth" | "maximum_drawdown" | "calmar";
+            };
+            header?: {
+                "if-none-match"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductRankingResponse"];
                 };
             };
             /** @description Not modified */

@@ -40,15 +40,38 @@
 .experiment-metrics span { color: var(--muted); font-size: .72rem; }
 .experiment-audit-row { display: grid; grid-template-columns: auto 1fr; gap: .65rem; align-items: start; padding: .55rem 0; border-bottom: 1px solid var(--line); }
 .experiment-audit-row p { margin: .18rem 0 0; color: var(--muted); font-size: .78rem; }
+.product-ranking { margin-top: 42px; }
+.ranking-controls { display: flex; gap: .7rem; align-items: end; }
+.ranking-controls label { display: grid; gap: .35rem; color: var(--muted); font-size: .72rem; }
+.ranking-controls select { max-width: 260px; }
+.ranking-context { display: grid; grid-template-columns: 1.4fr 1.2fr 1fr .6fr; border: 1px solid var(--line); background: var(--line); gap: 1px; }
+.ranking-context > div { display: grid; gap: .4rem; padding: .75rem .85rem; background: var(--paper); }
+.ranking-context span { color: var(--muted); font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; }
+.ranking-context strong { font: 600 .75rem Consolas, monospace; overflow-wrap: anywhere; }
+.ranking-table { overflow-x: auto; }
+.ranking-head, .ranking-table > div:not(.ranking-head) { min-width: 1060px; display: grid; grid-template-columns: .35fr 2fr 1.3fr .8fr repeat(3, .75fr) .2fr; gap: .75rem; align-items: center; }
+.product-ranking.compact .ranking-head, .product-ranking.compact .ranking-table > div:not(.ranking-head) { grid-template-columns: .35fr 2fr 1.3fr .8fr repeat(3, .75fr); }
+.ranking-head { padding: .55rem .8rem; color: var(--muted); font-size: .68rem; text-transform: uppercase; letter-spacing: .04em; }
+.ranking-table > div:not(.ranking-head) { border-top: 1px solid var(--line); padding: .75rem .8rem; }
+.ranking-table > div:not(.ranking-head):last-child { border-bottom: 1px solid var(--line); }
+.ranking-table span { min-width: 0; overflow-wrap: anywhere; }
+.ranking-table span > strong, .ranking-table small { display: block; }
+.ranking-table small { margin-top: .2rem; color: var(--muted); }
+.ranking-number { color: var(--green); font: 700 1.25rem Consolas, monospace; }
+.product-ranking.compact { margin-top: 54px; }
+.product-ranking.compact .section-heading { margin-bottom: .5rem; }
 
 @media (max-width: 900px) {
   .experiment-detail-strip, .experiment-detail-grid { grid-template-columns: 1fr 1fr; }
   .experiment-detail-grid > article:first-child { grid-column: 1 / -1; }
+  .ranking-context { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 620px) {
   .experiment-detail-strip, .experiment-detail-grid, .experiment-metrics { grid-template-columns: 1fr; }
   .experiment-detail-grid > article:first-child { grid-column: auto; }
+  .ranking-controls { display: grid; width: 100%; }
+  .ranking-context { grid-template-columns: 1fr; }
 }
 
 * { box-sizing: border-box; }

@@ -2,10 +2,25 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Sequence
-from typing import Any
+from decimal import Decimal
+from typing import Any, cast
 
 from sqlalchemy import Engine, bindparam, text
 from sqlalchemy.engine import RowMapping
+
+from style_rotation.experiment.ranking import RankableValue, competition_ranks
+
+_RANKING_METRICS = {
+    "net_sharpe": ("strategy", "absolute", "sharpe_ratio", "higher_is_better"),
+    "net_cagr": ("strategy", "absolute", "cagr", "higher_is_better"),
+    "relative_wealth_growth": (
+        "relative", "relative", "annualized_relative_wealth_growth", "higher_is_better"
+    ),
+    "maximum_drawdown": (
+        "strategy", "absolute", "maximum_drawdown", "higher_is_better"
+    ),
+    "calmar": ("strategy", "absolute", "calmar_ratio", "higher_is_better"),
+}
 
 _STRATEGY_TARGET_SUMMARY_SQL = """
     SELECT path.artifact_id, product.artifact_id AS product_artifact_id,
@@ -1516,6 +1531,160 @@ class ArtifactQueryService:
             "events": [dict(row) for row in events],
             "quality_checks": [dict(row) for row in checks],
             "artifacts": [dict(row) for row in artifacts],
+        }
+
+    def product_ranking(
+        self, *, cohort_artifact_id: uuid.UUID | None, metric_key: str
+    ) -> dict[str, Any]:
+        """Rank accepted product results inside one immutable strict comparison cohort."""
+        metric = _RANKING_METRICS.get(metric_key)
+        if metric is None:
+            raise ValueError(f"Unsupported Product Ranking metric: {metric_key}")
+        series_role, metric_scope, definition_key, direction = metric
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            cohorts = connection.execute(text("""
+                SELECT cohort.artifact_id, cohort.cohort_key, cohort.version_number,
+                       cohort.name, cohort.description, cohort.context_fingerprint,
+                       cohort.template_key, cohort.initialization_policy, cohort.as_of_date,
+                       cohort.common_data_ready_date, cohort.common_simulation_start,
+                       cohort.common_metric_start, cohort.common_metric_end, cohort.currency,
+                       cohort.member_count, benchmark_definition.benchmark_key,
+                       cost.cost_bps_per_side,
+                       warmup.required_observations AS required_warmup_observations
+                FROM experiment.comparison_cohort_version cohort
+                JOIN lineage.artifact artifact ON artifact.artifact_id = cohort.artifact_id
+                                             AND artifact.status = 'published'
+                JOIN experiment.benchmark_version benchmark ON
+                     benchmark.benchmark_version_id = cohort.benchmark_version_id
+                JOIN experiment.benchmark_definition benchmark_definition ON
+                     benchmark_definition.benchmark_definition_id =
+                     benchmark.benchmark_definition_id
+                JOIN experiment.cost_scenario cost ON cost.cost_scenario_id =
+                                                      cohort.cost_scenario_id
+                JOIN experiment.warmup_policy_version warmup ON
+                     warmup.warmup_policy_version_id = cohort.warmup_policy_version_id
+                ORDER BY cohort.created_at DESC, cohort.cohort_key
+            """)).mappings().all()
+            if not cohorts:
+                return {
+                    "cohorts": [], "active_cohort_artifact_id": None,
+                    "selected_metric": metric_key, "ranking_direction": direction,
+                    "candidate_count": 0, "ranked_count": 0, "entries": [],
+                }
+            active = next(
+                (row for row in cohorts if row["artifact_id"] == cohort_artifact_id), None
+            ) if cohort_artifact_id else cohorts[0]
+            if active is None:
+                raise LookupError(f"Published Comparison Cohort not found: {cohort_artifact_id}")
+            rows = connection.execute(text("""
+                SELECT publication.artifact_id AS result_artifact_id,
+                       product.artifact_id AS product_artifact_id,
+                       product_definition.product_key,
+                       model_specification.specification_key AS model_specification_key,
+                       variant.variant_key, variant.target_k, schedule.frequency,
+                       selected.metric_value, COALESCE(selected.value_status, 'undefined') AS
+                       value_status, COALESCE(selected.reason_code, 'metric_not_published') AS
+                       reason_code, COALESCE(selected.observation_count, 0) AS observation_count,
+                       interval.interval_performance_result_id
+                FROM experiment.comparison_cohort_version cohort
+                JOIN experiment.comparison_cohort_member member ON
+                     member.comparison_cohort_version_id = cohort.comparison_cohort_version_id
+                JOIN experiment.result_publication publication ON
+                     publication.result_publication_id = member.result_publication_id
+                JOIN experiment.experiment_specification experiment_specification ON
+                     experiment_specification.experiment_specification_id =
+                     publication.experiment_specification_id
+                JOIN strategy.model_strategy_target_path target ON
+                     target.portfolio_target_path_id =
+                     experiment_specification.strategy_target_path_id
+                JOIN strategy.strategy_product_version product ON
+                     product.strategy_product_version_id = target.strategy_product_version_id
+                JOIN strategy.strategy_product_definition product_definition ON
+                     product_definition.strategy_product_definition_id =
+                     product.strategy_product_definition_id
+                JOIN model.model_dataset model_dataset ON model_dataset.model_dataset_id =
+                                                          target.model_dataset_id
+                JOIN model.model_specification model_specification ON
+                     model_specification.model_specification_id =
+                     model_dataset.model_specification_id
+                JOIN strategy.strategy_variant variant ON variant.strategy_variant_id =
+                                                          product.strategy_variant_id
+                JOIN ops.rebalance_schedule_version schedule ON
+                     schedule.rebalance_schedule_version_id =
+                     product.rebalance_schedule_version_id
+                JOIN experiment.interval_performance_result interval ON
+                     interval.interval_performance_result_id =
+                     publication.interval_performance_result_id
+                LEFT JOIN experiment.performance_metric_definition definition ON
+                     definition.performance_metric_catalog_id =
+                     interval.performance_metric_catalog_id
+                     AND definition.metric_scope = :metric_scope
+                     AND definition.metric_key = :definition_key
+                LEFT JOIN experiment.performance_metric_value selected ON
+                     selected.interval_performance_result_id =
+                     interval.interval_performance_result_id
+                     AND selected.performance_metric_definition_id =
+                     definition.performance_metric_definition_id
+                     AND selected.series_role = :series_role
+                WHERE cohort.artifact_id = :cohort
+                ORDER BY member.ordinal
+            """), {
+                "cohort": active["artifact_id"], "series_role": series_role,
+                "metric_scope": metric_scope, "definition_key": definition_key,
+            }).mappings().all()
+            interval_ids = tuple(row["interval_performance_result_id"] for row in rows)
+            core_by_interval: dict[uuid.UUID, dict[str, float | None]] = {
+                interval_id: {} for interval_id in interval_ids
+            }
+            if interval_ids:
+                core_rows = connection.execute(text("""
+                    SELECT value.interval_performance_result_id, value.series_role,
+                           definition.metric_key, value.metric_value
+                    FROM experiment.performance_metric_value value
+                    JOIN experiment.performance_metric_definition definition ON
+                         definition.performance_metric_definition_id =
+                         value.performance_metric_definition_id
+                    WHERE value.interval_performance_result_id IN :result_ids
+                      AND ((value.series_role IN ('strategy','benchmark') AND
+                            definition.metric_key IN
+                            ('cagr','sharpe_ratio','maximum_drawdown'))
+                           OR (value.series_role = 'relative' AND definition.metric_key =
+                               'annualized_relative_wealth_growth'))
+                """).bindparams(bindparam("result_ids", expanding=True)),
+                    {"result_ids": interval_ids}).mappings().all()
+                for core in core_rows:
+                    value = core["metric_value"]
+                    core_by_interval[core["interval_performance_result_id"]][
+                        f"{core['series_role']}.{core['metric_key']}"
+                    ] = float(value) if value is not None else None
+        rank_values = tuple(
+            RankableValue(str(row["result_artifact_id"]), cast(Decimal | None, row["metric_value"]))
+            for row in rows
+        )
+        ranks = competition_ranks(rank_values, cast(Any, direction))
+        entries = []
+        for source in rows:
+            row = dict(source)
+            interval_id = row.pop("interval_performance_result_id")
+            value = row["metric_value"]
+            row["metric_value"] = float(value) if value is not None else None
+            if row["value_status"] == "defined":
+                row["reason_code"] = None
+            row["rank"] = ranks[str(row["result_artifact_id"])]
+            row["core_metrics"] = core_by_interval[interval_id]
+            entries.append(row)
+        entries.sort(key=lambda item: (
+            item["rank"] is None, item["rank"] or 0, item["product_key"],
+            str(item["result_artifact_id"]),
+        ))
+        return {
+            "cohorts": [dict(row) for row in cohorts],
+            "active_cohort_artifact_id": active["artifact_id"],
+            "selected_metric": metric_key, "ranking_direction": direction,
+            "candidate_count": len(entries),
+            "ranked_count": sum(item["rank"] is not None for item in entries),
+            "entries": entries,
         }
 
     @staticmethod
