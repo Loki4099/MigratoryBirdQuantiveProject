@@ -37,6 +37,11 @@ from style_rotation.data.providers.snapshots import (
 )
 from style_rotation.data.publication import CanonicalDataPublicationService
 from style_rotation.data.service import publish_data_contracts
+from style_rotation.experiment.engine import (
+    build_accounting_engine_spec,
+    publish_accounting_engine,
+)
+from style_rotation.experiment.publication import GrossPathPublicationService
 from style_rotation.factor.diagnostic_publication import FactorDiagnosticPublicationService
 from style_rotation.factor.engine import (
     build_factor_diagnostic_engine_spec,
@@ -413,6 +418,34 @@ def _strategy_publish_target(
             else None
         ),
     )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _experiment_bootstrap_accounting_engine(
+    git_commit: str, dependency_lock_file: str, version_number: int
+) -> int:
+    settings = get_settings()
+    status = database_status(settings.database_url)
+    if status.current_revision is None:
+        raise ValueError("Database must be migrated before publishing an Accounting engine")
+    spec = build_accounting_engine_spec(
+        git_commit,
+        Path(dependency_lock_file),
+        status.current_revision,
+        version_number=version_number,
+    )
+    result = publish_accounting_engine(create_postgres_engine(settings.database_url), spec)
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _experiment_publish_gross(
+    target_path_artifact_id: str, accounting_engine_artifact_id: str
+) -> int:
+    result = GrossPathPublicationService(
+        create_postgres_engine(get_settings().database_url)
+    ).publish(uuid.UUID(target_path_artifact_id), uuid.UUID(accounting_engine_artifact_id))
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0
 
@@ -1208,6 +1241,35 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
 
+    experiment_parser = subparsers.add_parser(
+        "experiment", help="Publish versioned portfolio accounting paths"
+    )
+    experiment_subparsers = experiment_parser.add_subparsers(
+        dest="experiment_command", required=True
+    )
+    accounting_engine_parser = experiment_subparsers.add_parser(
+        "bootstrap-accounting-engine",
+        help="Publish the deterministic gross Portfolio Accounting engine",
+    )
+    accounting_engine_parser.add_argument("--git-commit", required=True)
+    accounting_engine_parser.add_argument("--dependency-lock-file", default="requirements.lock")
+    accounting_engine_parser.add_argument("--version", type=int, default=1)
+    accounting_engine_parser.set_defaults(
+        handler=lambda args: _experiment_bootstrap_accounting_engine(
+            args.git_commit, args.dependency_lock_file, args.version
+        )
+    )
+    gross_parser = experiment_subparsers.add_parser(
+        "publish-gross", help="Calculate and publish one immutable Gross Portfolio Path"
+    )
+    gross_parser.add_argument("--target-path-artifact-id", required=True)
+    gross_parser.add_argument("--accounting-engine-artifact-id", required=True)
+    gross_parser.set_defaults(
+        handler=lambda args: _experiment_publish_gross(
+            args.target_path_artifact_id, args.accounting_engine_artifact_id
+        )
+    )
+
     for command in PLANNED_COMMANDS:
         if command.key in {
             "bootstrap",
@@ -1216,6 +1278,7 @@ def build_parser() -> argparse.ArgumentParser:
             "signal",
             "model",
             "strategy",
+            "experiment",
             "artifact",
             "lineage",
             "api",

@@ -32,6 +32,11 @@ from style_rotation.data.forward_return_publication import (
 )
 from style_rotation.data.publication import CanonicalDataPublicationService
 from style_rotation.data.service import SnapshotInput, SourceSnapshotService, publish_data_contracts
+from style_rotation.experiment.engine import (
+    build_accounting_engine_spec,
+    publish_accounting_engine,
+)
+from style_rotation.experiment.publication import GrossPathPublicationService
 from style_rotation.factor.diagnostic_publication import FactorDiagnosticPublicationService
 from style_rotation.factor.engine import (
     build_factor_diagnostic_engine_spec,
@@ -550,15 +555,71 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     assert len(strategy_payload["products"]) == 1
     assert len(strategy_payload["target_paths"]) == 1
     assert "sharpe" not in strategy_overview.text.lower()
-    target_detail = strategy_client.get(
-        f"/api/v2/strategies/targets/{target_path.artifact_id}"
-    )
+    target_detail = strategy_client.get(f"/api/v2/strategies/targets/{target_path.artifact_id}")
     assert target_detail.status_code == 200
     target_payload = target_detail.json()
     assert len(target_payload["decisions"]) == target_path.decision_count
     assert all(len(item["positions"]) == 4 for item in target_payload["decisions"])
-    assert target_payload["auxiliary_signal_dataset_artifact_id"] == str(
-        trend_signal.artifact_id
+    assert target_payload["auxiliary_signal_dataset_artifact_id"] == str(trend_signal.artifact_id)
+
+    accounting_spec = build_accounting_engine_spec(
+        "a" * 40,
+        PROJECT_ROOT / "requirements.lock",
+        "20260804_19_v02_gross_path",
+    )
+    accounting_engine = publish_accounting_engine(engine, accounting_spec)
+    assert publish_accounting_engine(engine, accounting_spec).reused is True
+    gross_service = GrossPathPublicationService(engine)
+    gross_path = gross_service.publish(target_path.artifact_id, accounting_engine.artifact_id)
+    gross_reused = gross_service.publish(target_path.artifact_id, accounting_engine.artifact_id)
+    assert gross_path.reused is False
+    assert gross_reused.reused is True
+    assert gross_path.artifact_id == gross_reused.artifact_id
+    assert gross_path.nav_count >= gross_path.execution_count == target_path.decision_count
+    assert gross_path.trade_count == gross_path.execution_count * 4
+    with engine.connect() as connection:
+        gross_counts = connection.execute(
+            text(
+                "SELECT (SELECT count(*) FROM experiment.gross_portfolio_path), "
+                "(SELECT count(*) FROM experiment.gross_daily_nav), "
+                "(SELECT count(*) FROM experiment.daily_asset_position), "
+                "(SELECT count(*) FROM experiment.daily_reserve_position), "
+                "(SELECT count(*) FROM experiment.portfolio_execution), "
+                "(SELECT count(*) FROM experiment.portfolio_trade)"
+            )
+        ).one()
+        gross_budgets = connection.execute(
+            text(
+                "SELECT reserve.nav_date, reserve.close_weight + sum(asset.close_weight) "
+                "FROM experiment.daily_reserve_position reserve "
+                "JOIN experiment.daily_asset_position asset ON "
+                "asset.gross_portfolio_path_id = reserve.gross_portfolio_path_id "
+                "AND asset.nav_date = reserve.nav_date GROUP BY reserve.gross_portfolio_path_id, "
+                "reserve.nav_date ORDER BY reserve.nav_date"
+            )
+        ).all()
+        execution_lags = connection.execute(
+            text(
+                "SELECT execution.decision_date, execution.execution_date "
+                "FROM experiment.portfolio_execution execution ORDER BY execution.execution_date"
+            )
+        ).all()
+    assert gross_counts == (
+        1,
+        gross_path.nav_count,
+        gross_path.nav_count * 4,
+        gross_path.nav_count,
+        gross_path.execution_count,
+        gross_path.trade_count,
+    )
+    assert all(
+        abs(Decimal(total) - Decimal(1)) <= Decimal("0.00000000000000000000001")
+        for _, total in gross_budgets
+    )
+    session_dates = [item.session_date for item in generated.sessions]
+    assert all(
+        session_dates.index(execution) == session_dates.index(decision) + 1
+        for decision, execution in execution_lags
     )
 
     evaluation_spec = build_signal_evaluation_engine_spec(
