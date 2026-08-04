@@ -49,6 +49,14 @@ from style_rotation.experiment.engine import (
     build_accounting_engine_spec,
     publish_accounting_engine,
 )
+from style_rotation.experiment.performance_engine import (
+    build_performance_engine_spec,
+    publish_performance_engine,
+)
+from style_rotation.experiment.performance_publication import (
+    IntervalPerformancePublicationService,
+    publish_performance_metric_catalog,
+)
 from style_rotation.experiment.publication import GrossPathPublicationService
 from style_rotation.factor.diagnostic_publication import FactorDiagnosticPublicationService
 from style_rotation.factor.engine import (
@@ -807,6 +815,91 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
         ).scalar_one()
     assert benchmark_counts == (3, 3, 3, 4, 13, 4, 12)
     assert Decimal(spy_execution) == Decimal(1)
+
+    metric_catalog = publish_performance_metric_catalog(engine)
+    assert metric_catalog.metric_count == 22
+    assert publish_performance_metric_catalog(engine).reused is True
+    performance_spec = build_performance_engine_spec(
+        "a" * 40,
+        PROJECT_ROOT / "requirements.lock",
+        "20260804_22_v02_performance",
+    )
+    performance_engine = publish_performance_engine(engine, performance_spec)
+    assert publish_performance_engine(engine, performance_spec).reused is True
+    performance_service = IntervalPerformancePublicationService(engine)
+    performance_result = performance_service.publish(
+        net_paths[1].artifact_id,
+        benchmark_net[1].artifact_id,
+        metric_catalog.artifact_id,
+        performance_engine.artifact_id,
+        template_key="full_history",
+        as_of_date=date.fromisoformat(gross_path.effective_nav_end),
+    )
+    performance_reused = performance_service.publish(
+        net_paths[1].artifact_id,
+        benchmark_net[1].artifact_id,
+        metric_catalog.artifact_id,
+        performance_engine.artifact_id,
+        template_key="full_history",
+        as_of_date=date.fromisoformat(gross_path.effective_nav_end),
+    )
+    excluded_result = performance_service.publish(
+        net_paths[1].artifact_id,
+        benchmark_net[1].artifact_id,
+        metric_catalog.artifact_id,
+        performance_engine.artifact_id,
+        template_key="trailing_10_years",
+        as_of_date=date.fromisoformat(gross_path.effective_nav_end),
+    )
+    assert performance_result.availability_status == "eligible"
+    assert performance_result.metric_value_count == 36
+    assert performance_result.observation_count == gross_path.nav_count
+    assert performance_reused.reused is True
+    assert performance_reused.artifact_id == performance_result.artifact_id
+    assert excluded_result.availability_status == "excluded"
+    assert excluded_result.exclusion_reason == "insufficient_history"
+    assert excluded_result.metric_value_count == 0
+    with pytest.raises(ValueError, match="share context and per-side cost"):
+        performance_service.publish(
+            net_paths[0].artifact_id,
+            benchmark_net[1].artifact_id,
+            metric_catalog.artifact_id,
+            performance_engine.artifact_id,
+            template_key="full_history",
+            as_of_date=date.fromisoformat(gross_path.effective_nav_end),
+        )
+    with engine.connect() as connection:
+        performance_counts = connection.execute(
+            text(
+                "SELECT (SELECT count(*) FROM experiment.performance_metric_catalog), "
+                "(SELECT count(*) FROM experiment.performance_metric_definition), "
+                "(SELECT count(*) FROM experiment.interval_performance_result), "
+                "(SELECT count(*) FROM experiment.performance_metric_value)"
+            )
+        ).one()
+        relative_rows = connection.execute(
+            text(
+                "SELECT count(*) FROM experiment.performance_metric_value value JOIN "
+                "experiment.performance_metric_definition definition ON "
+                "definition.performance_metric_definition_id = "
+                "value.performance_metric_definition_id WHERE value.series_role = 'relative' "
+                "AND definition.metric_scope = 'relative'"
+            )
+        ).scalar_one()
+    assert performance_counts == (1, 22, 2, 36)
+    assert relative_rows == 8
+    with engine.connect() as connection:
+        with pytest.raises(DBAPIError):
+            connection.execute(
+                text(
+                    "UPDATE experiment.performance_metric_value SET metric_value = 0 "
+                    "WHERE interval_performance_result_id = "
+                    "(SELECT interval_performance_result_id FROM "
+                    "experiment.interval_performance_result WHERE availability_status = "
+                    "'eligible' LIMIT 1)"
+                )
+            )
+        connection.rollback()
 
     evaluation_spec = build_signal_evaluation_engine_spec(
         "a" * 40,
