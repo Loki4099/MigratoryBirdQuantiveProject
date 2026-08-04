@@ -42,7 +42,7 @@ class GrossPathPublication:
 
 @dataclass(frozen=True, slots=True)
 class _Context:
-    target: RowMapping
+    target: dict[str, Any]
     engine: RowMapping
     execution: RowMapping
     reserve_model: RowMapping
@@ -122,7 +122,7 @@ class GrossPathPublicationService:
         with self._engine.connect() as connection:
             target = _target(connection, target_artifact_id)
             engine = _accounting_engine(connection, engine_artifact_id)
-            execution = _execution_policy(connection, target["strategy_product_version_id"])
+            execution = _execution_policy(connection, target["execution_policy_version_id"])
             bundle_artifact_id = _artifact_for_business(
                 connection,
                 "data.data_bundle_version",
@@ -161,14 +161,17 @@ class GrossPathPublicationService:
                     {"calendar": calendar_id},
                 ).scalars()
             )
-            decisions = _decisions(connection, target["portfolio_target_path_id"])
+            decisions = _decisions(
+                connection,
+                target["portfolio_target_path_id"],
+                str(target["target_type"]),
+            )
             simulation_end = target["simulation_end"]
             active_sessions = tuple(
                 day for day in sessions if decisions[0].decision_date <= day <= simulation_end
             )
-            bars = _bars(
-                connection, market_dataset_id, target["universe_version_id"], active_sessions
-            )
+            asset_ids = tuple(item.asset_id for item in decisions[0].asset_weights)
+            bars = _bars(connection, market_dataset_id, asset_ids, active_sessions)
             reserve = _reserve_intervals(connection, reserve_dataset_id, active_sessions)
         return _Context(
             target,
@@ -187,19 +190,52 @@ class GrossPathPublicationService:
         )
 
 
-def _target(connection: Connection, artifact_id: uuid.UUID) -> RowMapping:
-    row = (
+def _target(connection: Connection, artifact_id: uuid.UUID) -> dict[str, Any]:
+    base = (
         connection.execute(
             text(
-                "SELECT path.*, owner.strategy_product_version_id, dataset.coverage_end AS simulation_end FROM strategy.portfolio_target_path path JOIN lineage.artifact artifact ON artifact.artifact_id = path.artifact_id AND artifact.status = 'published' JOIN strategy.model_strategy_target_path owner ON owner.portfolio_target_path_id = path.portfolio_target_path_id JOIN model.model_dataset dataset ON dataset.model_dataset_id = owner.model_dataset_id WHERE path.artifact_id = :artifact AND path.target_type = 'model_strategy'"
+                "SELECT path.* FROM strategy.portfolio_target_path path JOIN lineage.artifact "
+                "artifact ON artifact.artifact_id = path.artifact_id AND artifact.status = "
+                "'published' WHERE path.artifact_id = :artifact"
             ),
             {"artifact": artifact_id},
         )
         .mappings()
         .one_or_none()
     )
-    if row is None:
-        raise ValueError("Published model Strategy Target Path not found")
+    if base is None:
+        raise ValueError("Published Portfolio Target Path not found")
+    row = dict(base)
+    if row["target_type"] == "model_strategy":
+        owner = (
+            connection.execute(
+                text(
+                    "SELECT owner.strategy_product_version_id, dataset.coverage_end AS "
+                    "simulation_end, product.execution_policy_version_id FROM "
+                    "strategy.model_strategy_target_path owner JOIN model.model_dataset dataset ON "
+                    "dataset.model_dataset_id = owner.model_dataset_id JOIN "
+                    "strategy.strategy_product_version product ON "
+                    "product.strategy_product_version_id = owner.strategy_product_version_id WHERE "
+                    "owner.portfolio_target_path_id = :path"
+                ),
+                {"path": row["portfolio_target_path_id"]},
+            )
+            .mappings()
+            .one()
+        )
+    else:
+        owner = (
+            connection.execute(
+                text(
+                    "SELECT simulation_end, execution_policy_version_id FROM "
+                    "strategy.benchmark_target_path WHERE portfolio_target_path_id = :path"
+                ),
+                {"path": row["portfolio_target_path_id"]},
+            )
+            .mappings()
+            .one()
+        )
+    row.update(dict(owner))
     return row
 
 
@@ -219,13 +255,15 @@ def _accounting_engine(connection: Connection, artifact_id: uuid.UUID) -> RowMap
     return row
 
 
-def _execution_policy(connection: Connection, product_id: uuid.UUID) -> RowMapping:
+def _execution_policy(connection: Connection, execution_policy_id: uuid.UUID) -> RowMapping:
     return (
         connection.execute(
             text(
-                "SELECT version.* FROM strategy.strategy_product_version product JOIN ops.execution_policy_version version ON version.execution_policy_version_id = product.execution_policy_version_id JOIN lineage.artifact artifact ON artifact.artifact_id = version.artifact_id AND artifact.status = 'published' WHERE product.strategy_product_version_id = :product"
+                "SELECT version.* FROM ops.execution_policy_version version JOIN "
+                "lineage.artifact artifact ON artifact.artifact_id = version.artifact_id AND "
+                "artifact.status = 'published' WHERE version.execution_policy_version_id = :id"
             ),
-            {"product": product_id},
+            {"id": execution_policy_id},
         )
         .mappings()
         .one()
@@ -250,11 +288,26 @@ def _required_member(members: dict[str, RowMapping], role: str, column: str) -> 
     return value
 
 
-def _decisions(connection: Connection, path_id: uuid.UUID) -> tuple[TargetDecision, ...]:
+def _decisions(
+    connection: Connection, path_id: uuid.UUID, target_type: str
+) -> tuple[TargetDecision, ...]:
+    if target_type == "benchmark":
+        decision_table = "strategy.benchmark_decision"
+        position_table = "strategy.benchmark_asset_position"
+        decision_id = "benchmark_decision_id"
+    else:
+        decision_table = "strategy.portfolio_decision"
+        position_table = "strategy.target_asset_position"
+        decision_id = "portfolio_decision_id"
     rows = (
         connection.execute(
             text(
-                "SELECT decision.portfolio_decision_id, decision.decision_date, decision.reserve_target_weight, position.asset_id, asset.asset_key, position.target_weight FROM strategy.portfolio_decision decision JOIN strategy.target_asset_position position ON position.portfolio_decision_id = decision.portfolio_decision_id JOIN catalog.asset asset ON asset.asset_id = position.asset_id WHERE decision.portfolio_target_path_id = :path ORDER BY decision.decision_date, asset.asset_key"
+                f"SELECT decision.decision_date, decision.reserve_target_weight, "
+                f"position.asset_id, asset.asset_key, position.target_weight FROM "
+                f"{decision_table} decision JOIN {position_table} position ON "
+                f"position.{decision_id} = decision.{decision_id} JOIN catalog.asset asset ON "
+                f"asset.asset_id = position.asset_id WHERE decision.portfolio_target_path_id = "
+                f":path ORDER BY decision.decision_date, asset.asset_key"
             ),
             {"path": path_id},
         )
@@ -270,21 +323,24 @@ def _decisions(connection: Connection, path_id: uuid.UUID) -> tuple[TargetDecisi
         )
         reserve[day] = Decimal(row["reserve_target_weight"])
     if not grouped:
-        raise ValueError("Strategy Target Path has no decisions")
+        raise ValueError("Portfolio Target Path has no decisions")
     return tuple(TargetDecision(day, tuple(grouped[day]), reserve[day]) for day in sorted(grouped))
 
 
 def _bars(
     connection: Connection,
     dataset_id: uuid.UUID,
-    universe_id: uuid.UUID,
+    asset_ids: tuple[uuid.UUID, ...],
     sessions: tuple[date, ...],
 ) -> tuple[AccountingMarketBar, ...]:
     rows = connection.execute(
         text(
-            "SELECT bar.asset_id, asset.asset_key, bar.session_date, bar.open_adj, bar.close_adj FROM data.daily_bar bar JOIN catalog.asset asset ON asset.asset_id = bar.asset_id JOIN catalog.universe_member member ON member.asset_id = bar.asset_id AND member.universe_version_id = :universe AND member.role = 'candidate' WHERE bar.dataset_publication_id = :dataset AND bar.session_date = ANY(:sessions) ORDER BY asset.asset_key, bar.session_date"
+            "SELECT bar.asset_id, asset.asset_key, bar.session_date, bar.open_adj, bar.close_adj "
+            "FROM data.daily_bar bar JOIN catalog.asset asset ON asset.asset_id = bar.asset_id "
+            "WHERE bar.dataset_publication_id = :dataset AND bar.asset_id = ANY(:assets) AND "
+            "bar.session_date = ANY(:sessions) ORDER BY asset.asset_key, bar.session_date"
         ),
-        {"dataset": dataset_id, "universe": universe_id, "sessions": list(sessions)},
+        {"dataset": dataset_id, "assets": list(asset_ids), "sessions": list(sessions)},
     ).mappings()
     return tuple(
         AccountingMarketBar(

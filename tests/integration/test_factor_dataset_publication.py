@@ -33,6 +33,14 @@ from style_rotation.data.forward_return_publication import (
 )
 from style_rotation.data.publication import CanonicalDataPublicationService
 from style_rotation.data.service import SnapshotInput, SourceSnapshotService, publish_data_contracts
+from style_rotation.experiment.benchmark_engine import (
+    build_benchmark_target_engine_spec,
+    publish_benchmark_target_engine,
+)
+from style_rotation.experiment.benchmark_publication import (
+    BenchmarkTargetPublicationService,
+    publish_benchmark_catalog,
+)
 from style_rotation.experiment.cost_publication import (
     NetCostPathPublicationService,
     publish_cost_catalog,
@@ -706,6 +714,99 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
                 )
             )
         connection.rollback()
+
+    benchmark_catalog = publish_benchmark_catalog(engine)
+    benchmark_catalog_reused = publish_benchmark_catalog(engine)
+    assert len(benchmark_catalog.benchmarks) == 3
+    assert all(item.reused for item in benchmark_catalog_reused.benchmarks)
+    benchmark_engine_spec = build_benchmark_target_engine_spec(
+        "a" * 40,
+        PROJECT_ROOT / "requirements.lock",
+        "20260804_21_v02_benchmark_path",
+    )
+    benchmark_engine = publish_benchmark_target_engine(engine, benchmark_engine_spec)
+    assert publish_benchmark_target_engine(engine, benchmark_engine_spec).reused is True
+    benchmark_target_service = BenchmarkTargetPublicationService(engine)
+    benchmark_targets = tuple(
+        benchmark_target_service.publish(
+            target_path.artifact_id,
+            benchmark.version_artifact_id,
+            benchmark_engine.artifact_id,
+        )
+        for benchmark in benchmark_catalog.benchmarks
+    )
+    benchmark_targets_reused = tuple(
+        benchmark_target_service.publish(
+            target_path.artifact_id,
+            benchmark.version_artifact_id,
+            benchmark_engine.artifact_id,
+        )
+        for benchmark in benchmark_catalog.benchmarks
+    )
+    assert all(item.reused for item in benchmark_targets_reused)
+    targets_by_key = {item.benchmark_key: item for item in benchmark_targets}
+    assert targets_by_key["spy_buy_and_hold"].category == "product_primary"
+    assert targets_by_key["spy_buy_and_hold"].decision_count == 1
+    assert targets_by_key["spy_buy_and_hold"].position_count == 1
+    assert targets_by_key["four_etf_equal_weight_buy_and_hold"].decision_count == 1
+    assert targets_by_key["four_etf_equal_weight_buy_and_hold"].position_count == 4
+    assert (
+        targets_by_key["four_etf_equal_weight_same_schedule_rebalanced"].decision_count
+        == target_path.decision_count
+    )
+    assert (
+        targets_by_key["four_etf_equal_weight_same_schedule_rebalanced"].position_count
+        == target_path.decision_count * 4
+    )
+    benchmark_gross = tuple(
+        gross_service.publish(item.artifact_id, accounting_engine.artifact_id)
+        for item in benchmark_targets
+    )
+    gross_by_key = dict(
+        zip((item.benchmark_key for item in benchmark_targets), benchmark_gross, strict=True)
+    )
+    assert gross_by_key["spy_buy_and_hold"].execution_count == 1
+    assert gross_by_key["spy_buy_and_hold"].trade_count == 1
+    assert gross_by_key["four_etf_equal_weight_buy_and_hold"].execution_count == 1
+    assert gross_by_key["four_etf_equal_weight_buy_and_hold"].trade_count == 4
+    assert (
+        gross_by_key["four_etf_equal_weight_same_schedule_rebalanced"].execution_count
+        == target_path.decision_count
+    )
+    benchmark_net = tuple(
+        net_service.publish(gross.artifact_id, scenario.artifact_id)
+        for gross in benchmark_gross
+        for scenario in cost_catalog.scenarios
+    )
+    assert len(benchmark_net) == 9
+    assert all(item.nav_count == gross_path.nav_count for item in benchmark_net)
+    with engine.connect() as connection:
+        benchmark_counts = connection.execute(
+            text(
+                "SELECT (SELECT count(*) FROM experiment.benchmark_definition), "
+                "(SELECT count(*) FROM experiment.benchmark_version), "
+                "(SELECT count(*) FROM strategy.benchmark_target_path), "
+                "(SELECT count(*) FROM strategy.benchmark_decision), "
+                "(SELECT count(*) FROM strategy.benchmark_asset_position), "
+                "(SELECT count(*) FROM experiment.gross_portfolio_path), "
+                "(SELECT count(*) FROM experiment.net_cost_path)"
+            )
+        ).one()
+        spy_execution = connection.execute(
+            text(
+                "SELECT execution.gross_traded_fraction FROM experiment.portfolio_execution "
+                "execution JOIN experiment.gross_portfolio_path gross ON "
+                "gross.gross_portfolio_path_id = execution.gross_portfolio_path_id JOIN "
+                "strategy.benchmark_target_path target ON target.portfolio_target_path_id = "
+                "gross.portfolio_target_path_id JOIN experiment.benchmark_version version ON "
+                "version.benchmark_version_id = target.benchmark_version_id JOIN "
+                "experiment.benchmark_definition definition ON "
+                "definition.benchmark_definition_id = version.benchmark_definition_id WHERE "
+                "definition.benchmark_key = 'spy_buy_and_hold'"
+            )
+        ).scalar_one()
+    assert benchmark_counts == (3, 3, 3, 4, 13, 4, 12)
+    assert Decimal(spy_execution) == Decimal(1)
 
     evaluation_spec = build_signal_evaluation_engine_spec(
         "a" * 40,

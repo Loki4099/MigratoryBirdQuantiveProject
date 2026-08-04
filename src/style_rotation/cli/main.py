@@ -37,6 +37,14 @@ from style_rotation.data.providers.snapshots import (
 )
 from style_rotation.data.publication import CanonicalDataPublicationService
 from style_rotation.data.service import publish_data_contracts
+from style_rotation.experiment.benchmark_engine import (
+    build_benchmark_target_engine_spec,
+    publish_benchmark_target_engine,
+)
+from style_rotation.experiment.benchmark_publication import (
+    BenchmarkTargetPublicationService,
+    publish_benchmark_catalog,
+)
 from style_rotation.experiment.cost_publication import (
     NetCostPathPublicationService,
     publish_cost_catalog,
@@ -466,6 +474,48 @@ def _experiment_publish_net(gross_path_artifact_id: str, cost_scenario_artifact_
     result = NetCostPathPublicationService(
         create_postgres_engine(get_settings().database_url)
     ).publish(uuid.UUID(gross_path_artifact_id), uuid.UUID(cost_scenario_artifact_id))
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _experiment_bootstrap_benchmarks(version_number: int) -> int:
+    result = publish_benchmark_catalog(
+        create_postgres_engine(get_settings().database_url), version_number=version_number
+    )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _experiment_bootstrap_benchmark_engine(
+    git_commit: str, dependency_lock_file: str, version_number: int
+) -> int:
+    settings = get_settings()
+    status = database_status(settings.database_url)
+    if status.current_revision is None:
+        raise ValueError("Database must be migrated before publishing a Benchmark Target engine")
+    spec = build_benchmark_target_engine_spec(
+        git_commit,
+        Path(dependency_lock_file),
+        status.current_revision,
+        version_number=version_number,
+    )
+    result = publish_benchmark_target_engine(create_postgres_engine(settings.database_url), spec)
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _experiment_publish_benchmark_target(
+    reference_target_artifact_id: str,
+    benchmark_version_artifact_id: str,
+    benchmark_engine_artifact_id: str,
+) -> int:
+    result = BenchmarkTargetPublicationService(
+        create_postgres_engine(get_settings().database_url)
+    ).publish(
+        uuid.UUID(reference_target_artifact_id),
+        uuid.UUID(benchmark_version_artifact_id),
+        uuid.UUID(benchmark_engine_artifact_id),
+    )
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0
 
@@ -1305,6 +1355,40 @@ def build_parser() -> argparse.ArgumentParser:
     net_parser.set_defaults(
         handler=lambda args: _experiment_publish_net(
             args.gross_path_artifact_id, args.cost_scenario_artifact_id
+        )
+    )
+    benchmark_catalog_parser = experiment_subparsers.add_parser(
+        "bootstrap-benchmarks",
+        help="Publish product and research Benchmark definitions and versions",
+    )
+    benchmark_catalog_parser.add_argument("--version", type=int, default=1)
+    benchmark_catalog_parser.set_defaults(
+        handler=lambda args: _experiment_bootstrap_benchmarks(args.version)
+    )
+    benchmark_engine_parser = experiment_subparsers.add_parser(
+        "bootstrap-benchmark-engine",
+        help="Publish the deterministic Benchmark Target engine",
+    )
+    benchmark_engine_parser.add_argument("--git-commit", required=True)
+    benchmark_engine_parser.add_argument("--dependency-lock-file", default="requirements.lock")
+    benchmark_engine_parser.add_argument("--version", type=int, default=1)
+    benchmark_engine_parser.set_defaults(
+        handler=lambda args: _experiment_bootstrap_benchmark_engine(
+            args.git_commit, args.dependency_lock_file, args.version
+        )
+    )
+    benchmark_target_parser = experiment_subparsers.add_parser(
+        "publish-benchmark-target",
+        help="Publish one Benchmark Target Path aligned to a reference Strategy Target",
+    )
+    benchmark_target_parser.add_argument("--reference-target-artifact-id", required=True)
+    benchmark_target_parser.add_argument("--benchmark-version-artifact-id", required=True)
+    benchmark_target_parser.add_argument("--benchmark-engine-artifact-id", required=True)
+    benchmark_target_parser.set_defaults(
+        handler=lambda args: _experiment_publish_benchmark_target(
+            args.reference_target_artifact_id,
+            args.benchmark_version_artifact_id,
+            args.benchmark_engine_artifact_id,
         )
     )
 
