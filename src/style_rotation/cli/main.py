@@ -47,6 +47,7 @@ from style_rotation.factor.engine import (
 from style_rotation.factor.publication import FactorDatasetPublicationService
 from style_rotation.factor.service import publish_factor_catalog
 from style_rotation.lineage.service import ArtifactService
+from style_rotation.model.service import publish_model_catalog
 from style_rotation.persistence.database import database_status, reset_database, upgrade_database
 from style_rotation.persistence.session import create_postgres_engine
 from style_rotation.signal.diagnostic_engine import (
@@ -318,6 +319,14 @@ def _factor_diagnose(
 
 def _signal_bootstrap(catalog_file: str) -> int:
     result = publish_signal_catalog(
+        create_postgres_engine(get_settings().database_url), Path(catalog_file)
+    )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _model_bootstrap(catalog_file: str) -> int:
+    result = publish_model_catalog(
         create_postgres_engine(get_settings().database_url), Path(catalog_file)
     )
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
@@ -910,8 +919,29 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
 
+    model_parser = subparsers.add_parser(
+        "model", help="Materialize immutable model methods and specifications"
+    )
+    model_subparsers = model_parser.add_subparsers(dest="model_command", required=True)
+    model_bootstrap_parser = model_subparsers.add_parser(
+        "bootstrap", help="Materialize the published M0 model catalog"
+    )
+    model_bootstrap_parser.add_argument(
+        "--catalog-file", default="v0.2/catalogs/models.v0.2.0.json"
+    )
+    model_bootstrap_parser.set_defaults(handler=lambda args: _model_bootstrap(args.catalog_file))
+
     for command in PLANNED_COMMANDS:
-        if command.key in {"bootstrap", "data", "factor", "signal", "artifact", "lineage", "api"}:
+        if command.key in {
+            "bootstrap",
+            "data",
+            "factor",
+            "signal",
+            "model",
+            "artifact",
+            "lineage",
+            "api",
+        }:
             continue
         command_parser = subparsers.add_parser(command.key, help=command.summary)
         command_parser.set_defaults(handler=lambda _args, item=command: _planned(item))
