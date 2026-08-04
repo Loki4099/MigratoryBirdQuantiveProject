@@ -4,7 +4,7 @@ Versioned research platform for explainable US style rotation across IWF, IWD, I
 
 ## Status
 
-v0.2 is being rebuilt in short, independently verified milestones. M0 through M5 are complete. The platform now has immutable publication, typed market data, deterministic Factor/Signal/Model calculation and independent diagnostics, and read-only bilingual research pages through the Models layer. The strategy and experiment vertical slices follow in later milestones.
+v0.2 is being rebuilt in short, independently verified milestones. M0 through M5 and M6A are complete. The platform now has immutable publication, typed market data, deterministic Factor/Signal/Model calculation and independent diagnostics, read-only bilingual research pages through the Models layer, and immutable Strategy contracts, variants, schedules, and execution policies. Strategy Product target paths and experiments follow in later milestones.
 
 The authoritative plan is [v0.2/正式开发方案.md](v0.2/正式开发方案.md). Detailed decisions and database rationale are stored in [v0.2/设计决策记录.md](v0.2/设计决策记录.md) and [v0.2/数据库设计.md](v0.2/数据库设计.md).
 
@@ -96,6 +96,7 @@ style-rotation signal evaluate --signal-catalog-artifact-id <uuid> --forward-ret
 style-rotation model bootstrap --catalog-file v0.2/catalogs/models.v0.2.0.json
 style-rotation model bootstrap-engine --git-commit <hex-commit> --dependency-lock-file requirements.lock --version 1
 style-rotation model publish --model-catalog-artifact-id <uuid> --signal-catalog-artifact-id <uuid> --bundle-artifact-id <uuid> --eligibility-artifact-id <uuid> --signal-engine-artifact-id <uuid> --model-engine-artifact-id <uuid>
+style-rotation strategy bootstrap --catalog-file v0.2/catalogs/strategies.v0.2.0.json
 style-rotation artifact list
 style-rotation lineage show <artifact-uuid>
 ```

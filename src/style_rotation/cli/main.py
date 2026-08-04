@@ -66,6 +66,7 @@ from style_rotation.signal.diagnostic_publication import SignalDiagnosticPublica
 from style_rotation.signal.engine import build_signal_engine_spec, publish_signal_engine
 from style_rotation.signal.publication import SignalDatasetPublicationService
 from style_rotation.signal.service import publish_signal_catalog
+from style_rotation.strategy.service import publish_strategy_catalog
 
 
 @dataclass(frozen=True, slots=True)
@@ -335,6 +336,14 @@ def _signal_bootstrap(catalog_file: str) -> int:
 
 def _model_bootstrap(catalog_file: str) -> int:
     result = publish_model_catalog(
+        create_postgres_engine(get_settings().database_url), Path(catalog_file)
+    )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _strategy_bootstrap(catalog_file: str) -> int:
+    result = publish_strategy_catalog(
         create_postgres_engine(get_settings().database_url), Path(catalog_file)
     )
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
@@ -1073,6 +1082,20 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
 
+    strategy_parser = subparsers.add_parser(
+        "strategy", help="Materialize immutable strategy contracts and variants"
+    )
+    strategy_subparsers = strategy_parser.add_subparsers(dest="strategy_command", required=True)
+    strategy_bootstrap_parser = strategy_subparsers.add_parser(
+        "bootstrap", help="Materialize the published M0 strategy catalog"
+    )
+    strategy_bootstrap_parser.add_argument(
+        "--catalog-file", default="v0.2/catalogs/strategies.v0.2.0.json"
+    )
+    strategy_bootstrap_parser.set_defaults(
+        handler=lambda args: _strategy_bootstrap(args.catalog_file)
+    )
+
     for command in PLANNED_COMMANDS:
         if command.key in {
             "bootstrap",
@@ -1080,6 +1103,7 @@ def build_parser() -> argparse.ArgumentParser:
             "factor",
             "signal",
             "model",
+            "strategy",
             "artifact",
             "lineage",
             "api",

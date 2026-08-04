@@ -378,7 +378,7 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     model_engine_spec = build_model_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260804_16_v02_model_eval",
+        "20260804_17_v02_strategy_core",
     )
     model_engine = publish_model_engine(engine, model_engine_spec)
     assert publish_model_engine(engine, model_engine_spec).reused is True
@@ -499,7 +499,7 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     model_evaluation_spec = build_model_evaluation_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260804_16_v02_model_eval",
+        "20260804_17_v02_strategy_core",
     )
     model_evaluation_engine = publish_model_evaluation_engine(engine, model_evaluation_spec)
     assert publish_model_evaluation_engine(engine, model_evaluation_spec).reused is True

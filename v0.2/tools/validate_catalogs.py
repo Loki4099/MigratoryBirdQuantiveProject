@@ -143,8 +143,11 @@ def validate() -> dict[str, int]:
         )
     if strategies["trend_signal"] not in generated_signal_key_set:
         raise AssertionError("Strategy trend filter references an unknown signal")
-    if len(strategies["schedule_versions"]) != 2:
+    schedules = strategies["schedules"]
+    if {item["frequency"] for item in schedules} != {"weekly", "monthly"}:
         raise AssertionError("Exactly weekly and monthly schedules are required in v0.2.0")
+    if strategies["execution_policy"]["delay_common_sessions"] != 1:
+        raise AssertionError("Formal execution must occur on the next common session")
 
     targets = forward_returns["definitions"]
     target_keys = [item["key"] for item in targets]
@@ -166,7 +169,7 @@ def validate() -> dict[str, int]:
         "dimension_subset_patterns": subset_patterns,
         "concrete_model_specifications": concrete_model_specifications,
         "strategy_variant_configurations": strategy_configurations,
-        "schedule_versions": len(strategies["schedule_versions"]),
+        "schedule_versions": len(schedules),
         "forward_return_targets": len(targets),
     }
 

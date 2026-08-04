@@ -1,25 +1,41 @@
 {
   "catalog_type": "strategy",
   "catalog_version": "0.2.0",
-  "family": "cross_sectional_top_k_rotation",
+  "definition": {
+    "key": "cross_sectional_top_k_rotation",
+    "family": "cross_sectional_top_k_rotation",
+    "hypothesis": "Cross-sectional model scores can be converted into transparent fixed-slot allocations without embedding model logic in the strategy."
+  },
+  "input_contracts": [
+    {
+      "key": "rankable_complete_model_score",
+      "requires_model_score": true,
+      "compatible_model_output_types": ["continuous_score", "directional_score"],
+      "candidate_input_policy": "complete_eligible_universe",
+      "missing_input_policy": "fail_formal_run"
+    }
+  ],
   "variant_templates": [
     {
       "key": "top_k_equal_weight",
+      "input_contract_key": "rankable_complete_model_score",
       "selection_order": "rank_then_select",
       "trend_filter": "none",
       "empty_slot_policy": "not_applicable"
     },
     {
       "key": "post_selection_trend_overlay",
+      "input_contract_key": "rankable_complete_model_score",
       "selection_order": "rank_select_then_filter",
-      "trend_filter": "price_above_sma200",
+      "trend_filter": "published_threshold_state",
       "empty_slot_policy": "reserve_without_replacement"
     },
     {
       "key": "pre_selection_trend_eligible_top_k",
+      "input_contract_key": "rankable_complete_model_score",
       "selection_order": "filter_then_rank_select",
-      "trend_filter": "price_above_sma200",
-      "empty_slot_policy": "fill_with_lower_ranked_eligible_then_reserve"
+      "trend_filter": "published_threshold_state",
+      "empty_slot_policy": "eligible_backfill_then_reserve"
     }
   ],
   "k_values": [
@@ -27,9 +43,29 @@
     {"value": 2, "preset_type": "canonical"},
     {"value": 3, "preset_type": "sensitivity"}
   ],
-  "schedule_versions": ["weekly_last_session_close_v1", "monthly_last_session_close_v1"],
-  "execution_policy": "next_common_session_adjusted_open_v1",
+  "schedules": [
+    {
+      "key": "weekly_last_common_session_close",
+      "frequency": "weekly",
+      "decision_timing": "last_common_session_close",
+      "decision_data_policy": "include_decision_close"
+    },
+    {
+      "key": "monthly_last_common_session_close",
+      "frequency": "monthly",
+      "decision_timing": "last_common_session_close",
+      "decision_data_policy": "include_decision_close"
+    }
+  ],
+  "execution_policy": {
+    "key": "next_common_session_adjusted_open",
+    "delay_common_sessions": 1,
+    "execution_price": "adjusted_open",
+    "missing_execution_policy": "fail_formal_run"
+  },
   "trend_signal": "price_above_ma_state__moving_average_ratio__s1_l200",
+  "trend_eligible_state": "positive",
+  "trend_boundary_policy": "zero_is_ineligible",
   "tie_policy": "proportional_share_of_remaining_slot_budget",
   "slot_weight_rule": "1 / K",
   "reserve_rule": "unused_slot_budget_to_synthetic_reserve",
@@ -38,7 +74,7 @@
     "schedule_choices_per_configuration": 2
   },
   "product_generation_policy": {
-    "default_model_groups": ["dimension_subset_equal_weight", "fixed_weight_specifications", "vote_specifications"],
+    "included_model_specification_types": ["dimension_subset_equal_weight", "fixed_weight", "directional_vote"],
     "single_signal_models": "on_demand_when_signal_product_eligible",
     "event_only_models": "diagnostic_only_unless_future_strategy_declares_compatibility"
   }
