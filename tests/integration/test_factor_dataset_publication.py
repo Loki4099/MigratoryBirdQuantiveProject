@@ -58,6 +58,10 @@ from style_rotation.experiment.performance_publication import (
     publish_performance_metric_catalog,
 )
 from style_rotation.experiment.publication import GrossPathPublicationService
+from style_rotation.experiment.suite_publication import (
+    ExperimentCellRequest,
+    publish_experiment_suite,
+)
 from style_rotation.factor.diagnostic_publication import FactorDiagnosticPublicationService
 from style_rotation.factor.engine import (
     build_factor_diagnostic_engine_spec,
@@ -898,6 +902,98 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
                     "experiment.interval_performance_result WHERE availability_status = "
                     "'eligible' LIMIT 1)"
                 )
+            )
+        connection.rollback()
+
+    suite_cells = (
+        ExperimentCellRequest(
+            "spy_5bps_full",
+            target_path.artifact_id,
+            benchmark_catalog.benchmarks[0].version_artifact_id,
+            cost_catalog.scenarios[1].artifact_id,
+            metric_catalog.artifact_id,
+            accounting_engine.artifact_id,
+            benchmark_engine.artifact_id,
+            performance_engine.artifact_id,
+            "full_history",
+            date.fromisoformat(gross_path.effective_nav_end),
+        ),
+        ExperimentCellRequest(
+            "spy_5bps_trailing_10y",
+            target_path.artifact_id,
+            benchmark_catalog.benchmarks[0].version_artifact_id,
+            cost_catalog.scenarios[1].artifact_id,
+            metric_catalog.artifact_id,
+            accounting_engine.artifact_id,
+            benchmark_engine.artifact_id,
+            performance_engine.artifact_id,
+            "trailing_10_years",
+            date.fromisoformat(gross_path.effective_nav_end),
+        ),
+    )
+    suite = publish_experiment_suite(
+        engine,
+        suite_key="initial_spy_comparison",
+        name="Initial SPY Comparison",
+        description="Explicit full-history and trailing-ten-year cells.",
+        cells=suite_cells,
+    )
+    suite_reused = publish_experiment_suite(
+        engine,
+        suite_key="initial_spy_comparison",
+        name="Initial SPY Comparison",
+        description="Explicit full-history and trailing-ten-year cells.",
+        cells=suite_cells,
+    )
+    shared_suite = publish_experiment_suite(
+        engine,
+        suite_key="shared_full_history_check",
+        name="Shared Full-History Check",
+        description="Confirms that atomic specifications are reusable across suites.",
+        cells=(suite_cells[0],),
+    )
+    assert suite.specification_count == 2
+    assert suite_reused.reused is True
+    assert suite_reused.artifact_id == suite.artifact_id
+    assert all(item.reused for item in suite_reused.specifications)
+    assert shared_suite.specifications[0].reused is True
+    assert shared_suite.specifications[0].artifact_id == suite.specifications[0].artifact_id
+    with pytest.raises(ValueError, match="performance_engine"):
+        publish_experiment_suite(
+            engine,
+            suite_key="invalid_engine_roles",
+            name="Invalid Engine Roles",
+            description="Must roll back without publishing a partial suite.",
+            cells=(
+                ExperimentCellRequest(
+                    "invalid",
+                    target_path.artifact_id,
+                    benchmark_catalog.benchmarks[0].version_artifact_id,
+                    cost_catalog.scenarios[1].artifact_id,
+                    metric_catalog.artifact_id,
+                    accounting_engine.artifact_id,
+                    benchmark_engine.artifact_id,
+                    accounting_engine.artifact_id,
+                    "full_history",
+                    date.fromisoformat(gross_path.effective_nav_end),
+                ),
+            ),
+        )
+    with engine.connect() as connection:
+        suite_counts = connection.execute(
+            text(
+                "SELECT (SELECT count(*) FROM experiment.experiment_suite), "
+                "(SELECT count(*) FROM experiment.experiment_specification), "
+                "(SELECT count(*) FROM experiment.experiment_suite_cell), "
+                "(SELECT count(*) FROM lineage.artifact WHERE artifact_type = "
+                "'experiment_suite')"
+            )
+        ).one()
+    assert suite_counts == (2, 2, 3, 2)
+    with engine.connect() as connection:
+        with pytest.raises(DBAPIError):
+            connection.execute(
+                text("UPDATE experiment.experiment_suite_cell SET ordinal = 9")
             )
         connection.rollback()
 
