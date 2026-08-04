@@ -1538,6 +1538,596 @@
         "title": "LineageManifestResponse",
         "type": "object"
       },
+      "ModelAblationItem": {
+        "additionalProperties": false,
+        "properties": {
+          "ablated_specification_key": {
+            "title": "Ablated Specification Key",
+            "type": "string"
+          },
+          "delta_information_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delta Information Ratio"
+          },
+          "delta_mean_rank_ic": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delta Mean Rank Ic"
+          },
+          "delta_mean_top_bottom_spread": {
+            "title": "Delta Mean Top Bottom Spread",
+            "type": "number"
+          },
+          "full_specification_key": {
+            "title": "Full Specification Key",
+            "type": "string"
+          },
+          "period_count": {
+            "title": "Period Count",
+            "type": "integer"
+          },
+          "removed_dimension_key": {
+            "title": "Removed Dimension Key",
+            "type": "string"
+          },
+          "window_key": {
+            "title": "Window Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "full_specification_key",
+          "ablated_specification_key",
+          "removed_dimension_key",
+          "window_key",
+          "period_count",
+          "delta_mean_rank_ic",
+          "delta_information_ratio",
+          "delta_mean_top_bottom_spread"
+        ],
+        "title": "ModelAblationItem",
+        "type": "object"
+      },
+      "ModelComponentItem": {
+        "additionalProperties": false,
+        "properties": {
+          "input_transform": {
+            "title": "Input Transform",
+            "type": "string"
+          },
+          "signal_key": {
+            "title": "Signal Key",
+            "type": "string"
+          },
+          "weight": {
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "signal_key",
+          "input_transform",
+          "weight"
+        ],
+        "title": "ModelComponentItem",
+        "type": "object"
+      },
+      "ModelDiagnosticIssueItem": {
+        "additionalProperties": false,
+        "properties": {
+          "details": {
+            "additionalProperties": true,
+            "title": "Details",
+            "type": "object"
+          },
+          "issue_code": {
+            "title": "Issue Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "info",
+              "warning",
+              "error"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "specification_key": {
+            "title": "Specification Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "specification_key",
+          "severity",
+          "issue_code",
+          "message",
+          "details"
+        ],
+        "title": "ModelDiagnosticIssueItem",
+        "type": "object"
+      },
+      "ModelDiagnosticItem": {
+        "additionalProperties": false,
+        "properties": {
+          "active_dimension_count": {
+            "title": "Active Dimension Count",
+            "type": "integer"
+          },
+          "component_count": {
+            "title": "Component Count",
+            "type": "integer"
+          },
+          "dimensions": {
+            "items": {
+              "$ref": "#/components/schemas/ModelDimensionItem"
+            },
+            "title": "Dimensions",
+            "type": "array"
+          },
+          "full": {
+            "$ref": "#/components/schemas/ModelWindowMetricItem"
+          },
+          "hypothesis": {
+            "title": "Hypothesis",
+            "type": "string"
+          },
+          "model_dataset_artifact_id": {
+            "format": "uuid",
+            "title": "Model Dataset Artifact Id",
+            "type": "string"
+          },
+          "model_family": {
+            "title": "Model Family",
+            "type": "string"
+          },
+          "model_key": {
+            "title": "Model Key",
+            "type": "string"
+          },
+          "output_type": {
+            "title": "Output Type",
+            "type": "string"
+          },
+          "overall_method_key": {
+            "title": "Overall Method Key",
+            "type": "string"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "research_tier": {
+            "title": "Research Tier",
+            "type": "string"
+          },
+          "specification_key": {
+            "title": "Specification Key",
+            "type": "string"
+          },
+          "specification_type": {
+            "title": "Specification Type",
+            "type": "string"
+          },
+          "stability": {
+            "items": {
+              "$ref": "#/components/schemas/ModelWindowMetricItem"
+            },
+            "title": "Stability",
+            "type": "array"
+          },
+          "tie_output": {
+            "title": "Tie Output",
+            "type": "string"
+          }
+        },
+        "required": [
+          "model_dataset_artifact_id",
+          "specification_key",
+          "specification_type",
+          "model_key",
+          "model_family",
+          "hypothesis",
+          "overall_method_key",
+          "tie_output",
+          "output_type",
+          "active_dimension_count",
+          "component_count",
+          "research_tier",
+          "dimensions",
+          "full",
+          "stability",
+          "quality"
+        ],
+        "title": "ModelDiagnosticItem",
+        "type": "object"
+      },
+      "ModelDimensionItem": {
+        "additionalProperties": false,
+        "properties": {
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/ModelComponentItem"
+            },
+            "title": "Components",
+            "type": "array"
+          },
+          "dimension_key": {
+            "title": "Dimension Key",
+            "type": "string"
+          },
+          "input_transform": {
+            "title": "Input Transform",
+            "type": "string"
+          },
+          "method_key": {
+            "title": "Method Key",
+            "type": "string"
+          },
+          "weight": {
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "dimension_key",
+          "method_key",
+          "input_transform",
+          "weight",
+          "components"
+        ],
+        "title": "ModelDimensionItem",
+        "type": "object"
+      },
+      "ModelOverviewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "ablation_count": {
+            "title": "Ablation Count",
+            "type": "integer"
+          },
+          "ablations": {
+            "items": {
+              "$ref": "#/components/schemas/ModelAblationItem"
+            },
+            "title": "Ablations",
+            "type": "array"
+          },
+          "common_period_count": {
+            "title": "Common Period Count",
+            "type": "integer"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "coverage_end": {
+            "format": "date",
+            "title": "Coverage End",
+            "type": "string"
+          },
+          "coverage_start": {
+            "format": "date",
+            "title": "Coverage Start",
+            "type": "string"
+          },
+          "data_bundle_artifact_id": {
+            "format": "uuid",
+            "title": "Data Bundle Artifact Id",
+            "type": "string"
+          },
+          "eligibility_artifact_id": {
+            "format": "uuid",
+            "title": "Eligibility Artifact Id",
+            "type": "string"
+          },
+          "evaluation_artifact_id": {
+            "format": "uuid",
+            "title": "Evaluation Artifact Id",
+            "type": "string"
+          },
+          "evaluation_engine_artifact_id": {
+            "format": "uuid",
+            "title": "Evaluation Engine Artifact Id",
+            "type": "string"
+          },
+          "forward_return_artifact_id": {
+            "format": "uuid",
+            "title": "Forward Return Artifact Id",
+            "type": "string"
+          },
+          "frequency": {
+            "enum": [
+              "weekly",
+              "monthly"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "high_correlation_threshold": {
+            "title": "High Correlation Threshold",
+            "type": "number"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/ModelDiagnosticIssueItem"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "model_catalog_artifact_id": {
+            "format": "uuid",
+            "title": "Model Catalog Artifact Id",
+            "type": "string"
+          },
+          "model_count": {
+            "title": "Model Count",
+            "type": "integer"
+          },
+          "model_engine_artifact_id": {
+            "format": "uuid",
+            "title": "Model Engine Artifact Id",
+            "type": "string"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelDiagnosticItem"
+            },
+            "title": "Models",
+            "type": "array"
+          },
+          "pair_count": {
+            "title": "Pair Count",
+            "type": "integer"
+          },
+          "pairs": {
+            "items": {
+              "$ref": "#/components/schemas/ModelPairDiagnosticItem"
+            },
+            "title": "Pairs",
+            "type": "array"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "target_key": {
+            "title": "Target Key",
+            "type": "string"
+          },
+          "universe_artifact_id": {
+            "format": "uuid",
+            "title": "Universe Artifact Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "evaluation_artifact_id",
+          "model_catalog_artifact_id",
+          "universe_artifact_id",
+          "data_bundle_artifact_id",
+          "eligibility_artifact_id",
+          "model_engine_artifact_id",
+          "evaluation_engine_artifact_id",
+          "forward_return_artifact_id",
+          "target_key",
+          "frequency",
+          "coverage_start",
+          "coverage_end",
+          "model_count",
+          "common_period_count",
+          "pair_count",
+          "ablation_count",
+          "high_correlation_threshold",
+          "models",
+          "pairs",
+          "ablations",
+          "issues"
+        ],
+        "title": "ModelOverviewResponse",
+        "type": "object"
+      },
+      "ModelPairDiagnosticItem": {
+        "additionalProperties": false,
+        "properties": {
+          "high_correlation": {
+            "title": "High Correlation",
+            "type": "boolean"
+          },
+          "left_specification_key": {
+            "title": "Left Specification Key",
+            "type": "string"
+          },
+          "mean_top2_overlap": {
+            "title": "Mean Top2 Overlap",
+            "type": "number"
+          },
+          "right_specification_key": {
+            "title": "Right Specification Key",
+            "type": "string"
+          },
+          "score_observation_count": {
+            "title": "Score Observation Count",
+            "type": "integer"
+          },
+          "score_spearman": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score Spearman"
+          },
+          "spread_correlation": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spread Correlation"
+          },
+          "spread_period_count": {
+            "title": "Spread Period Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "left_specification_key",
+          "right_specification_key",
+          "score_observation_count",
+          "score_spearman",
+          "spread_period_count",
+          "spread_correlation",
+          "mean_top2_overlap",
+          "high_correlation"
+        ],
+        "title": "ModelPairDiagnosticItem",
+        "type": "object"
+      },
+      "ModelWindowMetricItem": {
+        "additionalProperties": false,
+        "properties": {
+          "information_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Information Ratio"
+          },
+          "mean_confidence": {
+            "title": "Mean Confidence",
+            "type": "number"
+          },
+          "mean_rank_ic": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean Rank Ic"
+          },
+          "mean_score_dispersion": {
+            "title": "Mean Score Dispersion",
+            "type": "number"
+          },
+          "mean_top2_turnover": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean Top2 Turnover"
+          },
+          "mean_top_bottom_spread": {
+            "title": "Mean Top Bottom Spread",
+            "type": "number"
+          },
+          "median_rank_ic": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Rank Ic"
+          },
+          "non_neutral_rate": {
+            "title": "Non Neutral Rate",
+            "type": "number"
+          },
+          "period_count": {
+            "title": "Period Count",
+            "type": "integer"
+          },
+          "positive_ic_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Positive Ic Ratio"
+          },
+          "undefined_ic_count": {
+            "title": "Undefined Ic Count",
+            "type": "integer"
+          },
+          "valid_ic_count": {
+            "title": "Valid Ic Count",
+            "type": "integer"
+          },
+          "window_end": {
+            "format": "date",
+            "title": "Window End",
+            "type": "string"
+          },
+          "window_key": {
+            "title": "Window Key",
+            "type": "string"
+          },
+          "window_start": {
+            "format": "date",
+            "title": "Window Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "window_key",
+          "window_start",
+          "window_end",
+          "period_count",
+          "valid_ic_count",
+          "undefined_ic_count",
+          "mean_rank_ic",
+          "median_rank_ic",
+          "positive_ic_ratio",
+          "information_ratio",
+          "mean_top_bottom_spread",
+          "non_neutral_rate",
+          "mean_top2_turnover",
+          "mean_score_dispersion",
+          "mean_confidence"
+        ],
+        "title": "ModelWindowMetricItem",
+        "type": "object"
+      },
       "QualitySummary": {
         "additionalProperties": false,
         "properties": {
@@ -2608,6 +3198,72 @@
         "summary": "Health",
         "tags": [
           "system"
+        ]
+      }
+    },
+    "/api/v2/models/overview": {
+      "get": {
+        "operationId": "model_overview_api_v2_models_overview_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "frequency",
+            "required": false,
+            "schema": {
+              "default": "weekly",
+              "enum": [
+                "weekly",
+                "monthly"
+              ],
+              "title": "Frequency",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "if-none-match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-None-Match"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelOverviewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Not modified"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Model Overview",
+        "tags": [
+          "model"
         ]
       }
     },

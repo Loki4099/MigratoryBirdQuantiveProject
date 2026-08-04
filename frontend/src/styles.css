@@ -194,6 +194,36 @@ h2 { font-size: 17px; }
 .signal-pair-list dl div { text-align: right; }
 .signal-pair-list dt { color: var(--muted); font-size: 7px; }
 .signal-pair-list dd { margin: 4px 0 0; color: var(--green); font: 600 10px Consolas, monospace; }
+.model-scope-strip { grid-template-columns: 1.5fr 1.5fr repeat(3, .55fr); }
+.model-toolbar { display: flex; justify-content: space-between; gap: 14px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.model-toolbar > div { display: flex; flex-wrap: wrap; gap: 4px; }
+.model-toolbar button { border: 1px solid var(--line); background: var(--paper); color: var(--muted); padding: 6px 9px; border-radius: 4px; font-size: 8px; cursor: pointer; }
+.model-toolbar button.active { border-color: var(--green); background: #e9eee9; color: var(--green); font-weight: 700; }
+.model-toolbar input { width: min(300px, 40vw); border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 4px; padding: 8px 10px; font-size: 9px; }
+.model-result-count { margin: 10px 0; color: var(--muted); font: 9px Consolas, monospace; }
+.model-load-more { display: block; margin: 18px auto 0; border: 1px solid var(--green); background: transparent; color: var(--green); padding: 8px 14px; border-radius: 4px; font-size: 9px; cursor: pointer; }
+.model-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.model-card { background: var(--paper); padding: 21px; min-width: 0; }
+.model-card > p { color: var(--muted); min-height: 28px; font-size: 9px; line-height: 1.6; }
+.model-composition { margin-top: 14px; border-top: 1px solid var(--line); font-size: 8px; }
+.model-composition summary { padding: 10px 2px; color: var(--green); cursor: pointer; font-weight: 700; }
+.model-composition > div { border-top: 1px solid var(--line); padding: 9px 2px; }
+.model-composition header { display: flex; justify-content: space-between; gap: 12px; }
+.model-composition header strong { font: 600 9px Consolas, monospace; }
+.model-composition header code { color: var(--muted); font-size: 8px; }
+.model-composition ul { list-style: none; margin: 7px 0 0; padding: 0; }
+.model-composition li { display: flex; justify-content: space-between; gap: 10px; padding: 5px 0; border-top: 1px dotted var(--line); color: var(--muted); }
+.model-composition li span { overflow-wrap: anywhere; }
+.ablation-list { border-bottom: 1px solid var(--line); }
+.ablation-list > article { display: grid; grid-template-columns: minmax(0, 1.8fr) 1fr; gap: 20px; padding: 13px 10px; border-bottom: 1px solid var(--line); }
+.ablation-list strong, .ablation-list span { display: block; font: 500 8px Consolas, monospace; overflow-wrap: anywhere; }
+.ablation-list span { color: var(--muted); margin-top: 4px; }
+.ablation-list dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0; }
+.ablation-list dl div { text-align: right; }
+.ablation-list dt { color: var(--muted); font-size: 7px; }
+.ablation-list dd { margin: 4px 0 0; color: var(--green); font: 600 10px Consolas, monospace; }
+.ablation-disclosure { margin-top: 14px; border-bottom: 1px solid var(--line); }
+.ablation-disclosure > summary { padding: 13px 10px; color: var(--green); cursor: pointer; font-size: 9px; font-weight: 700; }
 .arrow-link { color: var(--green); text-decoration: none; font-weight: 700; text-align: right; }
 .back-link { display: inline-block; margin-bottom: 30px; color: var(--green); font-size: 11px; text-decoration: none; }
 .detail-heading p:not(.eyebrow) { font-family: Consolas, monospace; font-size: 10px; }
@@ -235,7 +265,7 @@ h2 { font-size: 17px; }
   .app-shell { grid-template-columns: 190px 1fr; }
   .sidebar { padding-inline: 12px; }
   .stat-grid, .asset-grid { grid-template-columns: 1fr 1fr; }
-  .data-detail-grid, .factor-diagnostic-grid, .signal-grid { grid-template-columns: 1fr; gap: 0; }
+  .data-detail-grid, .factor-diagnostic-grid, .signal-grid, .model-grid { grid-template-columns: 1fr; gap: 0; }
   .artifact-list-head { display: none; }
   .artifact-row { grid-template-columns: 1.4fr 1fr .5fr; }
   .artifact-row > :nth-child(4), .artifact-row > :nth-child(5) { justify-self: start; }
@@ -250,6 +280,9 @@ h2 { font-size: 17px; }
   main { padding: 30px 18px 55px; }
   .stat-grid, .foundation-strip, .detail-grid, .dependency-grid, .asset-grid, .scope-strip, .dataset-metrics, .factor-grid, .factor-stat-grid, .signal-stat-grid { grid-template-columns: 1fr; }
   .signal-pair-list > article, .signal-stability > div { grid-template-columns: 1fr; }
+  .ablation-list > article { grid-template-columns: 1fr; }
+  .model-toolbar { align-items: stretch; flex-direction: column; }
+  .model-toolbar input { width: auto; }
   .signal-pair-list dl { margin-top: 8px; }
   .source-list article { grid-template-columns: 1fr; gap: 6px; }
   .requirement-list article { grid-template-columns: 1fr; gap: 7px; }

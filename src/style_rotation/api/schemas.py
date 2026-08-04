@@ -398,3 +398,110 @@ class SignalOverviewResponse(ApiModel):
     signals: list[SignalDiagnosticItem]
     pairs: list[SignalPairDiagnosticItem]
     issues: list[SignalDiagnosticIssueItem]
+
+
+class ModelWindowMetricItem(ApiModel):
+    window_key: str
+    window_start: date
+    window_end: date
+    period_count: int
+    valid_ic_count: int
+    undefined_ic_count: int
+    mean_rank_ic: float | None
+    median_rank_ic: float | None
+    positive_ic_ratio: float | None
+    information_ratio: float | None
+    mean_top_bottom_spread: float
+    non_neutral_rate: float
+    mean_top2_turnover: float | None
+    mean_score_dispersion: float
+    mean_confidence: float
+
+
+class ModelComponentItem(ApiModel):
+    signal_key: str
+    input_transform: str
+    weight: float
+
+
+class ModelDimensionItem(ApiModel):
+    dimension_key: str
+    method_key: str
+    input_transform: str
+    weight: float
+    components: list[ModelComponentItem]
+
+
+class ModelDiagnosticItem(ApiModel):
+    model_dataset_artifact_id: UUID
+    specification_key: str
+    specification_type: str
+    model_key: str
+    model_family: str
+    hypothesis: str
+    overall_method_key: str
+    tie_output: str
+    output_type: str
+    active_dimension_count: int
+    component_count: int
+    research_tier: str
+    dimensions: list[ModelDimensionItem]
+    full: ModelWindowMetricItem
+    stability: list[ModelWindowMetricItem]
+    quality: QualitySummary
+
+
+class ModelPairDiagnosticItem(ApiModel):
+    left_specification_key: str
+    right_specification_key: str
+    score_observation_count: int
+    score_spearman: float | None
+    spread_period_count: int
+    spread_correlation: float | None
+    mean_top2_overlap: float
+    high_correlation: bool
+
+
+class ModelAblationItem(ApiModel):
+    full_specification_key: str
+    ablated_specification_key: str
+    removed_dimension_key: str
+    window_key: str
+    period_count: int
+    delta_mean_rank_ic: float | None
+    delta_information_ratio: float | None
+    delta_mean_top_bottom_spread: float
+
+
+class ModelDiagnosticIssueItem(ApiModel):
+    specification_key: str
+    severity: Literal["info", "warning", "error"]
+    issue_code: str
+    message: str
+    details: dict[str, Any]
+
+
+class ModelOverviewResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    evaluation_artifact_id: UUID
+    model_catalog_artifact_id: UUID
+    universe_artifact_id: UUID
+    data_bundle_artifact_id: UUID
+    eligibility_artifact_id: UUID
+    model_engine_artifact_id: UUID
+    evaluation_engine_artifact_id: UUID
+    forward_return_artifact_id: UUID
+    target_key: str
+    frequency: Literal["weekly", "monthly"]
+    coverage_start: date
+    coverage_end: date
+    model_count: int
+    common_period_count: int
+    pair_count: int
+    ablation_count: int
+    high_correlation_threshold: float
+    models: list[ModelDiagnosticItem]
+    pairs: list[ModelPairDiagnosticItem]
+    ablations: list[ModelAblationItem]
+    issues: list[ModelDiagnosticIssueItem]

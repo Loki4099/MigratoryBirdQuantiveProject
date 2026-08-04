@@ -30,6 +30,8 @@ from style_rotation.api.schemas import (
     FactorOverviewResponse,
     HealthResponse,
     LineageManifestResponse,
+    ModelDiagnosticItem,
+    ModelOverviewResponse,
     QualityState,
     QualitySummary,
     SignalDiagnosticItem,
@@ -71,6 +73,7 @@ class ArtifactReader(Protocol):
     def data_overview(self) -> dict[str, Any]: ...
     def factor_overview(self) -> dict[str, Any]: ...
     def signal_overview(self, frequency: str) -> dict[str, Any]: ...
+    def model_overview(self, frequency: str) -> dict[str, Any]: ...
 
 
 def _context() -> ApiContext:
@@ -156,7 +159,7 @@ def create_app(
 
     @app.get("/api/v2/capabilities", response_model=CapabilitiesResponse, tags=["system"])
     def capabilities() -> CapabilitiesResponse:
-        available = {"catalog", "data", "factor", "signal", "lineage", "ops"}
+        available = {"catalog", "data", "factor", "signal", "model", "lineage", "ops"}
         return CapabilitiesResponse(
             context=_context(),
             quality=QualitySummary(state="ok"),
@@ -178,6 +181,7 @@ def create_app(
                 "data_overview",
                 "factor_overview",
                 "signal_overview",
+                "model_overview",
                 "artifacts",
                 "lineage",
             ],
@@ -218,6 +222,49 @@ def create_app(
             total=total,
             limit=limit,
             offset=offset,
+        )
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
+
+    @app.get(
+        "/api/v2/models/overview",
+        response_model=ModelOverviewResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["model"],
+    )
+    def model_overview(
+        response: Response,
+        frequency: Annotated[Literal["weekly", "monthly"], Query()] = "weekly",
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> ModelOverviewResponse | Response:
+        result = reader.model_overview(frequency)
+        issue_severities: dict[str, set[str]] = {}
+        for issue in result["issues"]:
+            issue_severities.setdefault(str(issue["specification_key"]), set()).add(
+                str(issue["severity"])
+            )
+        models: list[ModelDiagnosticItem] = []
+        has_error = False
+        has_warning = False
+        for model in result["models"]:
+            severities = issue_severities.get(str(model["specification_key"]), set())
+            if "error" in severities:
+                quality = QualitySummary(state="error", codes=["model.diagnostic_error"])
+                has_error = True
+            elif "warning" in severities:
+                quality = QualitySummary(state="warning", codes=["model.diagnostic_warning"])
+                has_warning = True
+            else:
+                quality = QualitySummary(state="ok")
+            models.append(ModelDiagnosticItem.model_validate({**model, "quality": quality}))
+        if has_error:
+            overall = QualitySummary(state="error", codes=["model.diagnostic_error"])
+        elif has_warning:
+            overall = QualitySummary(state="warning", codes=["model.diagnostic_warning"])
+        else:
+            overall = QualitySummary(state="ok")
+        payload = ModelOverviewResponse.model_validate(
+            {"context": _context(), "quality": overall, **result, "models": models}
         )
         cached = _etag_response(payload, response, if_none_match)
         return cached or payload

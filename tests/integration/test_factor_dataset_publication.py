@@ -541,6 +541,19 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
             )
         ).one()
     assert model_evaluation_counts == (2, 258, 344, 7310, 300, 186)
+    model_overview = TestClient(create_app(ArtifactQueryService(engine))).get(
+        "/api/v2/models/overview?frequency=weekly"
+    )
+    assert model_overview.status_code == 200
+    model_payload = model_overview.json()
+    assert model_payload["frequency"] == "weekly"
+    assert model_payload["model_count"] == 86
+    assert model_payload["common_period_count"] == 2
+    assert len(model_payload["models"]) == 86
+    assert len(model_payload["pairs"]) == 3655
+    assert len(model_payload["ablations"]) == 150
+    assert sum(len(item["dimensions"]) for item in model_payload["models"]) == 151
+    assert "sharpe" not in model_overview.text.lower()
     signal_overview = TestClient(create_app(ArtifactQueryService(engine))).get(
         "/api/v2/signals/overview?frequency=weekly"
     )

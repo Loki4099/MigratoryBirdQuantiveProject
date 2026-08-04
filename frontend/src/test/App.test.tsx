@@ -118,6 +118,48 @@ const signalOverview = {
     issue_code: "short_evaluation_sample", message: "Short sample", details: {},
   }],
 };
+const modelOverview = {
+  context: health.context,
+  quality: { state: "warning", codes: ["model.diagnostic_warning"] },
+  evaluation_artifact_id: "00000000-0000-0000-0000-000000000030",
+  model_catalog_artifact_id: "00000000-0000-0000-0000-000000000031",
+  universe_artifact_id: "00000000-0000-0000-0000-000000000032",
+  data_bundle_artifact_id: "00000000-0000-0000-0000-000000000033",
+  eligibility_artifact_id: "00000000-0000-0000-0000-000000000034",
+  model_engine_artifact_id: "00000000-0000-0000-0000-000000000035",
+  evaluation_engine_artifact_id: "00000000-0000-0000-0000-000000000036",
+  forward_return_artifact_id: "00000000-0000-0000-0000-000000000037",
+  target_key: "weekly_next_open_to_next_open", frequency: "weekly",
+  coverage_start: "2025-01-03", coverage_end: "2026-01-30",
+  model_count: 1, common_period_count: 52, pair_count: 1, ablation_count: 1,
+  high_correlation_threshold: 0.85,
+  models: [{
+    model_dataset_artifact_id: "00000000-0000-0000-0000-000000000038",
+    specification_key: "dimension_equal_weight__momentum_trend+volatility_risk",
+    specification_type: "dimension_subset_equal_weight",
+    model_key: "classic_market_composite", model_family: "cross_sectional_composite",
+    hypothesis: "Complementary dimensions may improve robustness.",
+    overall_method_key: "weighted_mean", tie_output: "not_applicable",
+    output_type: "continuous_score", active_dimension_count: 2, component_count: 1,
+    research_tier: "canonical", quality: { state: "warning", codes: ["model.diagnostic_warning"] },
+    dimensions: [{ dimension_key: "momentum_trend", method_key: "weighted_mean", input_transform: "identity", weight: 0.5,
+      components: [{ signal_key: "return_continuation__total_return__w252", input_transform: "identity", weight: 1 }] }],
+    full: { window_key: "full", window_start: "2025-01-03", window_end: "2026-01-30", period_count: 52,
+      valid_ic_count: 51, undefined_ic_count: 1, mean_rank_ic: 0.21, median_rank_ic: 0.2,
+      positive_ic_ratio: 0.64, information_ratio: 1.2, mean_top_bottom_spread: 0.0035,
+      non_neutral_rate: 1, mean_top2_turnover: 0.2, mean_score_dispersion: 0.41, mean_confidence: 0.55 },
+    stability: [],
+  }],
+  pairs: [{ left_specification_key: "model_a", right_specification_key: "model_b",
+    score_observation_count: 208, score_spearman: 0.91, spread_period_count: 52,
+    spread_correlation: 0.7, mean_top2_overlap: 0.8, high_correlation: true }],
+  ablations: [{ full_specification_key: "dimension_equal_weight__momentum_trend+volatility_risk",
+    ablated_specification_key: "dimension_equal_weight__momentum_trend",
+    removed_dimension_key: "volatility_risk", window_key: "full", period_count: 52,
+    delta_mean_rank_ic: 0.03, delta_information_ratio: 0.1, delta_mean_top_bottom_spread: 0.0004 }],
+  issues: [{ specification_key: "dimension_equal_weight__momentum_trend+volatility_risk",
+    severity: "warning", issue_code: "short_evaluation_sample", message: "Short sample", details: {} }],
+};
 
 function renderRoute(path: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -129,7 +171,7 @@ beforeEach(async () => {
   await i18n.changeLanguage("zh-CN");
   vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
     const url = String(input);
-    const payload = url.includes("signals/overview") ? signalOverview : url.includes("factors/overview") ? factorOverview : url.includes("data/overview") ? dataOverview : url.includes("health") ? health : url.includes("capabilities") ? capabilities : artifacts;
+    const payload = url.includes("models/overview") ? modelOverview : url.includes("signals/overview") ? signalOverview : url.includes("factors/overview") ? factorOverview : url.includes("data/overview") ? dataOverview : url.includes("health") ? health : url.includes("capabilities") ? capabilities : artifacts;
     return new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } });
   });
 });
@@ -138,7 +180,7 @@ test("renders real foundation data without inventing future research results", a
   renderRoute("/?lang=zh-CN");
   expect(await screen.findByText("从可追溯的研究对象开始")).toBeInTheDocument();
   expect(screen.getByText("20260802_02_v02_lineage")).toBeInTheDocument();
-  expect(screen.getByText("模型库")).toBeInTheDocument();
+  expect(screen.getByText("策略产品")).toBeInTheDocument();
 });
 
 test("language switch keeps the route and translates fixed UI text", async () => {
@@ -180,5 +222,15 @@ test("signal page displays published directional diagnostics without strategy ra
   expect(screen.getAllByText("return_continuation__total_return__w252").length).toBeGreaterThan(0);
   expect(screen.getByText("Mean Rank IC")).toBeInTheDocument();
   expect(screen.getByText("Signal redundancy alerts")).toBeInTheDocument();
+  expect(screen.queryByText(/Sharpe/i)).not.toBeInTheDocument();
+});
+
+test("model page displays composition, controlled ablation, and no strategy ranking", async () => {
+  await i18n.changeLanguage("en");
+  renderRoute("/models?lang=en&frequency=weekly");
+  expect(await screen.findByRole("heading", { name: "Model structure and independent diagnostics" })).toBeInTheDocument();
+  expect(screen.getAllByText("dimension_equal_weight__momentum_trend+volatility_risk").length).toBeGreaterThan(0);
+  expect(screen.getByText("Controlled dimension ablation")).toBeInTheDocument();
+  expect(screen.getByText("Model redundancy alerts")).toBeInTheDocument();
   expect(screen.queryByText(/Sharpe/i)).not.toBeInTheDocument();
 });

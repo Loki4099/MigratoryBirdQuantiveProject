@@ -186,6 +186,101 @@ class FakeArtifactReader:
             ],
         }
 
+    def model_overview(self, frequency: str) -> dict[str, Any]:
+        identifiers = [uuid.uuid4() for _ in range(8)]
+        metric = {
+            "window_key": "full",
+            "window_start": date(2025, 1, 3),
+            "window_end": date(2026, 1, 30),
+            "period_count": 52,
+            "valid_ic_count": 51,
+            "undefined_ic_count": 1,
+            "mean_rank_ic": 0.21,
+            "median_rank_ic": 0.2,
+            "positive_ic_ratio": 0.64,
+            "information_ratio": 1.2,
+            "mean_top_bottom_spread": 0.0035,
+            "non_neutral_rate": 1.0,
+            "mean_top2_turnover": 0.2,
+            "mean_score_dispersion": 0.41,
+            "mean_confidence": 0.55,
+        }
+        specification = "dimension_equal_weight__momentum_trend+volatility_risk"
+        return {
+            "evaluation_artifact_id": identifiers[0],
+            "model_catalog_artifact_id": identifiers[1],
+            "universe_artifact_id": identifiers[2],
+            "data_bundle_artifact_id": identifiers[3],
+            "eligibility_artifact_id": identifiers[4],
+            "model_engine_artifact_id": identifiers[5],
+            "evaluation_engine_artifact_id": identifiers[6],
+            "forward_return_artifact_id": identifiers[7],
+            "target_key": f"{frequency}_next_open_to_next_open",
+            "frequency": frequency,
+            "coverage_start": date(2025, 1, 3),
+            "coverage_end": date(2026, 1, 30),
+            "model_count": 1,
+            "common_period_count": 52,
+            "pair_count": 0,
+            "ablation_count": 1,
+            "high_correlation_threshold": 0.85,
+            "models": [
+                {
+                    "model_dataset_artifact_id": uuid.uuid4(),
+                    "specification_key": specification,
+                    "specification_type": "dimension_subset_equal_weight",
+                    "model_key": "classic_market_composite",
+                    "model_family": "cross_sectional_composite",
+                    "hypothesis": "Complementary dimensions may improve robustness.",
+                    "overall_method_key": "weighted_mean",
+                    "tie_output": "not_applicable",
+                    "output_type": "continuous_score",
+                    "active_dimension_count": 2,
+                    "component_count": 2,
+                    "research_tier": "canonical",
+                    "dimensions": [
+                        {
+                            "dimension_key": "momentum_trend",
+                            "method_key": "weighted_mean",
+                            "input_transform": "identity",
+                            "weight": 0.5,
+                            "components": [
+                                {
+                                    "signal_key": "return_continuation__total_return__w252",
+                                    "input_transform": "identity",
+                                    "weight": 1.0,
+                                }
+                            ],
+                        }
+                    ],
+                    "full": metric,
+                    "stability": [{**metric, "window_key": "year:2025"}],
+                }
+            ],
+            "pairs": [],
+            "ablations": [
+                {
+                    "full_specification_key": specification,
+                    "ablated_specification_key": "dimension_equal_weight__momentum_trend",
+                    "removed_dimension_key": "volatility_risk",
+                    "window_key": "full",
+                    "period_count": 52,
+                    "delta_mean_rank_ic": 0.03,
+                    "delta_information_ratio": 0.1,
+                    "delta_mean_top_bottom_spread": 0.0004,
+                }
+            ],
+            "issues": [
+                {
+                    "specification_key": specification,
+                    "severity": "warning",
+                    "issue_code": "short_evaluation_sample",
+                    "message": "Short sample",
+                    "details": {"period_count": 52},
+                }
+            ],
+        }
+
 
 def _client() -> tuple[TestClient, FakeArtifactReader]:
     reader = FakeArtifactReader()
@@ -307,6 +402,27 @@ def test_signal_overview_is_frequency_explicit_and_keeps_strategy_metrics_out() 
     assert signal_domain["availability"] == "available"
     invalid = client.get("/api/v2/signals/overview?frequency=daily")
     assert invalid.status_code == 422
+
+
+def test_model_overview_exposes_composition_diagnostics_and_controlled_ablation() -> None:
+    client, _reader = _client()
+    response = client.get("/api/v2/models/overview?frequency=weekly")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["quality"] == {
+        "state": "warning",
+        "codes": ["model.diagnostic_warning"],
+    }
+    assert payload["models"][0]["dimensions"][0]["dimension_key"] == "momentum_trend"
+    assert payload["models"][0]["full"]["mean_score_dispersion"] == 0.41
+    assert payload["ablations"][0]["removed_dimension_key"] == "volatility_risk"
+    assert "sharpe" not in response.text.lower()
+    model_domain = next(
+        item
+        for item in client.get("/api/v2/capabilities").json()["domains"]
+        if item["key"] == "model"
+    )
+    assert model_domain["availability"] == "available"
 
 
 def test_committed_openapi_contract_matches_application() -> None:

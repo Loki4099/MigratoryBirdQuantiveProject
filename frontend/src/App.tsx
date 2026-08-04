@@ -11,6 +11,7 @@ import { DataPage } from "./pages/DataPage";
 import { FactorsPage } from "./pages/FactorsPage";
 import { PlannedPage } from "./pages/PlannedPage";
 import { SignalsPage } from "./pages/SignalsPage";
+import { ModelsPage } from "./pages/ModelsPage";
 
 export const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false } },
@@ -25,7 +26,7 @@ export function AppRoutes() {
         <Route path="data" element={<DataPage />} />
         <Route path="factors" element={<FactorsPage />} />
         <Route path="signals" element={<SignalsPage />} />
-        <Route path="models" element={<PlannedPage titleKey="nav.models" milestone="M5" />} />
+        <Route path="models" element={<ModelsPage />} />
         <Route path="strategies" element={<PlannedPage titleKey="nav.strategies" milestone="M6" />} />
         <Route path="experiments" element={<PlannedPage titleKey="nav.experiments" milestone="M7" />} />
         <Route path="compare" element={<PlannedPage titleKey="nav.compare" milestone="M8" />} />

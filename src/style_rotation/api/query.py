@@ -765,6 +765,329 @@ class ArtifactQueryService:
         result["issues"] = [dict(row) for row in issues]
         return result
 
+    def model_overview(self, frequency: str) -> dict[str, Any]:
+        """Return one published Model evaluation with definition and composition metadata."""
+        if frequency not in {"weekly", "monthly"}:
+            raise ValueError("Model frequency must be weekly or monthly")
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            evaluation = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT evaluation.model_evaluation_id,
+                           evaluation.artifact_id AS evaluation_artifact_id,
+                           evaluation.model_catalog_artifact_id,
+                           universe.artifact_id AS universe_artifact_id,
+                           bundle.artifact_id AS data_bundle_artifact_id,
+                           eligibility.artifact_id AS eligibility_artifact_id,
+                           model_engine.artifact_id AS model_engine_artifact_id,
+                           evaluation_engine.artifact_id AS evaluation_engine_artifact_id,
+                           target.artifact_id AS forward_return_artifact_id,
+                           target_definition.target_key, evaluation.frequency,
+                           evaluation.coverage_start, evaluation.coverage_end,
+                           evaluation.model_count, evaluation.pair_count,
+                           evaluation.ablation_count,
+                           evaluation.high_correlation_threshold
+                    FROM model.model_evaluation evaluation
+                    JOIN lineage.artifact artifact
+                      ON artifact.artifact_id = evaluation.artifact_id
+                    JOIN catalog.universe_version universe
+                      ON universe.universe_version_id = evaluation.universe_version_id
+                    JOIN data.data_bundle_version bundle
+                      ON bundle.data_bundle_version_id = evaluation.data_bundle_version_id
+                    JOIN catalog.eligibility_snapshot eligibility
+                      ON eligibility.eligibility_snapshot_id =
+                         evaluation.eligibility_snapshot_id
+                    JOIN ops.engine_version model_engine
+                      ON model_engine.engine_version_id = evaluation.model_engine_version_id
+                    JOIN ops.engine_version evaluation_engine
+                      ON evaluation_engine.engine_version_id =
+                         evaluation.evaluation_engine_version_id
+                    JOIN data.forward_return_dataset target
+                      ON target.forward_return_dataset_id =
+                         evaluation.forward_return_dataset_id
+                    JOIN data.forward_return_version target_version
+                      ON target_version.forward_return_version_id =
+                         target.forward_return_version_id
+                    JOIN data.forward_return_definition target_definition
+                      ON target_definition.forward_return_definition_id =
+                         target_version.forward_return_definition_id
+                    WHERE artifact.status = 'published'
+                      AND evaluation.frequency = :frequency
+                    ORDER BY evaluation.created_at DESC LIMIT 1
+                    """
+                    ),
+                    {"frequency": frequency},
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if evaluation is None:
+                raise LookupError(f"Published {frequency} Model evaluation not found")
+            evaluation_id = evaluation["model_evaluation_id"]
+            model_rows = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT dataset.model_dataset_id,
+                           dataset.artifact_id AS model_dataset_artifact_id,
+                           specification.model_specification_id,
+                           specification.specification_key,
+                           specification.specification_type,
+                           definition.model_key, definition.model_family,
+                           definition.hypothesis,
+                           method.method_key AS overall_method_key,
+                           specification.tie_output, specification.output_type,
+                           specification.active_dimension_count,
+                           specification.component_count,
+                           specification.research_tier,
+                           metric.window_key, metric.window_start, metric.window_end,
+                           metric.period_count, metric.valid_ic_count,
+                           metric.undefined_ic_count, metric.mean_rank_ic,
+                           metric.median_rank_ic, metric.positive_ic_ratio,
+                           metric.information_ratio, metric.mean_top_bottom_spread,
+                           metric.non_neutral_rate, metric.mean_top2_turnover,
+                           metric.mean_score_dispersion, metric.mean_confidence
+                    FROM model.model_evaluation_metric metric
+                    JOIN model.model_dataset dataset
+                      ON dataset.model_dataset_id = metric.model_dataset_id
+                    JOIN model.model_specification specification
+                      ON specification.model_specification_id =
+                         dataset.model_specification_id
+                    JOIN model.model_definition_version definition_version
+                      ON definition_version.model_definition_version_id =
+                         specification.model_definition_version_id
+                    JOIN model.model_definition definition
+                      ON definition.model_definition_id =
+                         definition_version.model_definition_id
+                    JOIN model.model_method_version method_version
+                      ON method_version.model_method_version_id =
+                         specification.overall_method_version_id
+                    JOIN model.model_method_definition method
+                      ON method.model_method_definition_id =
+                         method_version.model_method_definition_id
+                    WHERE metric.model_evaluation_id = :evaluation
+                    ORDER BY specification.specification_type,
+                             specification.specification_key, metric.window_key
+                    """
+                    ),
+                    {"evaluation": evaluation_id},
+                )
+                .mappings()
+                .all()
+            )
+            specification_ids = tuple(
+                dict.fromkeys(row["model_specification_id"] for row in model_rows)
+            )
+            composition_rows = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT dimension.model_specification_id,
+                           dimension.model_dimension_id, dimension.dimension_key,
+                           dimension.ordinal AS dimension_ordinal,
+                           dimension.input_transform AS dimension_input_transform,
+                           dimension.weight AS dimension_weight,
+                           method.method_key AS dimension_method_key,
+                           component.ordinal AS component_ordinal,
+                           component.input_transform AS component_input_transform,
+                           component.weight AS component_weight,
+                           signal_definition.signal_key
+                    FROM model.model_dimension dimension
+                    JOIN model.model_method_version method_version
+                      ON method_version.model_method_version_id =
+                         dimension.method_version_id
+                    JOIN model.model_method_definition method
+                      ON method.model_method_definition_id =
+                         method_version.model_method_definition_id
+                    JOIN model.model_component component
+                      ON component.model_dimension_id = dimension.model_dimension_id
+                    JOIN signal.signal_version signal_version
+                      ON signal_version.signal_version_id = component.signal_version_id
+                    JOIN signal.signal_definition signal_definition
+                      ON signal_definition.signal_definition_id =
+                         signal_version.signal_definition_id
+                    WHERE dimension.model_specification_id IN :specifications
+                    ORDER BY dimension.model_specification_id, dimension.ordinal,
+                             component.ordinal
+                    """
+                    ).bindparams(bindparam("specifications", expanding=True)),
+                    {"specifications": specification_ids},
+                )
+                .mappings()
+                .all()
+            )
+            pairs = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT left_specification.specification_key AS left_specification_key,
+                           right_specification.specification_key AS right_specification_key,
+                           pair.score_observation_count, pair.score_spearman,
+                           pair.spread_period_count, pair.spread_correlation,
+                           pair.mean_top2_overlap, pair.high_correlation
+                    FROM model.model_pair_diagnostic pair
+                    JOIN model.model_dataset left_dataset
+                      ON left_dataset.model_dataset_id = pair.left_model_dataset_id
+                    JOIN model.model_specification left_specification
+                      ON left_specification.model_specification_id =
+                         left_dataset.model_specification_id
+                    JOIN model.model_dataset right_dataset
+                      ON right_dataset.model_dataset_id = pair.right_model_dataset_id
+                    JOIN model.model_specification right_specification
+                      ON right_specification.model_specification_id =
+                         right_dataset.model_specification_id
+                    WHERE pair.model_evaluation_id = :evaluation
+                    ORDER BY pair.high_correlation DESC,
+                             abs(pair.score_spearman) DESC NULLS LAST,
+                             left_specification.specification_key,
+                             right_specification.specification_key
+                    """
+                    ),
+                    {"evaluation": evaluation_id},
+                )
+                .mappings()
+                .all()
+            )
+            ablations = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT full_specification.specification_key AS full_specification_key,
+                           ablated_specification.specification_key AS
+                               ablated_specification_key,
+                           comparison.removed_dimension_key, comparison.window_key,
+                           comparison.period_count, comparison.delta_mean_rank_ic,
+                           comparison.delta_information_ratio,
+                           comparison.delta_mean_top_bottom_spread
+                    FROM model.model_ablation_comparison comparison
+                    JOIN model.model_dataset full_dataset
+                      ON full_dataset.model_dataset_id =
+                         comparison.full_model_dataset_id
+                    JOIN model.model_specification full_specification
+                      ON full_specification.model_specification_id =
+                         full_dataset.model_specification_id
+                    JOIN model.model_dataset ablated_dataset
+                      ON ablated_dataset.model_dataset_id =
+                         comparison.ablated_model_dataset_id
+                    JOIN model.model_specification ablated_specification
+                      ON ablated_specification.model_specification_id =
+                         ablated_dataset.model_specification_id
+                    WHERE comparison.model_evaluation_id = :evaluation
+                    ORDER BY comparison.window_key, full_specification.specification_key,
+                             comparison.removed_dimension_key
+                    """
+                    ),
+                    {"evaluation": evaluation_id},
+                )
+                .mappings()
+                .all()
+            )
+            issues = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT specification.specification_key, issue.severity,
+                           issue.issue_code, issue.message, issue.details
+                    FROM model.model_diagnostic_issue issue
+                    JOIN model.model_dataset dataset
+                      ON dataset.model_dataset_id = issue.model_dataset_id
+                    JOIN model.model_specification specification
+                      ON specification.model_specification_id =
+                         dataset.model_specification_id
+                    WHERE issue.model_evaluation_id = :evaluation
+                    ORDER BY CASE issue.severity WHEN 'error' THEN 0
+                                  WHEN 'warning' THEN 1 ELSE 2 END,
+                             specification.specification_key, issue.issue_code
+                    """
+                    ),
+                    {"evaluation": evaluation_id},
+                )
+                .mappings()
+                .all()
+            )
+        metric_fields = (
+            "window_key",
+            "window_start",
+            "window_end",
+            "period_count",
+            "valid_ic_count",
+            "undefined_ic_count",
+            "mean_rank_ic",
+            "median_rank_ic",
+            "positive_ic_ratio",
+            "information_ratio",
+            "mean_top_bottom_spread",
+            "non_neutral_rate",
+            "mean_top2_turnover",
+            "mean_score_dispersion",
+            "mean_confidence",
+        )
+        dimensions: dict[uuid.UUID, list[dict[str, Any]]] = {}
+        current_dimension: dict[tuple[uuid.UUID, uuid.UUID], dict[str, Any]] = {}
+        for row in composition_rows:
+            specification_id = row["model_specification_id"]
+            dimension_identity = (specification_id, row["model_dimension_id"])
+            if dimension_identity not in current_dimension:
+                dimension = {
+                    "dimension_key": row["dimension_key"],
+                    "method_key": row["dimension_method_key"],
+                    "input_transform": row["dimension_input_transform"],
+                    "weight": row["dimension_weight"],
+                    "components": [],
+                }
+                current_dimension[dimension_identity] = dimension
+                dimensions.setdefault(specification_id, []).append(dimension)
+            current_dimension[dimension_identity]["components"].append(
+                {
+                    "signal_key": row["signal_key"],
+                    "input_transform": row["component_input_transform"],
+                    "weight": row["component_weight"],
+                }
+            )
+        models: dict[uuid.UUID, dict[str, Any]] = {}
+        metadata_fields = (
+            "model_dataset_artifact_id",
+            "specification_key",
+            "specification_type",
+            "model_key",
+            "model_family",
+            "hypothesis",
+            "overall_method_key",
+            "tie_output",
+            "output_type",
+            "active_dimension_count",
+            "component_count",
+            "research_tier",
+        )
+        for row in model_rows:
+            dataset_id = row["model_dataset_id"]
+            metric = {field: row[field] for field in metric_fields}
+            if dataset_id not in models:
+                models[dataset_id] = {field: row[field] for field in metadata_fields}
+                models[dataset_id]["dimensions"] = dimensions.get(row["model_specification_id"], [])
+                models[dataset_id]["stability"] = []
+            if row["window_key"] == "full":
+                models[dataset_id]["full"] = metric
+            else:
+                models[dataset_id]["stability"].append(metric)
+        if len(models) != evaluation["model_count"] or any(
+            "full" not in item for item in models.values()
+        ):
+            raise LookupError("Published Model evaluation metrics are incomplete")
+        common_periods = {item["full"]["period_count"] for item in models.values()}
+        if len(common_periods) != 1:
+            raise LookupError("Published Model evaluation does not share one common sample")
+        result = dict(evaluation)
+        result.pop("model_evaluation_id")
+        result["common_period_count"] = next(iter(common_periods))
+        result["models"] = list(models.values())
+        result["pairs"] = [dict(row) for row in pairs]
+        result["ablations"] = [dict(row) for row in ablations]
+        result["issues"] = [dict(row) for row in issues]
+        return result
+
     @staticmethod
     def _latest_bundle(connection: Any) -> dict[str, Any] | None:
         row = (

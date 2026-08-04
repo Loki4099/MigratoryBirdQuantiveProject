@@ -157,6 +157,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/models/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Model Overview */
+        get: operations["model_overview_api_v2_models_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/signals/overview": {
         parameters: {
             query?: never;
@@ -792,6 +809,239 @@ export interface components {
             quality: components["schemas"]["QualitySummary"];
             root_artifact: components["schemas"]["ArtifactSummary"];
         };
+        /** ModelAblationItem */
+        ModelAblationItem: {
+            /** Ablated Specification Key */
+            ablated_specification_key: string;
+            /** Delta Information Ratio */
+            delta_information_ratio: number | null;
+            /** Delta Mean Rank Ic */
+            delta_mean_rank_ic: number | null;
+            /** Delta Mean Top Bottom Spread */
+            delta_mean_top_bottom_spread: number;
+            /** Full Specification Key */
+            full_specification_key: string;
+            /** Period Count */
+            period_count: number;
+            /** Removed Dimension Key */
+            removed_dimension_key: string;
+            /** Window Key */
+            window_key: string;
+        };
+        /** ModelComponentItem */
+        ModelComponentItem: {
+            /** Input Transform */
+            input_transform: string;
+            /** Signal Key */
+            signal_key: string;
+            /** Weight */
+            weight: number;
+        };
+        /** ModelDiagnosticIssueItem */
+        ModelDiagnosticIssueItem: {
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+            /** Issue Code */
+            issue_code: string;
+            /** Message */
+            message: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "info" | "warning" | "error";
+            /** Specification Key */
+            specification_key: string;
+        };
+        /** ModelDiagnosticItem */
+        ModelDiagnosticItem: {
+            /** Active Dimension Count */
+            active_dimension_count: number;
+            /** Component Count */
+            component_count: number;
+            /** Dimensions */
+            dimensions: components["schemas"]["ModelDimensionItem"][];
+            full: components["schemas"]["ModelWindowMetricItem"];
+            /** Hypothesis */
+            hypothesis: string;
+            /**
+             * Model Dataset Artifact Id
+             * Format: uuid
+             */
+            model_dataset_artifact_id: string;
+            /** Model Family */
+            model_family: string;
+            /** Model Key */
+            model_key: string;
+            /** Output Type */
+            output_type: string;
+            /** Overall Method Key */
+            overall_method_key: string;
+            quality: components["schemas"]["QualitySummary"];
+            /** Research Tier */
+            research_tier: string;
+            /** Specification Key */
+            specification_key: string;
+            /** Specification Type */
+            specification_type: string;
+            /** Stability */
+            stability: components["schemas"]["ModelWindowMetricItem"][];
+            /** Tie Output */
+            tie_output: string;
+        };
+        /** ModelDimensionItem */
+        ModelDimensionItem: {
+            /** Components */
+            components: components["schemas"]["ModelComponentItem"][];
+            /** Dimension Key */
+            dimension_key: string;
+            /** Input Transform */
+            input_transform: string;
+            /** Method Key */
+            method_key: string;
+            /** Weight */
+            weight: number;
+        };
+        /** ModelOverviewResponse */
+        ModelOverviewResponse: {
+            /** Ablation Count */
+            ablation_count: number;
+            /** Ablations */
+            ablations: components["schemas"]["ModelAblationItem"][];
+            /** Common Period Count */
+            common_period_count: number;
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Coverage End
+             * Format: date
+             */
+            coverage_end: string;
+            /**
+             * Coverage Start
+             * Format: date
+             */
+            coverage_start: string;
+            /**
+             * Data Bundle Artifact Id
+             * Format: uuid
+             */
+            data_bundle_artifact_id: string;
+            /**
+             * Eligibility Artifact Id
+             * Format: uuid
+             */
+            eligibility_artifact_id: string;
+            /**
+             * Evaluation Artifact Id
+             * Format: uuid
+             */
+            evaluation_artifact_id: string;
+            /**
+             * Evaluation Engine Artifact Id
+             * Format: uuid
+             */
+            evaluation_engine_artifact_id: string;
+            /**
+             * Forward Return Artifact Id
+             * Format: uuid
+             */
+            forward_return_artifact_id: string;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /** High Correlation Threshold */
+            high_correlation_threshold: number;
+            /** Issues */
+            issues: components["schemas"]["ModelDiagnosticIssueItem"][];
+            /**
+             * Model Catalog Artifact Id
+             * Format: uuid
+             */
+            model_catalog_artifact_id: string;
+            /** Model Count */
+            model_count: number;
+            /**
+             * Model Engine Artifact Id
+             * Format: uuid
+             */
+            model_engine_artifact_id: string;
+            /** Models */
+            models: components["schemas"]["ModelDiagnosticItem"][];
+            /** Pair Count */
+            pair_count: number;
+            /** Pairs */
+            pairs: components["schemas"]["ModelPairDiagnosticItem"][];
+            quality: components["schemas"]["QualitySummary"];
+            /** Target Key */
+            target_key: string;
+            /**
+             * Universe Artifact Id
+             * Format: uuid
+             */
+            universe_artifact_id: string;
+        };
+        /** ModelPairDiagnosticItem */
+        ModelPairDiagnosticItem: {
+            /** High Correlation */
+            high_correlation: boolean;
+            /** Left Specification Key */
+            left_specification_key: string;
+            /** Mean Top2 Overlap */
+            mean_top2_overlap: number;
+            /** Right Specification Key */
+            right_specification_key: string;
+            /** Score Observation Count */
+            score_observation_count: number;
+            /** Score Spearman */
+            score_spearman: number | null;
+            /** Spread Correlation */
+            spread_correlation: number | null;
+            /** Spread Period Count */
+            spread_period_count: number;
+        };
+        /** ModelWindowMetricItem */
+        ModelWindowMetricItem: {
+            /** Information Ratio */
+            information_ratio: number | null;
+            /** Mean Confidence */
+            mean_confidence: number;
+            /** Mean Rank Ic */
+            mean_rank_ic: number | null;
+            /** Mean Score Dispersion */
+            mean_score_dispersion: number;
+            /** Mean Top2 Turnover */
+            mean_top2_turnover: number | null;
+            /** Mean Top Bottom Spread */
+            mean_top_bottom_spread: number;
+            /** Median Rank Ic */
+            median_rank_ic: number | null;
+            /** Non Neutral Rate */
+            non_neutral_rate: number;
+            /** Period Count */
+            period_count: number;
+            /** Positive Ic Ratio */
+            positive_ic_ratio: number | null;
+            /** Undefined Ic Count */
+            undefined_ic_count: number;
+            /** Valid Ic Count */
+            valid_ic_count: number;
+            /**
+             * Window End
+             * Format: date
+             */
+            window_end: string;
+            /** Window Key */
+            window_key: string;
+            /**
+             * Window Start
+             * Format: date
+             */
+            window_start: string;
+        };
         /** QualitySummary */
         QualitySummary: {
             /** Codes */
@@ -1349,6 +1599,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
+                };
+            };
+        };
+    };
+    model_overview_api_v2_models_overview_get: {
+        parameters: {
+            query?: {
+                frequency?: "weekly" | "monthly";
+            };
+            header?: {
+                "if-none-match"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelOverviewResponse"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
