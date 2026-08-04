@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Annotated, Any, Protocol
+from typing import Annotated, Any, Literal, Protocol
 
 from fastapi import FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
@@ -32,6 +32,8 @@ from style_rotation.api.schemas import (
     LineageManifestResponse,
     QualityState,
     QualitySummary,
+    SignalDiagnosticItem,
+    SignalOverviewResponse,
 )
 from style_rotation.architecture import DOMAIN_BOUNDARIES
 from style_rotation.config.settings import get_settings
@@ -68,6 +70,7 @@ class ArtifactReader(Protocol):
     def data_requirements(self) -> dict[str, Any]: ...
     def data_overview(self) -> dict[str, Any]: ...
     def factor_overview(self) -> dict[str, Any]: ...
+    def signal_overview(self, frequency: str) -> dict[str, Any]: ...
 
 
 def _context() -> ApiContext:
@@ -153,7 +156,7 @@ def create_app(
 
     @app.get("/api/v2/capabilities", response_model=CapabilitiesResponse, tags=["system"])
     def capabilities() -> CapabilitiesResponse:
-        available = {"catalog", "data", "factor", "lineage", "ops"}
+        available = {"catalog", "data", "factor", "signal", "lineage", "ops"}
         return CapabilitiesResponse(
             context=_context(),
             quality=QualitySummary(state="ok"),
@@ -174,6 +177,7 @@ def create_app(
                 "data_requirements",
                 "data_overview",
                 "factor_overview",
+                "signal_overview",
                 "artifacts",
                 "lineage",
             ],
@@ -214,6 +218,47 @@ def create_app(
             total=total,
             limit=limit,
             offset=offset,
+        )
+        cached = _etag_response(payload, response, if_none_match)
+        return cached or payload
+
+    @app.get(
+        "/api/v2/signals/overview",
+        response_model=SignalOverviewResponse,
+        responses={304: {"description": "Not modified"}},
+        tags=["signal"],
+    )
+    def signal_overview(
+        response: Response,
+        frequency: Annotated[Literal["weekly", "monthly"], Query()] = "weekly",
+        if_none_match: Annotated[str | None, Header()] = None,
+    ) -> SignalOverviewResponse | Response:
+        result = reader.signal_overview(frequency)
+        issue_severities: dict[str, set[str]] = {}
+        for issue in result["issues"]:
+            issue_severities.setdefault(str(issue["signal_key"]), set()).add(str(issue["severity"]))
+        signals: list[SignalDiagnosticItem] = []
+        has_error = False
+        has_warning = False
+        for signal in result["signals"]:
+            severities = issue_severities.get(str(signal["signal_key"]), set())
+            if "error" in severities:
+                quality = QualitySummary(state="error", codes=["signal.diagnostic_error"])
+                has_error = True
+            elif "warning" in severities:
+                quality = QualitySummary(state="warning", codes=["signal.diagnostic_warning"])
+                has_warning = True
+            else:
+                quality = QualitySummary(state="ok")
+            signals.append(SignalDiagnosticItem.model_validate({**signal, "quality": quality}))
+        if has_error:
+            overall = QualitySummary(state="error", codes=["signal.diagnostic_error"])
+        elif has_warning:
+            overall = QualitySummary(state="warning", codes=["signal.diagnostic_warning"])
+        else:
+            overall = QualitySummary(state="ok")
+        payload = SignalOverviewResponse.model_validate(
+            {"context": _context(), "quality": overall, **result, "signals": signals}
         )
         cached = _etag_response(payload, response, if_none_match)
         return cached or payload

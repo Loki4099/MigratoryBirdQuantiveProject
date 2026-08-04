@@ -157,6 +157,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/signals/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Signal Overview */
+        get: operations["signal_overview_api_v2_signals_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -785,6 +802,192 @@ export interface components {
              */
             state: "ok" | "partial" | "warning" | "error";
         };
+        /** SignalDiagnosticIssueItem */
+        SignalDiagnosticIssueItem: {
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+            /** Issue Code */
+            issue_code: string;
+            /** Message */
+            message: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "info" | "warning" | "error";
+            /** Signal Key */
+            signal_key: string;
+        };
+        /** SignalDiagnosticItem */
+        SignalDiagnosticItem: {
+            /** Direction */
+            direction: string;
+            /** Economic Family */
+            economic_family: string;
+            /** Factor Variant Key */
+            factor_variant_key: string;
+            full: components["schemas"]["SignalWindowMetricItem"];
+            /** Normalization */
+            normalization: string;
+            /** Output Type */
+            output_type: string;
+            /** Product Eligible */
+            product_eligible: boolean;
+            quality: components["schemas"]["QualitySummary"];
+            /** Rationale */
+            rationale: string;
+            /** Rationale Type */
+            rationale_type: string;
+            /** Research Tier */
+            research_tier: string;
+            /**
+             * Signal Dataset Artifact Id
+             * Format: uuid
+             */
+            signal_dataset_artifact_id: string;
+            /** Signal Key */
+            signal_key: string;
+            /** Stability */
+            stability: components["schemas"]["SignalWindowMetricItem"][];
+            /** Template Key */
+            template_key: string;
+        };
+        /** SignalOverviewResponse */
+        SignalOverviewResponse: {
+            /** Common Period Count */
+            common_period_count: number;
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Coverage End
+             * Format: date
+             */
+            coverage_end: string;
+            /**
+             * Coverage Start
+             * Format: date
+             */
+            coverage_start: string;
+            /**
+             * Data Bundle Artifact Id
+             * Format: uuid
+             */
+            data_bundle_artifact_id: string;
+            /**
+             * Eligibility Artifact Id
+             * Format: uuid
+             */
+            eligibility_artifact_id: string;
+            /**
+             * Evaluation Artifact Id
+             * Format: uuid
+             */
+            evaluation_artifact_id: string;
+            /**
+             * Evaluation Engine Artifact Id
+             * Format: uuid
+             */
+            evaluation_engine_artifact_id: string;
+            /**
+             * Forward Return Artifact Id
+             * Format: uuid
+             */
+            forward_return_artifact_id: string;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /** High Correlation Threshold */
+            high_correlation_threshold: number;
+            /** Issues */
+            issues: components["schemas"]["SignalDiagnosticIssueItem"][];
+            /** Pair Count */
+            pair_count: number;
+            /** Pairs */
+            pairs: components["schemas"]["SignalPairDiagnosticItem"][];
+            quality: components["schemas"]["QualitySummary"];
+            /**
+             * Signal Catalog Artifact Id
+             * Format: uuid
+             */
+            signal_catalog_artifact_id: string;
+            /** Signal Count */
+            signal_count: number;
+            /**
+             * Signal Engine Artifact Id
+             * Format: uuid
+             */
+            signal_engine_artifact_id: string;
+            /** Signals */
+            signals: components["schemas"]["SignalDiagnosticItem"][];
+            /** Target Key */
+            target_key: string;
+            /**
+             * Universe Artifact Id
+             * Format: uuid
+             */
+            universe_artifact_id: string;
+        };
+        /** SignalPairDiagnosticItem */
+        SignalPairDiagnosticItem: {
+            /** High Correlation */
+            high_correlation: boolean;
+            /** Left Signal Key */
+            left_signal_key: string;
+            /** Mean Top2 Overlap */
+            mean_top2_overlap: number;
+            /** Right Signal Key */
+            right_signal_key: string;
+            /** Score Observation Count */
+            score_observation_count: number;
+            /** Score Spearman */
+            score_spearman: number | null;
+            /** Spread Correlation */
+            spread_correlation: number | null;
+            /** Spread Period Count */
+            spread_period_count: number;
+        };
+        /** SignalWindowMetricItem */
+        SignalWindowMetricItem: {
+            /** Event Asset Concentration */
+            event_asset_concentration: number | null;
+            /** Event Rate */
+            event_rate: number | null;
+            /** Information Ratio */
+            information_ratio: number | null;
+            /** Mean Rank Ic */
+            mean_rank_ic: number | null;
+            /** Mean Top2 Turnover */
+            mean_top2_turnover: number | null;
+            /** Mean Top Bottom Spread */
+            mean_top_bottom_spread: number;
+            /** Median Rank Ic */
+            median_rank_ic: number | null;
+            /** Non Neutral Rate */
+            non_neutral_rate: number;
+            /** Period Count */
+            period_count: number;
+            /** Positive Ic Ratio */
+            positive_ic_ratio: number | null;
+            /** Undefined Ic Count */
+            undefined_ic_count: number;
+            /** Valid Ic Count */
+            valid_ic_count: number;
+            /**
+             * Window End
+             * Format: date
+             */
+            window_end: string;
+            /** Window Key */
+            window_key: string;
+            /**
+             * Window Start
+             * Format: date
+             */
+            window_start: string;
+        };
         /** SourceSnapshotItem */
         SourceSnapshotItem: {
             /**
@@ -1146,6 +1349,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
+                };
+            };
+        };
+    };
+    signal_overview_api_v2_signals_overview_get: {
+        parameters: {
+            query?: {
+                frequency?: "weekly" | "monthly";
+            };
+            header?: {
+                "if-none-match"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignalOverviewResponse"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

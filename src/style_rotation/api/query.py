@@ -549,6 +549,222 @@ class ArtifactQueryService:
         result["issues"] = [dict(row) for row in issues]
         return result
 
+    def signal_overview(self, frequency: str) -> dict[str, Any]:
+        """Return the latest published Signal evaluation for one explicit target frequency."""
+        if frequency not in {"weekly", "monthly"}:
+            raise ValueError("Signal frequency must be weekly or monthly")
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            evaluation = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT evaluation.signal_evaluation_id,
+                           evaluation.artifact_id AS evaluation_artifact_id,
+                           evaluation.signal_catalog_artifact_id,
+                           universe.artifact_id AS universe_artifact_id,
+                           bundle.artifact_id AS data_bundle_artifact_id,
+                           eligibility.artifact_id AS eligibility_artifact_id,
+                           signal_engine.artifact_id AS signal_engine_artifact_id,
+                           evaluation_engine.artifact_id AS evaluation_engine_artifact_id,
+                           target.artifact_id AS forward_return_artifact_id,
+                           target_definition.target_key, evaluation.frequency,
+                           evaluation.coverage_start, evaluation.coverage_end,
+                           evaluation.signal_count, evaluation.pair_count,
+                           evaluation.high_correlation_threshold
+                    FROM signal.signal_evaluation evaluation
+                    JOIN lineage.artifact artifact
+                      ON artifact.artifact_id = evaluation.artifact_id
+                    JOIN catalog.universe_version universe
+                      ON universe.universe_version_id = evaluation.universe_version_id
+                    JOIN data.data_bundle_version bundle
+                      ON bundle.data_bundle_version_id = evaluation.data_bundle_version_id
+                    JOIN catalog.eligibility_snapshot eligibility
+                      ON eligibility.eligibility_snapshot_id =
+                         evaluation.eligibility_snapshot_id
+                    JOIN ops.engine_version signal_engine
+                      ON signal_engine.engine_version_id =
+                         evaluation.signal_engine_version_id
+                    JOIN ops.engine_version evaluation_engine
+                      ON evaluation_engine.engine_version_id =
+                         evaluation.evaluation_engine_version_id
+                    JOIN data.forward_return_dataset target
+                      ON target.forward_return_dataset_id =
+                         evaluation.forward_return_dataset_id
+                    JOIN data.forward_return_version target_version
+                      ON target_version.forward_return_version_id =
+                         target.forward_return_version_id
+                    JOIN data.forward_return_definition target_definition
+                      ON target_definition.forward_return_definition_id =
+                         target_version.forward_return_definition_id
+                    WHERE artifact.status = 'published'
+                      AND evaluation.frequency = :frequency
+                    ORDER BY evaluation.created_at DESC LIMIT 1
+                    """
+                    ),
+                    {"frequency": frequency},
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if evaluation is None:
+                raise LookupError(f"Published {frequency} Signal evaluation not found")
+            evaluation_id = evaluation["signal_evaluation_id"]
+            signal_rows = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT dataset.artifact_id AS signal_dataset_artifact_id,
+                           definition.signal_key, definition.template_key,
+                           definition.economic_family, definition.rationale_type,
+                           definition.rationale, definition.research_tier,
+                           definition.product_eligible, version.direction,
+                           version.normalization, version.output_type,
+                           factor_variant.variant_key AS factor_variant_key,
+                           metric.window_key, metric.window_start, metric.window_end,
+                           metric.period_count, metric.valid_ic_count,
+                           metric.undefined_ic_count, metric.mean_rank_ic,
+                           metric.median_rank_ic, metric.positive_ic_ratio,
+                           metric.information_ratio, metric.mean_top_bottom_spread,
+                           metric.event_rate, metric.event_asset_concentration,
+                           metric.non_neutral_rate, metric.mean_top2_turnover
+                    FROM signal.signal_evaluation_metric metric
+                    JOIN signal.signal_dataset dataset
+                      ON dataset.signal_dataset_id = metric.signal_dataset_id
+                    JOIN signal.signal_version version
+                      ON version.signal_version_id = dataset.signal_version_id
+                    JOIN signal.signal_definition definition
+                      ON definition.signal_definition_id = version.signal_definition_id
+                    JOIN factor.factor_variant factor_variant
+                      ON factor_variant.factor_variant_id = version.factor_variant_id
+                    WHERE metric.signal_evaluation_id = :evaluation
+                    ORDER BY definition.economic_family, definition.signal_key,
+                             metric.window_key
+                    """
+                    ),
+                    {"evaluation": evaluation_id},
+                )
+                .mappings()
+                .all()
+            )
+            pairs = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT left_definition.signal_key AS left_signal_key,
+                           right_definition.signal_key AS right_signal_key,
+                           pair.score_observation_count, pair.score_spearman,
+                           pair.spread_period_count, pair.spread_correlation,
+                           pair.mean_top2_overlap, pair.high_correlation
+                    FROM signal.signal_pair_diagnostic pair
+                    JOIN signal.signal_dataset left_dataset
+                      ON left_dataset.signal_dataset_id = pair.left_signal_dataset_id
+                    JOIN signal.signal_version left_version
+                      ON left_version.signal_version_id = left_dataset.signal_version_id
+                    JOIN signal.signal_definition left_definition
+                      ON left_definition.signal_definition_id =
+                         left_version.signal_definition_id
+                    JOIN signal.signal_dataset right_dataset
+                      ON right_dataset.signal_dataset_id = pair.right_signal_dataset_id
+                    JOIN signal.signal_version right_version
+                      ON right_version.signal_version_id = right_dataset.signal_version_id
+                    JOIN signal.signal_definition right_definition
+                      ON right_definition.signal_definition_id =
+                         right_version.signal_definition_id
+                    WHERE pair.signal_evaluation_id = :evaluation
+                    ORDER BY pair.high_correlation DESC,
+                             abs(pair.score_spearman) DESC NULLS LAST,
+                             left_definition.signal_key, right_definition.signal_key
+                    """
+                    ),
+                    {"evaluation": evaluation_id},
+                )
+                .mappings()
+                .all()
+            )
+            issues = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT definition.signal_key, issue.severity, issue.issue_code,
+                           issue.message, issue.details
+                    FROM signal.signal_diagnostic_issue issue
+                    JOIN signal.signal_dataset dataset
+                      ON dataset.signal_dataset_id = issue.signal_dataset_id
+                    JOIN signal.signal_version version
+                      ON version.signal_version_id = dataset.signal_version_id
+                    JOIN signal.signal_definition definition
+                      ON definition.signal_definition_id = version.signal_definition_id
+                    WHERE issue.signal_evaluation_id = :evaluation
+                    ORDER BY CASE issue.severity WHEN 'error' THEN 0
+                                  WHEN 'warning' THEN 1 ELSE 2 END,
+                             definition.signal_key, issue.issue_code
+                    """
+                    ),
+                    {"evaluation": evaluation_id},
+                )
+                .mappings()
+                .all()
+            )
+        metric_fields = (
+            "window_key",
+            "window_start",
+            "window_end",
+            "period_count",
+            "valid_ic_count",
+            "undefined_ic_count",
+            "mean_rank_ic",
+            "median_rank_ic",
+            "positive_ic_ratio",
+            "information_ratio",
+            "mean_top_bottom_spread",
+            "event_rate",
+            "event_asset_concentration",
+            "non_neutral_rate",
+            "mean_top2_turnover",
+        )
+        signals: dict[uuid.UUID, dict[str, Any]] = {}
+        for row in signal_rows:
+            artifact_id = row["signal_dataset_artifact_id"]
+            metric = {field: row[field] for field in metric_fields}
+            if artifact_id not in signals:
+                signals[artifact_id] = {
+                    key: row[key]
+                    for key in (
+                        "signal_dataset_artifact_id",
+                        "signal_key",
+                        "template_key",
+                        "economic_family",
+                        "rationale_type",
+                        "rationale",
+                        "research_tier",
+                        "product_eligible",
+                        "direction",
+                        "normalization",
+                        "output_type",
+                        "factor_variant_key",
+                    )
+                }
+                signals[artifact_id]["stability"] = []
+            if row["window_key"] == "full":
+                signals[artifact_id]["full"] = metric
+            else:
+                signals[artifact_id]["stability"].append(metric)
+        if len(signals) != evaluation["signal_count"] or any(
+            "full" not in item for item in signals.values()
+        ):
+            raise LookupError("Published Signal evaluation metrics are incomplete")
+        common_periods = {item["full"]["period_count"] for item in signals.values()}
+        if len(common_periods) != 1:
+            raise LookupError("Published Signal evaluation does not share one common sample")
+        result = dict(evaluation)
+        result.pop("signal_evaluation_id")
+        result["common_period_count"] = next(iter(common_periods))
+        result["signals"] = list(signals.values())
+        result["pairs"] = [dict(row) for row in pairs]
+        result["issues"] = [dict(row) for row in issues]
+        return result
+
     @staticmethod
     def _latest_bundle(connection: Any) -> dict[str, Any] | None:
         row = (

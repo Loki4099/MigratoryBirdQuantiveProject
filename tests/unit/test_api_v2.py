@@ -120,6 +120,72 @@ class FakeArtifactReader:
             "issues": [],
         }
 
+    def signal_overview(self, frequency: str) -> dict[str, Any]:
+        identifiers = [uuid.uuid4() for _ in range(8)]
+        metric = {
+            "window_key": "full",
+            "window_start": date(2025, 1, 3),
+            "window_end": date(2026, 1, 30),
+            "period_count": 52,
+            "valid_ic_count": 51,
+            "undefined_ic_count": 1,
+            "mean_rank_ic": 0.18,
+            "median_rank_ic": 0.2,
+            "positive_ic_ratio": 0.62,
+            "information_ratio": 1.1,
+            "mean_top_bottom_spread": 0.003,
+            "event_rate": None,
+            "event_asset_concentration": None,
+            "non_neutral_rate": 1.0,
+            "mean_top2_turnover": 0.22,
+        }
+        return {
+            "evaluation_artifact_id": identifiers[0],
+            "signal_catalog_artifact_id": identifiers[1],
+            "universe_artifact_id": identifiers[2],
+            "data_bundle_artifact_id": identifiers[3],
+            "eligibility_artifact_id": identifiers[4],
+            "signal_engine_artifact_id": identifiers[5],
+            "evaluation_engine_artifact_id": identifiers[6],
+            "forward_return_artifact_id": identifiers[7],
+            "target_key": f"{frequency}_next_open_to_next_open",
+            "frequency": frequency,
+            "coverage_start": date(2025, 1, 3),
+            "coverage_end": date(2026, 1, 30),
+            "signal_count": 1,
+            "common_period_count": 52,
+            "pair_count": 0,
+            "high_correlation_threshold": 0.85,
+            "signals": [
+                {
+                    "signal_dataset_artifact_id": uuid.uuid4(),
+                    "signal_key": "return_continuation__total_return__w252",
+                    "template_key": "return_continuation",
+                    "economic_family": "momentum",
+                    "rationale_type": "academic",
+                    "rationale": "Persistent relative performance may continue.",
+                    "research_tier": "canonical",
+                    "product_eligible": True,
+                    "direction": "higher_is_better",
+                    "normalization": "cross_sectional_centered_rank_-1_1",
+                    "output_type": "continuous",
+                    "factor_variant_key": "total_return__w252",
+                    "full": metric,
+                    "stability": [{**metric, "window_key": "year:2025"}],
+                }
+            ],
+            "pairs": [],
+            "issues": [
+                {
+                    "signal_key": "return_continuation__total_return__w252",
+                    "severity": "warning",
+                    "issue_code": "short_evaluation_sample",
+                    "message": "Short sample",
+                    "details": {"period_count": 52},
+                }
+            ],
+        }
+
 
 def _client() -> tuple[TestClient, FakeArtifactReader]:
     reader = FakeArtifactReader()
@@ -218,6 +284,29 @@ def test_factor_overview_reports_factor_properties_without_strategy_metrics() ->
         if item["key"] == "factor"
     )
     assert factor_domain["availability"] == "available"
+
+
+def test_signal_overview_is_frequency_explicit_and_keeps_strategy_metrics_out() -> None:
+    client, _reader = _client()
+    response = client.get("/api/v2/signals/overview?frequency=monthly")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["frequency"] == "monthly"
+    assert payload["quality"] == {
+        "state": "warning",
+        "codes": ["signal.diagnostic_warning"],
+    }
+    assert payload["signals"][0]["full"]["mean_rank_ic"] == 0.18
+    assert payload["signals"][0]["stability"][0]["window_key"] == "year:2025"
+    assert "sharpe" not in response.text.lower()
+    signal_domain = next(
+        item
+        for item in client.get("/api/v2/capabilities").json()["domains"]
+        if item["key"] == "signal"
+    )
+    assert signal_domain["availability"] == "available"
+    invalid = client.get("/api/v2/signals/overview?frequency=daily")
+    assert invalid.status_code == 422
 
 
 def test_committed_openapi_contract_matches_application() -> None:

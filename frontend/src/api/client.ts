@@ -9,6 +9,7 @@ export type AssetCatalogResponse = components["schemas"]["AssetCatalogResponse"]
 export type DataRequirementResponse = components["schemas"]["DataRequirementResponse"];
 export type DataOverviewResponse = components["schemas"]["DataOverviewResponse"];
 export type FactorOverviewResponse = components["schemas"]["FactorOverviewResponse"];
+export type SignalOverviewResponse = components["schemas"]["SignalOverviewResponse"];
 
 export class ApiClientError extends Error {
   constructor(
@@ -42,6 +43,8 @@ export const api = {
     getJson<DataRequirementResponse>("/api/v2/catalog/data-requirements"),
   dataOverview: () => getJson<DataOverviewResponse>("/api/v2/data/overview"),
   factorOverview: () => getJson<FactorOverviewResponse>("/api/v2/factors/overview"),
+  signalOverview: (frequency: "weekly" | "monthly") =>
+    getJson<SignalOverviewResponse>(`/api/v2/signals/overview?frequency=${frequency}`),
   artifacts: (statuses = ["published"]) => {
     const search = new URLSearchParams();
     statuses.forEach((status) => search.append("status", status));

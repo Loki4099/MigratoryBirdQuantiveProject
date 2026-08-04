@@ -4,7 +4,7 @@ Versioned research platform for explainable US style rotation across IWF, IWD, I
 
 ## Status
 
-v0.2 is being rebuilt in short, independently verified milestones. M0 through M3 and M4A–M4C2A are complete. The platform now has immutable publication, typed market data, deterministic factor calculation/diagnostics, 51 versioned Signal datasets, weekly/monthly forward-return targets, and separately published Signal evaluation diagnostics. The Signals API/UI, models, strategies, and experiments follow in later milestones.
+v0.2 is being rebuilt in short, independently verified milestones. M0 through M4 are complete. The platform now has immutable publication, typed market data, deterministic factor calculation/diagnostics, 51 versioned Signal datasets, weekly/monthly forward-return targets, separately published Signal evaluation diagnostics, and a read-only bilingual Signals API/UI. Models, strategies, and experiments follow in later milestones.
 
 The authoritative plan is [v0.2/正式开发方案.md](v0.2/正式开发方案.md). Detailed decisions and database rationale are stored in [v0.2/设计决策记录.md](v0.2/设计决策记录.md) and [v0.2/数据库设计.md](v0.2/数据库设计.md).
 
@@ -117,7 +117,7 @@ style-rotation api
 ```
 
 The application is then available at `http://127.0.0.1:8000/`, with OpenAPI docs at `/api/v2/docs`. The unauthenticated server refuses non-loopback bind addresses.
-The Data page reads `/api/v2/data/overview` and shows only published source, coverage, quality, bundle, and eligibility facts; it does not calculate or display strategy performance.
+The Data, Factors, and Signals pages read published overview endpoints. The Signals page selects an explicit weekly or monthly target and shows economic direction, IC/spread diagnostics, annual stability, activity, potential turnover, redundancy, quality, and lineage. The browser does not recompute research statistics or display strategy performance on these upstream pages.
 
 ## Development rules
 

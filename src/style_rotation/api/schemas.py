@@ -319,3 +319,82 @@ class FactorOverviewResponse(ApiModel):
     datasets: list[FactorDatasetDiagnosticItem]
     correlations: list[FactorCorrelationItem]
     issues: list[FactorDiagnosticIssueItem]
+
+
+class SignalWindowMetricItem(ApiModel):
+    window_key: str
+    window_start: date
+    window_end: date
+    period_count: int
+    valid_ic_count: int
+    undefined_ic_count: int
+    mean_rank_ic: float | None
+    median_rank_ic: float | None
+    positive_ic_ratio: float | None
+    information_ratio: float | None
+    mean_top_bottom_spread: float
+    event_rate: float | None
+    event_asset_concentration: float | None
+    non_neutral_rate: float
+    mean_top2_turnover: float | None
+
+
+class SignalDiagnosticItem(ApiModel):
+    signal_dataset_artifact_id: UUID
+    signal_key: str
+    template_key: str
+    economic_family: str
+    rationale_type: str
+    rationale: str
+    research_tier: str
+    product_eligible: bool
+    direction: str
+    normalization: str
+    output_type: str
+    factor_variant_key: str
+    full: SignalWindowMetricItem
+    stability: list[SignalWindowMetricItem]
+    quality: QualitySummary
+
+
+class SignalPairDiagnosticItem(ApiModel):
+    left_signal_key: str
+    right_signal_key: str
+    score_observation_count: int
+    score_spearman: float | None
+    spread_period_count: int
+    spread_correlation: float | None
+    mean_top2_overlap: float
+    high_correlation: bool
+
+
+class SignalDiagnosticIssueItem(ApiModel):
+    signal_key: str
+    severity: Literal["info", "warning", "error"]
+    issue_code: str
+    message: str
+    details: dict[str, Any]
+
+
+class SignalOverviewResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    evaluation_artifact_id: UUID
+    signal_catalog_artifact_id: UUID
+    universe_artifact_id: UUID
+    data_bundle_artifact_id: UUID
+    eligibility_artifact_id: UUID
+    signal_engine_artifact_id: UUID
+    evaluation_engine_artifact_id: UUID
+    forward_return_artifact_id: UUID
+    target_key: str
+    frequency: Literal["weekly", "monthly"]
+    coverage_start: date
+    coverage_end: date
+    signal_count: int
+    common_period_count: int
+    pair_count: int
+    high_correlation_threshold: float
+    signals: list[SignalDiagnosticItem]
+    pairs: list[SignalPairDiagnosticItem]
+    issues: list[SignalDiagnosticIssueItem]

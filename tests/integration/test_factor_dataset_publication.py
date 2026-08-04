@@ -408,6 +408,17 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
             )
         ).one()
     assert evaluation_counts == (2, 153, 204, 2550, 116)
+    signal_overview = TestClient(create_app(ArtifactQueryService(engine))).get(
+        "/api/v2/signals/overview?frequency=weekly"
+    )
+    assert signal_overview.status_code == 200
+    signal_payload = signal_overview.json()
+    assert signal_payload["frequency"] == "weekly"
+    assert signal_payload["signal_count"] == 51
+    assert signal_payload["common_period_count"] == 2
+    assert len(signal_payload["signals"]) == 51
+    assert len(signal_payload["pairs"]) == 1275
+    assert "sharpe" not in signal_overview.text.lower()
 
     diagnostic_spec = build_factor_diagnostic_engine_spec(
         "a" * 40,
