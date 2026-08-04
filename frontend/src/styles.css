@@ -122,9 +122,7 @@ code, .eyebrow, .topbar-context { font-family: Consolas, "SFMono-Regular", monos
 .brand-lockup strong, .brand-lockup small { display: block; }
 .brand-lockup strong { font-size: 16px; letter-spacing: .02em; }
 .brand-lockup small { color: #a9c2b8; margin-top: 3px; font-size: 11px; }
-.fledgling-mark { width: 38px; height: 42px; border-radius: 48% 48% 46% 46%; background: #f0ead6; transform: rotate(-7deg); position: relative; box-shadow: inset -7px -5px 0 #d7cda9; }
-.fledgling-mark::before { content: ""; position: absolute; width: 12px; height: 7px; border-radius: 50%; background: var(--sidebar); left: 8px; top: 12px; box-shadow: 15px 1px 0 -2px #d99a3b; }
-.fledgling-mark span { position: absolute; width: 15px; height: 10px; border-left: 2px solid var(--sidebar); border-bottom: 2px solid var(--sidebar); border-radius: 0 0 0 15px; left: 12px; top: 21px; transform: rotate(-18deg); }
+.brand-mark { width: 42px; height: 42px; flex: 0 0 42px; }
 .sidebar nav { overflow: auto; padding-top: 13px; }
 .nav-group { margin: 13px 0 20px; }
 .nav-group p { color: #89aa9e; font-size: 10px; letter-spacing: .15em; text-transform: uppercase; margin: 0 10px 6px; }

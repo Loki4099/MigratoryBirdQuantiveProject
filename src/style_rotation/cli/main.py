@@ -45,6 +45,10 @@ from style_rotation.experiment.benchmark_publication import (
     BenchmarkTargetPublicationService,
     publish_benchmark_catalog,
 )
+from style_rotation.experiment.comparison import (
+    publish_comparison_cohort,
+    publish_warmup_policy,
+)
 from style_rotation.experiment.cost_publication import (
     NetCostPathPublicationService,
     publish_cost_catalog,
@@ -53,7 +57,23 @@ from style_rotation.experiment.engine import (
     build_accounting_engine_spec,
     publish_accounting_engine,
 )
+from style_rotation.experiment.execution import ExperimentExecutionService
+from style_rotation.experiment.orchestration_engine import (
+    build_orchestration_engine_spec,
+    publish_orchestration_engine,
+)
+from style_rotation.experiment.performance_engine import (
+    build_performance_engine_spec,
+    publish_performance_engine,
+)
+from style_rotation.experiment.performance_publication import (
+    publish_performance_metric_catalog,
+)
 from style_rotation.experiment.publication import GrossPathPublicationService
+from style_rotation.experiment.suite_publication import (
+    ExperimentCellRequest,
+    publish_experiment_suite,
+)
 from style_rotation.factor.diagnostic_publication import FactorDiagnosticPublicationService
 from style_rotation.factor.engine import (
     build_factor_diagnostic_engine_spec,
@@ -73,6 +93,7 @@ from style_rotation.model.engine import (
 )
 from style_rotation.model.publication import ModelDatasetPublicationService
 from style_rotation.model.service import publish_model_catalog
+from style_rotation.ops.backup import BackupService
 from style_rotation.persistence.database import database_status, reset_database, upgrade_database
 from style_rotation.persistence.session import create_postgres_engine
 from style_rotation.signal.diagnostic_engine import (
@@ -158,6 +179,24 @@ def _db_reset(confirmation: str) -> int:
     settings = get_settings()
     reset_database(settings.database_url, confirmation, settings.environment)
     return _db_status(as_json=False)
+
+
+def _backup_create(output: str, git_commit: str, docker_service: str | None) -> int:
+    settings = get_settings()
+    result = BackupService(
+        create_postgres_engine(settings.database_url), settings.database_url
+    ).create(Path(output), git_commit=git_commit, docker_service=docker_service)
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _backup_restore_test(backup_record_id: str, docker_service: str) -> int:
+    settings = get_settings()
+    result = BackupService(
+        create_postgres_engine(settings.database_url), settings.database_url
+    ).restore_test(uuid.UUID(backup_record_id), docker_service=docker_service)
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
 
 
 def _artifact_service() -> ArtifactService:
@@ -520,6 +559,120 @@ def _experiment_publish_benchmark_target(
     return 0
 
 
+def _experiment_run_release_cell(
+    target_path_artifact_id: str,
+    git_commit: str,
+    dependency_lock_file: str,
+    as_of_date: date,
+    template_key: str,
+    cost_bps: int,
+    suite_key: str,
+    version_number: int,
+    required_warmup_observations: int,
+) -> int:
+    """Publish and execute one complete, reproducible experiment cell.
+
+    This is the supported recovery path after a clean database rebuild.  It deliberately
+    accepts a published Strategy Target rather than guessing which model/strategy product
+    should represent the release.
+    """
+    settings = get_settings()
+    engine = create_postgres_engine(settings.database_url)
+    status = database_status(settings.database_url)
+    if status.current_revision is None:
+        raise ValueError("Database must be migrated before running a release experiment")
+    if cost_bps not in {2, 5, 10}:
+        raise ValueError("Release experiment cost must be one of 2, 5, or 10 bps")
+
+    lock_path = Path(dependency_lock_file)
+    accounting = publish_accounting_engine(
+        engine,
+        build_accounting_engine_spec(
+            git_commit, lock_path, status.current_revision, version_number=version_number
+        ),
+    )
+    benchmark_engine = publish_benchmark_target_engine(
+        engine,
+        build_benchmark_target_engine_spec(
+            git_commit, lock_path, status.current_revision, version_number=version_number
+        ),
+    )
+    performance_engine = publish_performance_engine(
+        engine,
+        build_performance_engine_spec(
+            git_commit, lock_path, status.current_revision, version_number=version_number
+        ),
+    )
+    orchestration_engine = publish_orchestration_engine(
+        engine,
+        build_orchestration_engine_spec(
+            git_commit, lock_path, status.current_revision, version_number=version_number
+        ),
+    )
+    costs = publish_cost_catalog(engine, version_number=version_number)
+    benchmarks = publish_benchmark_catalog(engine, version_number=version_number)
+    metrics = publish_performance_metric_catalog(engine, version_number=version_number)
+    cost = next(item for item in costs.scenarios if item.cost_bps_per_side == cost_bps)
+    benchmark = next(
+        item for item in benchmarks.benchmarks if item.benchmark_key == "spy_buy_and_hold"
+    )
+
+    cell = ExperimentCellRequest(
+        cell_key=f"spy_{cost_bps}bps_{template_key}",
+        strategy_target_artifact_id=uuid.UUID(target_path_artifact_id),
+        benchmark_version_artifact_id=benchmark.version_artifact_id,
+        cost_scenario_artifact_id=cost.artifact_id,
+        metric_catalog_artifact_id=metrics.artifact_id,
+        accounting_engine_artifact_id=accounting.artifact_id,
+        benchmark_engine_artifact_id=benchmark_engine.artifact_id,
+        performance_engine_artifact_id=performance_engine.artifact_id,
+        template_key=template_key,  # type: ignore[arg-type]
+        as_of_date=as_of_date,
+    )
+    suite = publish_experiment_suite(
+        engine,
+        suite_key=suite_key,
+        name="v0.2 Release Experiment",
+        description="Complete reproducible SPY-benchmarked release experiment.",
+        cells=(cell,),
+        version_number=version_number,
+    )
+    result = ExperimentExecutionService(engine).execute(
+        suite.specifications[0].artifact_id, orchestration_engine.artifact_id
+    )
+    warmup = publish_warmup_policy(
+        engine,
+        required_observations=required_warmup_observations,
+        version_number=version_number,
+    )
+    cohort = publish_comparison_cohort(
+        engine,
+        cohort_key=f"{suite_key}_{cost_bps}bps_{template_key}",
+        name="v0.2 Release Comparison Cohort",
+        description="Strict comparison context for the v0.2 release experiment.",
+        warmup_policy_artifact_id=warmup.artifact_id,
+        result_artifact_ids=(result.result_artifact_id,),
+    )
+    print(
+        json.dumps(
+            {
+                "suite_artifact_id": str(suite.artifact_id),
+                "specification_artifact_id": str(suite.specifications[0].artifact_id),
+                "result_artifact_id": str(result.result_artifact_id),
+                "interval_result_artifact_id": str(result.interval_result_artifact_id),
+                "run_attempt_id": str(result.run_attempt_id),
+                "comparison_cohort_artifact_id": str(cohort.artifact_id),
+                "availability_status": result.availability_status,
+                "quality_status": result.quality_status,
+                "reused": result.reused,
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+    )
+    return 0
+
+
 def _model_bootstrap_engine(git_commit: str, dependency_lock_file: str, version_number: int) -> int:
     settings = get_settings()
     status = database_status(settings.database_url)
@@ -843,6 +996,26 @@ def build_parser() -> argparse.ArgumentParser:
     db_reset_parser = db_subparsers.add_parser("reset", help="Destructively rebuild a local DB")
     db_reset_parser.add_argument("--confirm-database", required=True)
     db_reset_parser.set_defaults(handler=lambda args: _db_reset(args.confirm_database))
+
+    backup_parser = subparsers.add_parser("backup", help="Create and restore-test DB backups")
+    backup_subparsers = backup_parser.add_subparsers(dest="backup_command", required=True)
+    backup_create_parser = backup_subparsers.add_parser(
+        "create", help="Create and checksum a PostgreSQL custom-format dump"
+    )
+    backup_create_parser.add_argument("--output", required=True)
+    backup_create_parser.add_argument("--git-commit", required=True)
+    backup_create_parser.add_argument("--docker-service")
+    backup_create_parser.set_defaults(
+        handler=lambda args: _backup_create(args.output, args.git_commit, args.docker_service)
+    )
+    backup_restore_parser = backup_subparsers.add_parser(
+        "restore-test", help="Restore a backup into an isolated temporary database and verify it"
+    )
+    backup_restore_parser.add_argument("--backup-record-id", required=True)
+    backup_restore_parser.add_argument("--docker-service", required=True)
+    backup_restore_parser.set_defaults(
+        handler=lambda args: _backup_restore_test(args.backup_record_id, args.docker_service)
+    )
 
     bootstrap_parser = subparsers.add_parser("bootstrap", help="Publish research catalogs")
     bootstrap_subparsers = bootstrap_parser.add_subparsers(dest="bootstrap_command", required=True)
@@ -1391,6 +1564,36 @@ def build_parser() -> argparse.ArgumentParser:
             args.benchmark_engine_artifact_id,
         )
     )
+    release_cell_parser = experiment_subparsers.add_parser(
+        "run-release-cell",
+        help="Bootstrap all experiment dependencies and execute one accepted release result",
+    )
+    release_cell_parser.add_argument("--target-path-artifact-id", required=True)
+    release_cell_parser.add_argument("--git-commit", required=True)
+    release_cell_parser.add_argument("--dependency-lock-file", default="requirements.lock")
+    release_cell_parser.add_argument("--as-of", required=True, type=_parse_date)
+    release_cell_parser.add_argument(
+        "--interval",
+        choices=("full_history", "recent_10y", "recent_5y", "recent_3y", "recent_1y"),
+        default="full_history",
+    )
+    release_cell_parser.add_argument("--cost-bps", choices=(2, 5, 10), type=int, default=5)
+    release_cell_parser.add_argument("--suite-key", default="v02_release")
+    release_cell_parser.add_argument("--version", type=int, default=1)
+    release_cell_parser.add_argument("--required-warmup-observations", type=int, default=253)
+    release_cell_parser.set_defaults(
+        handler=lambda args: _experiment_run_release_cell(
+            args.target_path_artifact_id,
+            args.git_commit,
+            args.dependency_lock_file,
+            args.as_of,
+            args.interval,
+            args.cost_bps,
+            args.suite_key,
+            args.version,
+            args.required_warmup_observations,
+        )
+    )
 
     for command in PLANNED_COMMANDS:
         if command.key in {
@@ -1404,6 +1607,7 @@ def build_parser() -> argparse.ArgumentParser:
             "artifact",
             "lineage",
             "api",
+            "backup",
         }:
             continue
         command_parser = subparsers.add_parser(command.key, help=command.summary)

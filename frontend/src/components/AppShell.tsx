@@ -2,6 +2,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { setLanguage, type SupportedLanguage } from "../i18n";
+import fledglingLogo from "../assets/fledgling-logo.svg";
 
 const navigation = [
   { label: "nav.overview", items: [["nav.dashboard", "/"]] },
@@ -35,7 +36,7 @@ export function AppShell() {
       <a className="skip-link" href="#main-content">{t("common.skipToContent")}</a>
       <aside className="sidebar">
         <div className="brand-lockup">
-          <div className="fledgling-mark" aria-hidden="true"><span /></div>
+          <img className="brand-mark" src={fledglingLogo} alt="" aria-hidden="true" />
           <div><strong>{t("brand.name")}</strong><small>{t("brand.stage")}</small></div>
         </div>
         <nav aria-label={t("common.primaryNavigation")}>

@@ -4,7 +4,7 @@ Versioned research platform for explainable US style rotation across IWF, IWD, I
 
 ## Status
 
-v0.2 is being rebuilt in short, independently verified milestones. M0 through M6C and M7E2 are complete. The platform now has immutable publication, typed market data, deterministic Factor/Signal/Model calculation and independent diagnostics, complete Strategy Product identities and Target Paths, read-only bilingual research pages through the Strategies layer, immutable Gross and 2/5/10 bps Net Cost Paths, product/research benchmark paths using the same accounting chain, versioned carry-in interval performance results, reusable atomic Experiment Specifications, audited Run Attempts, and one accepted Result per specification. Experiment read APIs and UI follow in M7F.
+v0.2.0 has completed its M0–M9 implementation baseline. The platform includes immutable publication, typed market data, independent Factor/Signal/Model diagnostics, Strategy Products and Target Paths, reproducible SPY-benchmarked experiments, strict comparison cohorts, bilingual read-only pages, decision-level lineage, and checksum-verified PostgreSQL backup/restore testing.
 
 The authoritative plan is [v0.2/正式开发方案.md](v0.2/正式开发方案.md). Detailed decisions and database rationale are stored in [v0.2/设计决策记录.md](v0.2/设计决策记录.md) and [v0.2/数据库设计.md](v0.2/数据库设计.md).
 
@@ -52,9 +52,7 @@ Destructive local rebuilds require an exact database-name confirmation:
 style-rotation db reset --confirm-database style_rotation_test
 ```
 
-Database commands plus `bootstrap catalogs`, `artifact list/show/invalidate`, `lineage show`, and the loopback-only `api` server are implemented. Later domain commands are registered early so the interface remains stable, but return an explicit nonzero “not implemented” result until their delivery milestone. They never silently invoke v0.1 calculations.
-
-Planned commands are `db`, `bootstrap`, `data`, `factor`, `signal`, `model`, `strategy`, `experiment`, `lineage`, `artifact`, `backup`, and `api`.
+The formal CLI domains are `db`, `bootstrap`, `data`, `factor`, `signal`, `model`, `strategy`, `experiment`, `lineage`, `artifact`, `backup`, and `api`. They never silently invoke v0.1 calculations.
 
 ## Machine-readable research catalog
 
@@ -107,6 +105,9 @@ style-rotation experiment publish-net --gross-path-artifact-id <uuid> --cost-sce
 style-rotation experiment bootstrap-benchmarks --version 1
 style-rotation experiment bootstrap-benchmark-engine --git-commit <hex-commit> --dependency-lock-file requirements.lock --version 1
 style-rotation experiment publish-benchmark-target --reference-target-artifact-id <uuid> --benchmark-version-artifact-id <uuid> --benchmark-engine-artifact-id <uuid>
+style-rotation experiment run-release-cell --target-path-artifact-id <uuid> --git-commit <hex-commit> --as-of 2026-08-03 --interval full_history --cost-bps 5 --suite-key v02_release_weekly
+style-rotation backup create --output artifacts/v0.2-release.dump --git-commit <hex-commit> --docker-service postgres
+style-rotation backup restore-test --backup-record-id <uuid> --docker-service postgres
 style-rotation artifact list
 style-rotation lineage show <artifact-uuid>
 ```
@@ -131,7 +132,7 @@ style-rotation api
 ```
 
 The application is then available at `http://127.0.0.1:8000/`, with OpenAPI docs at `/api/v2/docs`. The unauthenticated server refuses non-loopback bind addresses.
-The Data, Factors, Signals, Models, and Strategies pages read published overview endpoints. Strategies separates frozen rules, complete product identities, and per-decision candidate target weights. The browser does not recompute research statistics or display not-yet-produced strategy performance.
+The Data, Factors, Signals, Models, Strategies, Experiments, Compare, and Decision Explorer views read published v0.2 endpoints. The browser does not recompute financial results. Use `style-rotation api`; `style_rotation.web.app` is retained only as legacy v0.1 code and is not the v0.2 application entry point.
 
 ## Development rules
 

@@ -18,13 +18,22 @@ class UnifiedCliTests(unittest.TestCase):
         self.assertEqual(len(payload), 9)
         self.assertEqual(payload[0]["key"], "catalog")
 
-    def test_next_planned_command_fails_explicitly(self) -> None:
-        error = StringIO()
-        with redirect_stderr(error):
-            result = main(["backup"])
-        self.assertEqual(result, 2)
-        self.assertIn("not implemented", error.getvalue())
-        self.assertIn("M9", error.getvalue())
+    def test_backup_create_exposes_custom_dump_workflow(self) -> None:
+        with patch("style_rotation.cli.main._backup_create", return_value=0) as command:
+            result = main(
+                [
+                    "backup",
+                    "create",
+                    "--output",
+                    "artifacts/v02.dump",
+                    "--git-commit",
+                    "abcdef0",
+                    "--docker-service",
+                    "postgres-test",
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with("artifacts/v02.dump", "abcdef0", "postgres-test")
 
     def test_experiment_publish_gross_requires_both_artifacts(self) -> None:
         ids = [f"00000000-0000-0000-0000-00000000000{index}" for index in range(1, 3)]
@@ -77,6 +86,42 @@ class UnifiedCliTests(unittest.TestCase):
             )
         self.assertEqual(result, 0)
         command.assert_called_once_with(*ids)
+
+    def test_experiment_release_cell_exposes_complete_recovery_path(self) -> None:
+        target_id = "00000000-0000-0000-0000-000000000001"
+        with patch(
+            "style_rotation.cli.main._experiment_run_release_cell", return_value=0
+        ) as command:
+            result = main(
+                [
+                    "experiment",
+                    "run-release-cell",
+                    "--target-path-artifact-id",
+                    target_id,
+                    "--git-commit",
+                    "abcdef0",
+                    "--as-of",
+                    "2026-08-03",
+                    "--interval",
+                    "recent_3y",
+                    "--cost-bps",
+                    "10",
+                    "--suite-key",
+                    "v02_release_weekly",
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with(
+            target_id,
+            "abcdef0",
+            "requirements.lock",
+            date(2026, 8, 3),
+            "recent_3y",
+            10,
+            "v02_release_weekly",
+            1,
+            253,
+        )
 
     def test_version_flag_uses_v02_package_version(self) -> None:
         output = StringIO()

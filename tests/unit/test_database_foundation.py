@@ -28,7 +28,7 @@ class DatabaseFoundationUnitTests(unittest.TestCase):
 
     def test_clean_v02_migration_has_one_head(self) -> None:
         self.assertEqual(
-            head_revisions(LOCAL_TEST_URL), ("20260804_25_v02_cohort",)
+            head_revisions(LOCAL_TEST_URL), ("20260805_26_v02_backup",)
         )
 
     def test_reset_requires_exact_local_project_database_confirmation(self) -> None:
