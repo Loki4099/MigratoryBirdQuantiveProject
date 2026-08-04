@@ -42,7 +42,13 @@ from style_rotation.factor.engine import (
 from style_rotation.factor.publication import FactorDatasetPublicationService
 from style_rotation.factor.service import publish_factor_catalog
 from style_rotation.lineage.service import ArtifactService
-from style_rotation.model.engine import build_model_engine_spec, publish_model_engine
+from style_rotation.model.diagnostic_publication import ModelDiagnosticPublicationService
+from style_rotation.model.engine import (
+    build_model_engine_spec,
+    build_model_evaluation_engine_spec,
+    publish_model_engine,
+    publish_model_evaluation_engine,
+)
 from style_rotation.model.publication import ModelDatasetPublicationService
 from style_rotation.model.service import publish_model_catalog
 from style_rotation.persistence.database import reset_database
@@ -372,7 +378,7 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     model_engine_spec = build_model_engine_spec(
         "a" * 40,
         PROJECT_ROOT / "requirements.lock",
-        "20260804_15_v02_model_data",
+        "20260804_16_v02_model_eval",
     )
     model_engine = publish_model_engine(engine, model_engine_spec)
     assert publish_model_engine(engine, model_engine_spec).reused is True
@@ -489,6 +495,52 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
             )
         ).one()
     assert evaluation_counts == (2, 153, 204, 2550, 116)
+
+    model_evaluation_spec = build_model_evaluation_engine_spec(
+        "a" * 40,
+        PROJECT_ROOT / "requirements.lock",
+        "20260804_16_v02_model_eval",
+    )
+    model_evaluation_engine = publish_model_evaluation_engine(engine, model_evaluation_spec)
+    assert publish_model_evaluation_engine(engine, model_evaluation_spec).reused is True
+    model_evaluation_service = ModelDiagnosticPublicationService(engine)
+    model_evaluations = tuple(
+        model_evaluation_service.publish(
+            model_catalog.release_artifact_id,
+            item.artifact_id,
+            model_engine.artifact_id,
+            model_evaluation_engine.artifact_id,
+        )
+        for item in forward
+    )
+    model_evaluations_reused = tuple(
+        model_evaluation_service.publish(
+            model_catalog.release_artifact_id,
+            item.artifact_id,
+            model_engine.artifact_id,
+            model_evaluation_engine.artifact_id,
+        )
+        for item in forward
+    )
+    assert {item.frequency for item in model_evaluations} == {"weekly", "monthly"}
+    assert {item.model_count for item in model_evaluations} == {86}
+    assert {item.pair_count for item in model_evaluations} == {3655}
+    assert {item.ablation_count for item in model_evaluations} == {150}
+    assert all(item.reused for item in model_evaluations_reused)
+    with engine.connect() as connection:
+        model_evaluation_counts = connection.execute(
+            text(
+                "SELECT (SELECT count(*) FROM model.model_evaluation), "
+                "(SELECT count(*) FROM model.model_evaluation_period), "
+                "(SELECT count(*) FROM model.model_evaluation_metric), "
+                "(SELECT count(*) FROM model.model_pair_diagnostic), "
+                "(SELECT count(*) FROM model.model_ablation_comparison), "
+                "(SELECT count(*) FROM lineage.artifact_dependency dependency "
+                "JOIN lineage.artifact artifact ON artifact.artifact_id = "
+                "dependency.artifact_id WHERE artifact.artifact_type = 'model_evaluation')"
+            )
+        ).one()
+    assert model_evaluation_counts == (2, 258, 344, 7310, 300, 186)
     signal_overview = TestClient(create_app(ArtifactQueryService(engine))).get(
         "/api/v2/signals/overview?frequency=weekly"
     )
@@ -582,6 +634,12 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
         engine.begin() as connection,
     ):
         connection.execute(text("UPDATE signal.signal_evaluation_metric SET period_count = 1"))
+
+    with (
+        pytest.raises(Exception, match="only change while their artifact is draft"),
+        engine.begin() as connection,
+    ):
+        connection.execute(text("UPDATE model.model_ablation_comparison SET period_count = 1"))
 
     short = EligibilityPublicationService(engine).publish(
         uuid.UUID(scope[1]["artifact_id"]),

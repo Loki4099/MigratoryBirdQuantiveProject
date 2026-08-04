@@ -47,7 +47,13 @@ from style_rotation.factor.engine import (
 from style_rotation.factor.publication import FactorDatasetPublicationService
 from style_rotation.factor.service import publish_factor_catalog
 from style_rotation.lineage.service import ArtifactService
-from style_rotation.model.engine import build_model_engine_spec, publish_model_engine
+from style_rotation.model.diagnostic_publication import ModelDiagnosticPublicationService
+from style_rotation.model.engine import (
+    build_model_engine_spec,
+    build_model_evaluation_engine_spec,
+    publish_model_engine,
+    publish_model_evaluation_engine,
+)
 from style_rotation.model.publication import ModelDatasetPublicationService
 from style_rotation.model.service import publish_model_catalog
 from style_rotation.persistence.database import database_status, reset_database, upgrade_database
@@ -370,6 +376,42 @@ def _model_publish(
         uuid.UUID(model_engine_artifact_id),
     )
     print(json.dumps([item.to_dict() for item in results], indent=2, ensure_ascii=False))
+    return 0
+
+
+def _model_bootstrap_evaluation_engine(
+    git_commit: str, dependency_lock_file: str, version_number: int
+) -> int:
+    settings = get_settings()
+    status = database_status(settings.database_url)
+    if status.current_revision is None:
+        raise ValueError("Database must be migrated before publishing a Model evaluation engine")
+    spec = build_model_evaluation_engine_spec(
+        git_commit,
+        Path(dependency_lock_file),
+        status.current_revision,
+        version_number=version_number,
+    )
+    result = publish_model_evaluation_engine(create_postgres_engine(settings.database_url), spec)
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _model_evaluate(
+    model_catalog_artifact_id: str,
+    forward_return_artifact_id: str,
+    model_engine_artifact_id: str,
+    evaluation_engine_artifact_id: str,
+) -> int:
+    result = ModelDiagnosticPublicationService(
+        create_postgres_engine(get_settings().database_url)
+    ).publish(
+        uuid.UUID(model_catalog_artifact_id),
+        uuid.UUID(forward_return_artifact_id),
+        uuid.UUID(model_engine_artifact_id),
+        uuid.UUID(evaluation_engine_artifact_id),
+    )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0
 
 
@@ -998,6 +1040,36 @@ def build_parser() -> argparse.ArgumentParser:
             args.eligibility_artifact_id,
             args.signal_engine_artifact_id,
             args.model_engine_artifact_id,
+        )
+    )
+    model_evaluation_engine_parser = model_subparsers.add_parser(
+        "bootstrap-evaluation-engine",
+        help="Publish the deterministic Model evaluation engine version",
+    )
+    model_evaluation_engine_parser.add_argument("--git-commit", required=True)
+    model_evaluation_engine_parser.add_argument(
+        "--dependency-lock-file", default="requirements.lock"
+    )
+    model_evaluation_engine_parser.add_argument("--version", type=int, default=1)
+    model_evaluation_engine_parser.set_defaults(
+        handler=lambda args: _model_bootstrap_evaluation_engine(
+            args.git_commit, args.dependency_lock_file, args.version
+        )
+    )
+    model_evaluate_parser = model_subparsers.add_parser(
+        "evaluate",
+        help="Publish Model IC, stability, redundancy, dispersion, and ablation diagnostics",
+    )
+    model_evaluate_parser.add_argument("--model-catalog-artifact-id", required=True)
+    model_evaluate_parser.add_argument("--forward-return-artifact-id", required=True)
+    model_evaluate_parser.add_argument("--model-engine-artifact-id", required=True)
+    model_evaluate_parser.add_argument("--evaluation-engine-artifact-id", required=True)
+    model_evaluate_parser.set_defaults(
+        handler=lambda args: _model_evaluate(
+            args.model_catalog_artifact_id,
+            args.forward_return_artifact_id,
+            args.model_engine_artifact_id,
+            args.evaluation_engine_artifact_id,
         )
     )
 
