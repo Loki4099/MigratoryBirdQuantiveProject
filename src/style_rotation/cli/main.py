@@ -732,6 +732,7 @@ def _experiment_run_release_suite(
     version_number: int,
     required_warmup_observations: int,
     defer_cohorts: bool = False,
+    workers: int = 1,
 ) -> int:
     """Publish and execute the formal target × cost × interval release matrix."""
     settings = get_settings()
@@ -820,6 +821,7 @@ def _experiment_run_release_suite(
         required_warmup_observations=required_warmup_observations,
         version_number=version_number,
         publish_cohorts=not defer_cohorts,
+        max_workers=workers,
     )
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0
@@ -1813,6 +1815,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Execute a resumable batch without publishing partial ranking cohorts",
     )
+    release_suite_parser.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="Concurrent experiment workers; defaults to single-worker execution",
+    )
     release_suite_parser.set_defaults(
         handler=lambda args: _experiment_run_release_suite(
             tuple(args.target_path_artifact_id or ()),
@@ -1827,6 +1835,7 @@ def build_parser() -> argparse.ArgumentParser:
             args.version,
             args.required_warmup_observations,
             args.defer_cohorts,
+            args.workers,
         )
     )
 

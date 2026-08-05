@@ -4,7 +4,7 @@ Versioned research platform for explainable US style rotation across IWF, IWD, I
 
 ## Status
 
-The M0–M9 architecture is implemented, but the v0.2.0 release is still being corrected and populated. The current formal display database contains one long-history canonical suite with 90 accepted cells: one five-dimension model, three Strategy variants, weekly/monthly schedules, 2/5/10 bps costs, and full/trailing 10/5/3/1-year intervals. Full population of every registered Model and K=1/3 sensitivity configuration remains a release task and must not be represented as complete.
+The M0–M9 v0.2.0 scope is implemented and the formal display database is fully populated. Its single published release suite contains 630 Strategy Targets and 9,450 accepted/eligible cells: 35 product models, three Strategy variants, K=1/2/3, weekly/monthly schedules, 2/5/10 bps costs, and full/trailing 10/5/3/1-year carry-in intervals. The results are grouped into 90 strict comparison cohorts with 105 comparable products each. Further data-governance and UI refinement belongs to v0.2.1; additional factor deployment belongs to v0.2.2.
 
 The authoritative plan is [v0.2/正式开发方案.md](v0.2/正式开发方案.md). Detailed decisions and database rationale are stored in [v0.2/设计决策记录.md](v0.2/设计决策记录.md) and [v0.2/数据库设计.md](v0.2/数据库设计.md).
 
@@ -106,7 +106,7 @@ style-rotation experiment publish-net --gross-path-artifact-id <uuid> --cost-sce
 style-rotation experiment bootstrap-benchmarks --version 1
 style-rotation experiment bootstrap-benchmark-engine --git-commit <hex-commit> --dependency-lock-file requirements.lock --version 1
 style-rotation experiment publish-benchmark-target --reference-target-artifact-id <uuid> --benchmark-version-artifact-id <uuid> --benchmark-engine-artifact-id <uuid>
-style-rotation experiment run-release-suite --target-path-artifact-id <uuid> [--target-path-artifact-id <uuid> ...] --git-commit <hex-commit> --as-of 2026-08-03 --suite-key v02_formal_release
+style-rotation experiment run-release-suite --target-engine-artifact-id <uuid> --expected-target-count 630 --git-commit <hex-commit> --as-of 2026-08-03 --suite-key v02_formal_release --workers 4
 style-rotation backup create --output artifacts/v0.2-release.dump --git-commit <hex-commit> --docker-service postgres
 style-rotation backup restore-test --backup-record-id <uuid> --docker-service postgres
 style-rotation artifact list

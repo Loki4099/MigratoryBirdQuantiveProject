@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import asdict, dataclass
 from datetime import date
 from typing import Any
@@ -13,12 +14,17 @@ from style_rotation.experiment.comparison import (
     publish_comparison_cohort,
     publish_warmup_policy,
 )
-from style_rotation.experiment.execution import ExperimentExecutionService
+from style_rotation.experiment.execution import (
+    ExperimentExecutionPublication,
+    ExperimentExecutionService,
+)
 from style_rotation.experiment.intervals import IntervalTemplateKey
 from style_rotation.experiment.suite_publication import (
     ExperimentCellRequest,
+    ExperimentSpecificationPublication,
     publish_experiment_suite,
 )
+from style_rotation.persistence.session import create_postgres_engine
 
 FORMAL_INTERVALS: tuple[IntervalTemplateKey, ...] = (
     "full_history",
@@ -28,6 +34,43 @@ FORMAL_INTERVALS: tuple[IntervalTemplateKey, ...] = (
     "trailing_1_year",
 )
 FORMAL_COSTS_BPS = (2, 5, 10)
+
+_RELEASE_WORKER_SERVICE: ExperimentExecutionService | None = None
+_RELEASE_WORKER_ORCHESTRATION_ID: uuid.UUID | None = None
+
+
+def _initialize_release_worker(database_url: str, orchestration_engine_id: uuid.UUID) -> None:
+    global _RELEASE_WORKER_SERVICE, _RELEASE_WORKER_ORCHESTRATION_ID
+    _RELEASE_WORKER_SERVICE = ExperimentExecutionService(create_postgres_engine(database_url))
+    _RELEASE_WORKER_ORCHESTRATION_ID = orchestration_engine_id
+
+
+def _execute_release_specification(
+    specification_artifact_id: uuid.UUID,
+) -> ExperimentExecutionPublication:
+    if _RELEASE_WORKER_SERVICE is None or _RELEASE_WORKER_ORCHESTRATION_ID is None:
+        raise RuntimeError("Release worker was not initialized")
+    return _RELEASE_WORKER_SERVICE.execute(
+        specification_artifact_id, _RELEASE_WORKER_ORCHESTRATION_ID
+    )
+
+
+def _interleave_specifications_by_target(
+    cells: tuple[ExperimentCellRequest, ...],
+    specifications: tuple[ExperimentSpecificationPublication, ...],
+) -> tuple[ExperimentSpecificationPublication, ...]:
+    if len(cells) != len(specifications):
+        raise ValueError("Release cells and specifications must have matching lengths")
+    groups: dict[uuid.UUID, list[ExperimentSpecificationPublication]] = {}
+    for cell, specification in zip(cells, specifications, strict=True):
+        groups.setdefault(cell.strategy_target_artifact_id, []).append(specification)
+    longest_group = max((len(group) for group in groups.values()), default=0)
+    return tuple(
+        group[ordinal]
+        for ordinal in range(longest_group)
+        for group in groups.values()
+        if ordinal < len(group)
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -101,7 +144,10 @@ def run_release_suite(
     required_warmup_observations: int,
     version_number: int = 1,
     publish_cohorts: bool = True,
+    max_workers: int = 1,
 ) -> ReleaseSuiteResult:
+    if not 1 <= max_workers <= 16:
+        raise ValueError("Release suite max_workers must be between 1 and 16")
     suite = publish_experiment_suite(
         engine,
         suite_key=suite_key,
@@ -114,10 +160,27 @@ def run_release_suite(
         version_number=version_number,
     )
     service = ExperimentExecutionService(engine)
-    executions = tuple(
-        service.execute(item.artifact_id, orchestration_engine_artifact_id)
-        for item in suite.specifications
-    )
+    def execute(item: ExperimentSpecificationPublication) -> ExperimentExecutionPublication:
+        return service.execute(item.artifact_id, orchestration_engine_artifact_id)
+
+    if max_workers == 1:
+        executions = tuple(execute(item) for item in suite.specifications)
+    else:
+        database_url = engine.url.render_as_string(hide_password=False)
+        scheduled_specifications = _interleave_specifications_by_target(
+            cells, suite.specifications
+        )
+        with ProcessPoolExecutor(
+            max_workers=max_workers,
+            initializer=_initialize_release_worker,
+            initargs=(database_url, orchestration_engine_artifact_id),
+        ) as executor:
+            executions = tuple(
+                executor.map(
+                    _execute_release_specification,
+                    (item.artifact_id for item in scheduled_specifications),
+                )
+            )
     cohorts: tuple[ComparisonCohortPublication, ...] = ()
     if publish_cohorts:
         warmup = publish_warmup_policy(

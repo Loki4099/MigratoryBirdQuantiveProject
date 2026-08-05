@@ -162,6 +162,7 @@ class UnifiedCliTests(unittest.TestCase):
             1,
             253,
             True,
+            1,
         )
 
     def test_experiment_release_suite_can_select_a_guarded_target_engine_grid(self) -> None:
@@ -181,7 +182,7 @@ class UnifiedCliTests(unittest.TestCase):
         self.assertEqual(result, 0)
         command.assert_called_once_with(
             (), engine_id, 630, "abcdef0", "requirements.lock", date(2026, 8, 3),
-            None, None, "v02_formal_release", 1, 253, False,
+            None, None, "v02_formal_release", 1, 253, False, 1,
         )
 
     def test_version_flag_uses_v02_package_version(self) -> None:
