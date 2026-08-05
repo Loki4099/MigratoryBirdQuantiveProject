@@ -426,29 +426,32 @@ def _write_target(
             "simulation_end": context.reference["simulation_end"],
         },
     )
-    for decision in decisions:
-        decision_id = uuid.uuid4()
-        connection.execute(
-            text(
-                "INSERT INTO strategy.benchmark_decision (benchmark_decision_id, portfolio_target_path_id, decision_date, actual_holding_count, reserve_target_weight) VALUES (:id, :path, :date, :holdings, :reserve)"
-            ),
+    decision_rows = tuple((uuid.uuid4(), decision) for decision in decisions)
+    connection.execute(
+        text(
+            "INSERT INTO strategy.benchmark_decision (benchmark_decision_id, portfolio_target_path_id, decision_date, actual_holding_count, reserve_target_weight) VALUES (:id, :path, :date, :holdings, :reserve)"
+        ),
+        [
             {
                 "id": decision_id,
                 "path": path_id,
                 "date": decision.decision_date,
                 "holdings": len(decision.asset_weights),
                 "reserve": decision.reserve_target_weight,
-            },
-        )
-        connection.execute(
-            text(
-                "INSERT INTO strategy.benchmark_asset_position (benchmark_decision_id, asset_id, target_weight) VALUES (:decision, :asset, :weight)"
-            ),
-            [
-                {"decision": decision_id, "asset": item.asset_id, "weight": item.target_weight}
-                for item in decision.asset_weights
-            ],
-        )
+            }
+            for decision_id, decision in decision_rows
+        ],
+    )
+    connection.execute(
+        text(
+            "INSERT INTO strategy.benchmark_asset_position (benchmark_decision_id, asset_id, target_weight) VALUES (:decision, :asset, :weight)"
+        ),
+        [
+            {"decision": decision_id, "asset": item.asset_id, "weight": item.target_weight}
+            for decision_id, decision in decision_rows
+            for item in decision.asset_weights
+        ],
+    )
 
 
 class _BoundConnection:

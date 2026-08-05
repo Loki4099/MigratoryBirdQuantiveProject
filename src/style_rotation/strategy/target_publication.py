@@ -493,15 +493,15 @@ def _write_target_path(
             ),
             {"path": path_id, "signal": context.auxiliary_dataset["signal_dataset_id"]},
         )
-    for decision in decisions:
-        decision_id = uuid.uuid4()
-        connection.execute(
-            text(
-                "INSERT INTO strategy.portfolio_decision "
-                "(portfolio_decision_id, portfolio_target_path_id, decision_date, target_k, "
-                "actual_holding_count, boundary_tie_count, reserve_target_weight) VALUES "
-                "(:id, :path, :date, :k, :holdings, :ties, :reserve)"
-            ),
+    decision_rows = tuple((uuid.uuid4(), decision) for decision in decisions)
+    connection.execute(
+        text(
+            "INSERT INTO strategy.portfolio_decision "
+            "(portfolio_decision_id, portfolio_target_path_id, decision_date, target_k, "
+            "actual_holding_count, boundary_tie_count, reserve_target_weight) VALUES "
+            "(:id, :path, :date, :k, :holdings, :ties, :reserve)"
+        ),
+        [
             {
                 "id": decision_id,
                 "path": path_id,
@@ -510,32 +510,35 @@ def _write_target_path(
                 "holdings": decision.actual_holding_count,
                 "ties": decision.boundary_tie_count,
                 "reserve": decision.reserve_target_weight,
-            },
-        )
-        connection.execute(
-            text(
-                "INSERT INTO strategy.target_asset_position "
-                "(portfolio_decision_id, asset_id, model_score, model_rank, selection_rank, "
-                "trend_state, strategy_eligible, selected, target_weight, decision_reason) "
-                "VALUES (:decision, :asset, :score, :model_rank, :selection_rank, :trend, "
-                ":eligible, :selected, :weight, :reason)"
-            ),
-            [
-                {
-                    "decision": decision_id,
-                    "asset": position.asset_id,
-                    "score": position.model_score,
-                    "model_rank": position.model_rank,
-                    "selection_rank": position.selection_rank,
-                    "trend": position.trend_state,
-                    "eligible": position.strategy_eligible,
-                    "selected": position.selected,
-                    "weight": position.target_weight,
-                    "reason": position.reason,
-                }
-                for position in decision.positions
-            ],
-        )
+            }
+            for decision_id, decision in decision_rows
+        ],
+    )
+    connection.execute(
+        text(
+            "INSERT INTO strategy.target_asset_position "
+            "(portfolio_decision_id, asset_id, model_score, model_rank, selection_rank, "
+            "trend_state, strategy_eligible, selected, target_weight, decision_reason) "
+            "VALUES (:decision, :asset, :score, :model_rank, :selection_rank, :trend, "
+            ":eligible, :selected, :weight, :reason)"
+        ),
+        [
+            {
+                "decision": decision_id,
+                "asset": position.asset_id,
+                "score": position.model_score,
+                "model_rank": position.model_rank,
+                "selection_rank": position.selection_rank,
+                "trend": position.trend_state,
+                "eligible": position.strategy_eligible,
+                "selected": position.selected,
+                "weight": position.target_weight,
+                "reason": position.reason,
+            }
+            for decision_id, decision in decision_rows
+            for position in decision.positions
+        ],
+    )
 
 
 class _BoundConnection:

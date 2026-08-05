@@ -463,14 +463,16 @@ def _write_path(
             for item in result.daily_reserve_positions
         ],
     )
-    execution_ids: dict[tuple[date, date], uuid.UUID] = {}
-    for item in result.executions:
-        execution_id = uuid.uuid4()
-        execution_ids[(item.decision_date, item.execution_date)] = execution_id
-        connection.execute(
-            text(
-                "INSERT INTO experiment.portfolio_execution (portfolio_execution_id, gross_portfolio_path_id, decision_date, execution_date, gross_pretrade_nav, one_way_turnover, gross_traded_fraction, pretrade_reserve_weight, posttrade_reserve_weight) VALUES (:id, :path, :decision, :execution, :nav, :turnover, :traded, :pre_reserve, :post_reserve)"
-            ),
+    execution_rows = tuple((uuid.uuid4(), item) for item in result.executions)
+    execution_ids = {
+        (item.decision_date, item.execution_date): execution_id
+        for execution_id, item in execution_rows
+    }
+    connection.execute(
+        text(
+            "INSERT INTO experiment.portfolio_execution (portfolio_execution_id, gross_portfolio_path_id, decision_date, execution_date, gross_pretrade_nav, one_way_turnover, gross_traded_fraction, pretrade_reserve_weight, posttrade_reserve_weight) VALUES (:id, :path, :decision, :execution, :nav, :turnover, :traded, :pre_reserve, :post_reserve)"
+        ),
+        [
             {
                 "id": execution_id,
                 "path": path_id,
@@ -481,8 +483,10 @@ def _write_path(
                 "traded": item.gross_traded_fraction,
                 "pre_reserve": item.pretrade_reserve_weight,
                 "post_reserve": item.posttrade_reserve_weight,
-            },
-        )
+            }
+            for execution_id, item in execution_rows
+        ],
+    )
     connection.execute(
         text(
             "INSERT INTO experiment.portfolio_trade (portfolio_execution_id, asset_id, side, adjusted_execution_price, pretrade_weight, target_weight, signed_weight_change, absolute_weight_change) VALUES (:execution, :asset, :side, :price, :pretrade, :target, :signed, :absolute)"

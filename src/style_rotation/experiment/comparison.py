@@ -186,6 +186,8 @@ def _load_result_contexts(
         SELECT publication.result_publication_id,
                publication.artifact_id AS result_artifact_id,
                target.universe_version_id, universe.artifact_id AS universe_artifact_id,
+               target.engine_version_id AS target_engine_version_id,
+               target_engine.artifact_id AS target_engine_artifact_id,
                target.data_bundle_version_id, bundle.artifact_id AS data_bundle_artifact_id,
                target.eligibility_snapshot_id,
                eligibility.artifact_id AS eligibility_artifact_id,
@@ -233,6 +235,8 @@ def _load_result_contexts(
              variant.strategy_variant_id = product.strategy_variant_id
         JOIN ops.rebalance_schedule_version schedule ON
              schedule.rebalance_schedule_version_id = product.rebalance_schedule_version_id
+        JOIN ops.engine_version target_engine ON
+             target_engine.engine_version_id = target.engine_version_id
         JOIN catalog.universe_version universe ON
              universe.universe_version_id = target.universe_version_id
         JOIN data.data_bundle_version bundle ON
@@ -275,6 +279,7 @@ def _load_result_contexts(
 def _context_payload(row: RowMapping) -> dict[str, Any]:
     return {
         "universe_artifact_id": str(row["universe_artifact_id"]),
+        "target_engine_artifact_id": str(row["target_engine_artifact_id"]),
         "data_bundle_artifact_id": str(row["data_bundle_artifact_id"]),
         "eligibility_artifact_id": str(row["eligibility_artifact_id"]),
         "execution_policy_artifact_id": str(row["execution_policy_artifact_id"]),
