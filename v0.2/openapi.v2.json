@@ -455,6 +455,14 @@
             "title": "Description",
             "type": "string"
           },
+          "frequency": {
+            "enum": [
+              "weekly",
+              "monthly"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
           "initialization_policy": {
             "title": "Initialization Policy",
             "type": "string"
@@ -469,6 +477,10 @@
           },
           "required_warmup_observations": {
             "title": "Required Warmup Observations",
+            "type": "integer"
+          },
+          "target_k": {
+            "title": "Target K",
             "type": "integer"
           },
           "template_key": {
@@ -489,6 +501,8 @@
           "context_fingerprint",
           "template_key",
           "initialization_policy",
+          "target_k",
+          "frequency",
           "as_of_date",
           "common_data_ready_date",
           "common_simulation_start",

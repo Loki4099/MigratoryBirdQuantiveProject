@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import asdict, dataclass
+from datetime import date
 from typing import Any
 
 from sqlalchemy import Engine, text
@@ -43,6 +44,56 @@ def publish_strategy_target_grid(
     model_specification_keys: tuple[str, ...] | None = None,
     k_values: tuple[int, ...] = (2,),
     frequencies: tuple[str, ...] = FORMAL_FREQUENCIES,
+    required_history_start: date | None = None,
+    required_history_end: date | None = None,
+) -> StrategyGridPublication:
+    """Publish one grid under a database session lock so duplicate runners fail fast."""
+    lock_key = "style_rotation.formal_strategy_grid"
+    with engine.connect() as lock_connection:
+        acquired = bool(
+            lock_connection.execute(
+                text("SELECT pg_try_advisory_lock(hashtext(:key))"), {"key": lock_key}
+            ).scalar_one()
+        )
+        if not acquired:
+            raise RuntimeError("Another formal Strategy Grid publication is already running")
+        try:
+            return _publish_strategy_target_grid(
+                engine,
+                strategy_catalog_artifact_id=strategy_catalog_artifact_id,
+                model_catalog_artifact_id=model_catalog_artifact_id,
+                universe_artifact_id=universe_artifact_id,
+                data_bundle_artifact_id=data_bundle_artifact_id,
+                eligibility_artifact_id=eligibility_artifact_id,
+                target_engine_artifact_id=target_engine_artifact_id,
+                auxiliary_signal_dataset_artifact_id=auxiliary_signal_dataset_artifact_id,
+                model_specification_keys=model_specification_keys,
+                k_values=k_values,
+                frequencies=frequencies,
+                required_history_start=required_history_start,
+                required_history_end=required_history_end,
+            )
+        finally:
+            lock_connection.execute(
+                text("SELECT pg_advisory_unlock(hashtext(:key))"), {"key": lock_key}
+            )
+
+
+def _publish_strategy_target_grid(
+    engine: Engine,
+    *,
+    strategy_catalog_artifact_id: uuid.UUID,
+    model_catalog_artifact_id: uuid.UUID,
+    universe_artifact_id: uuid.UUID,
+    data_bundle_artifact_id: uuid.UUID,
+    eligibility_artifact_id: uuid.UUID,
+    target_engine_artifact_id: uuid.UUID,
+    auxiliary_signal_dataset_artifact_id: uuid.UUID,
+    model_specification_keys: tuple[str, ...] | None = None,
+    k_values: tuple[int, ...] = (2,),
+    frequencies: tuple[str, ...] = FORMAL_FREQUENCIES,
+    required_history_start: date | None = None,
+    required_history_end: date | None = None,
 ) -> StrategyGridPublication:
     if not k_values or set(k_values) - set(FORMAL_K_VALUES):
         raise ValueError("Strategy grid K must use one or more of 1, 2, and 3")
@@ -52,7 +103,8 @@ def publish_strategy_target_grid(
         model_rows = connection.execute(
             text(
                 "SELECT specification.specification_key, "
-                "dataset.artifact_id AS dataset_artifact_id "
+                "dataset.artifact_id AS dataset_artifact_id, dataset.coverage_start, "
+                "dataset.coverage_end "
                 "FROM lineage.artifact_dependency member "
                 "JOIN model.model_specification specification ON specification.artifact_id = "
                 "member.depends_on_artifact_id JOIN model.model_dataset dataset ON "
@@ -97,6 +149,25 @@ def publish_strategy_target_grid(
             ),
             {"catalog": strategy_catalog_artifact_id, "frequencies": list(frequencies)},
         ).mappings().all()
+        eligibility_window = connection.execute(
+            text(
+                "SELECT requested_start, requested_end FROM catalog.eligibility_snapshot "
+                "WHERE artifact_id = :eligibility"
+            ),
+            {"eligibility": eligibility_artifact_id},
+        ).mappings().one_or_none()
+    if eligibility_window is None:
+        raise ValueError("Strategy grid Eligibility Snapshot not found")
+    if required_history_start is not None:
+        if eligibility_window["requested_start"] > required_history_start:
+            raise ValueError("Strategy grid Eligibility Snapshot starts after required history")
+        if any(row["coverage_start"] > required_history_start for row in model_rows):
+            raise ValueError("Strategy grid Model Dataset starts after required history")
+    if required_history_end is not None:
+        if eligibility_window["requested_end"] < required_history_end:
+            raise ValueError("Strategy grid Eligibility Snapshot ends before required history")
+        if any(row["coverage_end"] < required_history_end for row in model_rows):
+            raise ValueError("Strategy grid Model Dataset ends before required history")
     if model_specification_keys is not None:
         requested = set(model_specification_keys)
         model_rows = [row for row in model_rows if row["specification_key"] in requested]

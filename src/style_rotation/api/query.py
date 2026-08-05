@@ -1545,15 +1545,27 @@ class ArtifactQueryService:
         with self._engine.connect() as connection:
             connection.execute(text("SET TRANSACTION READ ONLY"))
             cohorts = connection.execute(text("""
+                WITH latest_cohort AS (
+                    SELECT DISTINCT ON (cohort_version.cohort_key)
+                           cohort_version.comparison_cohort_version_id
+                    FROM experiment.comparison_cohort_version cohort_version
+                    JOIN lineage.artifact cohort_artifact ON
+                         cohort_artifact.artifact_id = cohort_version.artifact_id
+                         AND cohort_artifact.status = 'published'
+                    ORDER BY cohort_version.cohort_key, cohort_version.version_number DESC
+                )
                 SELECT cohort.artifact_id, cohort.cohort_key, cohort.version_number,
                        cohort.name, cohort.description, cohort.context_fingerprint,
                        cohort.template_key, cohort.initialization_policy, cohort.as_of_date,
+                       cohort.target_k, cohort.frequency,
                        cohort.common_data_ready_date, cohort.common_simulation_start,
                        cohort.common_metric_start, cohort.common_metric_end, cohort.currency,
                        cohort.member_count, benchmark_definition.benchmark_key,
                        cost.cost_bps_per_side,
                        warmup.required_observations AS required_warmup_observations
                 FROM experiment.comparison_cohort_version cohort
+                JOIN latest_cohort latest ON latest.comparison_cohort_version_id =
+                                             cohort.comparison_cohort_version_id
                 JOIN lineage.artifact artifact ON artifact.artifact_id = cohort.artifact_id
                                              AND artifact.status = 'published'
                 JOIN experiment.benchmark_version benchmark ON
@@ -1575,6 +1587,7 @@ class ArtifactQueryService:
                         ELSE 5
                     END,
                     CASE cost.cost_bps_per_side WHEN 5 THEN 0 WHEN 2 THEN 1 ELSE 2 END,
+                    CASE cohort.target_k WHEN 2 THEN 0 WHEN 1 THEN 1 ELSE 2 END,
                     cohort.common_simulation_start,
                     cohort.cohort_key
             """)).mappings().all()

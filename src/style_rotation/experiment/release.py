@@ -8,6 +8,7 @@ from typing import Any
 from sqlalchemy import Engine
 
 from style_rotation.experiment.comparison import (
+    ComparisonCohortPublication,
     group_comparable_results,
     publish_comparison_cohort,
     publish_warmup_policy,
@@ -99,6 +100,7 @@ def run_release_suite(
     orchestration_engine_artifact_id: uuid.UUID,
     required_warmup_observations: int,
     version_number: int = 1,
+    publish_cohorts: bool = True,
 ) -> ReleaseSuiteResult:
     suite = publish_experiment_suite(
         engine,
@@ -116,25 +118,36 @@ def run_release_suite(
         service.execute(item.artifact_id, orchestration_engine_artifact_id)
         for item in suite.specifications
     )
-    warmup = publish_warmup_policy(
-        engine,
-        required_observations=required_warmup_observations,
-        version_number=version_number,
-    )
-    groups = group_comparable_results(
-        engine, tuple(item.result_artifact_id for item in executions)
-    )
-    cohorts = tuple(
-        publish_comparison_cohort(
+    cohorts: tuple[ComparisonCohortPublication, ...] = ()
+    if publish_cohorts:
+        warmup = publish_warmup_policy(
             engine,
-            cohort_key=f"{suite_key}.context.{group.context_fingerprint[:16]}",
-            name="v0.2 Formal Comparable Product Cohort",
-            description="Eligible accepted results sharing one exact published market context.",
-            warmup_policy_artifact_id=warmup.artifact_id,
-            result_artifact_ids=group.result_artifact_ids,
+            required_observations=required_warmup_observations,
+            version_number=version_number,
         )
-        for group in groups
-    )
+        groups = group_comparable_results(
+            engine, tuple(item.result_artifact_id for item in executions)
+        )
+        cohorts = tuple(
+            publish_comparison_cohort(
+                engine,
+                cohort_key=(
+                    f"{suite_key}.k{group.target_k}.{group.frequency}.context."
+                    f"{group.context_fingerprint[:16]}"
+                ),
+                name=(
+                    f"v0.2 Formal K={group.target_k} {group.frequency.title()} "
+                    "Comparable Product Cohort"
+                ),
+                description=(
+                    "Eligible accepted results sharing one exact published market context, "
+                    "target K, and rebalance frequency."
+                ),
+                warmup_policy_artifact_id=warmup.artifact_id,
+                result_artifact_ids=group.result_artifact_ids,
+            )
+            for group in groups
+        )
     eligible_count = sum(item.availability_status == "eligible" for item in executions)
     return ReleaseSuiteResult(
         suite.artifact_id,

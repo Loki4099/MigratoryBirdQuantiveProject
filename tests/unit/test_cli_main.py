@@ -145,6 +145,7 @@ class UnifiedCliTests(unittest.TestCase):
                     "2026-08-03",
                     "--suite-key",
                     "v02_formal",
+                    "--defer-cohorts",
                 ]
             )
         self.assertEqual(result, 0)
@@ -158,6 +159,7 @@ class UnifiedCliTests(unittest.TestCase):
             "v02_formal",
             1,
             253,
+            True,
         )
 
     def test_version_flag_uses_v02_package_version(self) -> None:

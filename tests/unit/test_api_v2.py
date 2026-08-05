@@ -468,6 +468,7 @@ class FakeArtifactReader:
                 "version_number": 1, "name": "Weekly Full 5 bps",
                 "description": "Strict comparison context", "context_fingerprint": "d" * 64,
                 "template_key": "full_history", "initialization_policy": "carry_in",
+                "target_k": 2, "frequency": "weekly",
                 "as_of_date": date(2026, 1, 9),
                 "common_data_ready_date": date(2025, 1, 1),
                 "common_simulation_start": date(2025, 1, 2),

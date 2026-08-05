@@ -499,6 +499,11 @@ export interface components {
             currency: "USD";
             /** Description */
             description: string;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
             /** Initialization Policy */
             initialization_policy: string;
             /** Member Count */
@@ -507,6 +512,8 @@ export interface components {
             name: string;
             /** Required Warmup Observations */
             required_warmup_observations: number;
+            /** Target K */
+            target_k: number;
             /** Template Key */
             template_key: string;
             /** Version Number */

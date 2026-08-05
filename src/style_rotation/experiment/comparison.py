@@ -34,6 +34,8 @@ class ComparisonCohortPublication:
 @dataclass(frozen=True, slots=True)
 class ComparableResultGroup:
     context_fingerprint: str
+    target_k: int
+    frequency: str
     result_artifact_ids: tuple[uuid.UUID, ...]
 
 
@@ -50,13 +52,14 @@ def group_comparable_results(
         return ()
     with engine.connect() as connection:
         contexts = _load_result_contexts(connection, ordered)
-    grouped: dict[str, list[uuid.UUID]] = {}
+    grouped: dict[tuple[str, int, str], list[uuid.UUID]] = {}
     for row in contexts:
         fingerprint = sha256_hexdigest(_context_payload(row))
-        grouped.setdefault(fingerprint, []).append(row["result_artifact_id"])
+        key = (fingerprint, int(row["target_k"]), str(row["frequency"]))
+        grouped.setdefault(key, []).append(row["result_artifact_id"])
     return tuple(
-        ComparableResultGroup(fingerprint, tuple(result_ids))
-        for fingerprint, result_ids in sorted(grouped.items())
+        ComparableResultGroup(fingerprint, target_k, frequency, tuple(result_ids))
+        for (fingerprint, target_k, frequency), result_ids in sorted(grouped.items())
     )
 
 
@@ -203,6 +206,7 @@ def _load_result_contexts(
                performance.artifact_id AS performance_engine_artifact_id,
                specification.template_key, specification.initialization_policy,
                specification.as_of_date,
+               variant.target_k, schedule.frequency,
                ready.common_data_ready_date,
                strategy_gross.effective_nav_start AS common_simulation_start,
                interval.resolved_start AS common_metric_start,
@@ -221,6 +225,14 @@ def _load_result_contexts(
              strategy_gross.gross_portfolio_path_id = strategy_net.gross_portfolio_path_id
         JOIN strategy.portfolio_target_path target ON target.portfolio_target_path_id =
                                                       strategy_gross.portfolio_target_path_id
+        JOIN strategy.model_strategy_target_path model_path ON
+             model_path.portfolio_target_path_id = target.portfolio_target_path_id
+        JOIN strategy.strategy_product_version product ON
+             product.strategy_product_version_id = model_path.strategy_product_version_id
+        JOIN strategy.strategy_variant variant ON
+             variant.strategy_variant_id = product.strategy_variant_id
+        JOIN ops.rebalance_schedule_version schedule ON
+             schedule.rebalance_schedule_version_id = product.rebalance_schedule_version_id
         JOIN catalog.universe_version universe ON
              universe.universe_version_id = target.universe_version_id
         JOIN data.data_bundle_version bundle ON
@@ -275,6 +287,8 @@ def _context_payload(row: RowMapping) -> dict[str, Any]:
         "performance_engine_artifact_id": str(row["performance_engine_artifact_id"]),
         "template_key": row["template_key"],
         "initialization_policy": row["initialization_policy"],
+        "target_k": int(row["target_k"]),
+        "frequency": row["frequency"],
         "as_of_date": row["as_of_date"],
         "common_data_ready_date": row["common_data_ready_date"],
         "common_simulation_start": row["common_simulation_start"],
@@ -336,13 +350,15 @@ def _write_cohort(
             accounting_engine_version_id, benchmark_engine_version_id,
             performance_engine_version_id, cohort_key, version_number, name, description,
             context_fingerprint, template_key, initialization_policy, as_of_date,
+            target_k, frequency,
             common_data_ready_date, common_simulation_start, common_metric_start,
             common_metric_end, currency, member_count
         ) VALUES (
             :id, :artifact, :warmup, :universe, :bundle, :eligibility, :execution,
             :reserve, :benchmark, :cost, :metric, :accounting, :benchmark_engine,
             :performance, :key, :version, :name, :description, :fingerprint,
-            :template, :initialization, :as_of, :data_ready, :simulation_start,
+            :template, :initialization, :as_of, :target_k, :frequency,
+            :data_ready, :simulation_start,
             :metric_start, :metric_end, 'USD', :member_count)
     """), {
         "id": cohort_id, "artifact": artifact_id,
@@ -359,6 +375,7 @@ def _write_cohort(
         "version": version_number, "name": name, "description": description,
         "fingerprint": context_fingerprint, "template": context["template_key"],
         "initialization": context["initialization_policy"], "as_of": context["as_of_date"],
+        "target_k": context["target_k"], "frequency": context["frequency"],
         "data_ready": context["common_data_ready_date"],
         "simulation_start": context["common_simulation_start"],
         "metric_start": context["common_metric_start"], "metric_end": context["common_metric_end"],

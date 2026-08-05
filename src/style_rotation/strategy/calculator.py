@@ -4,10 +4,11 @@ import uuid
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date
-from decimal import Decimal
+from decimal import ROUND_DOWN, Decimal
 
 ZERO = Decimal(0)
 ONE = Decimal(1)
+WEIGHT_QUANTUM = Decimal("0.000000000000000001")
 
 
 @dataclass(frozen=True, slots=True)
@@ -191,6 +192,17 @@ def _slot_weights(
         if len(group) > remaining_slots:
             boundary_tie_count = len(group)
         remaining_slots -= consumed
+    if remaining_slots == 0 and weights:
+        # NUMERIC(24,18) cannot represent thirds exactly.  Round every slot down at the
+        # storage scale, then assign only the microscopic arithmetic residual (<= n e-18)
+        # to a deterministic selected row.  This never changes selection or tie membership.
+        weights = {
+            asset_id: weight.quantize(WEIGHT_QUANTUM, rounding=ROUND_DOWN)
+            for asset_id, weight in weights.items()
+        }
+        residual = ONE - sum(weights.values(), ZERO)
+        residual_asset = min(weights, key=str)
+        weights[residual_asset] += residual
     return weights, boundary_tie_count
 
 

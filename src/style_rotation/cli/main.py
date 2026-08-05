@@ -491,6 +491,8 @@ def _strategy_publish_grid(
     model_specification_keys: tuple[str, ...] | None,
     k_values: tuple[int, ...],
     frequencies: tuple[str, ...],
+    required_history_start: date | None,
+    required_history_end: date | None,
 ) -> int:
     result = publish_strategy_target_grid(
         create_postgres_engine(get_settings().database_url),
@@ -506,6 +508,8 @@ def _strategy_publish_grid(
         model_specification_keys=model_specification_keys,
         k_values=k_values,
         frequencies=frequencies,
+        required_history_start=required_history_start,
+        required_history_end=required_history_end,
     )
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0
@@ -723,6 +727,7 @@ def _experiment_run_release_suite(
     suite_key: str,
     version_number: int,
     required_warmup_observations: int,
+    defer_cohorts: bool = False,
 ) -> int:
     """Publish and execute the formal target × cost × interval release matrix."""
     settings = get_settings()
@@ -786,6 +791,7 @@ def _experiment_run_release_suite(
         orchestration_engine_artifact_id=orchestration_engine.artifact_id,
         required_warmup_observations=required_warmup_observations,
         version_number=version_number,
+        publish_cohorts=not defer_cohorts,
     )
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0
@@ -1621,6 +1627,8 @@ def build_parser() -> argparse.ArgumentParser:
     strategy_grid_parser.add_argument(
         "--frequency", action="append", choices=("weekly", "monthly"), default=None
     )
+    strategy_grid_parser.add_argument("--required-history-start", type=_parse_date)
+    strategy_grid_parser.add_argument("--required-history-end", type=_parse_date)
     strategy_grid_parser.set_defaults(
         handler=lambda args: _strategy_publish_grid(
             args.strategy_catalog_artifact_id,
@@ -1633,6 +1641,8 @@ def build_parser() -> argparse.ArgumentParser:
             tuple(args.model_specification_key) if args.model_specification_key else None,
             tuple(args.k) if args.k else (2,),
             tuple(args.frequency) if args.frequency else ("weekly", "monthly"),
+            args.required_history_start,
+            args.required_history_end,
         )
     )
 
@@ -1769,6 +1779,11 @@ def build_parser() -> argparse.ArgumentParser:
     release_suite_parser.add_argument(
         "--required-warmup-observations", type=int, default=253
     )
+    release_suite_parser.add_argument(
+        "--defer-cohorts",
+        action="store_true",
+        help="Execute a resumable batch without publishing partial ranking cohorts",
+    )
     release_suite_parser.set_defaults(
         handler=lambda args: _experiment_run_release_suite(
             tuple(args.target_path_artifact_id),
@@ -1780,6 +1795,7 @@ def build_parser() -> argparse.ArgumentParser:
             args.suite_key,
             args.version,
             args.required_warmup_observations,
+            args.defer_cohorts,
         )
     )
 

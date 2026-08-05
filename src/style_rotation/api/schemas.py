@@ -740,6 +740,8 @@ class ComparisonCohortItem(ApiModel):
     context_fingerprint: str
     template_key: str
     initialization_policy: str
+    target_k: int
+    frequency: Literal["weekly", "monthly"]
     as_of_date: date
     common_data_ready_date: date
     common_simulation_start: date
