@@ -10,6 +10,8 @@ from datetime import date
 from pathlib import Path
 from typing import NoReturn
 
+from sqlalchemy import text
+
 from style_rotation import __version__
 from style_rotation.architecture import DOMAIN_BOUNDARIES
 from style_rotation.catalog.bootstrap import publish_catalogs
@@ -719,6 +721,8 @@ def _experiment_run_release_cell(
 
 def _experiment_run_release_suite(
     target_path_artifact_ids: tuple[str, ...],
+    target_engine_artifact_id: str | None,
+    expected_target_count: int | None,
     git_commit: str,
     dependency_lock_file: str,
     as_of_date: date,
@@ -735,6 +739,30 @@ def _experiment_run_release_suite(
     status = database_status(settings.database_url)
     if status.current_revision is None:
         raise ValueError("Database must be migrated before running a release suite")
+    if target_engine_artifact_id is not None:
+        with engine.connect() as connection:
+            selected_targets = tuple(
+                str(item)
+                for item in connection.execute(
+                    text(
+                        "SELECT target.artifact_id FROM strategy.portfolio_target_path target "
+                        "JOIN ops.engine_version engine ON engine.engine_version_id = "
+                        "target.engine_version_id JOIN lineage.artifact artifact ON "
+                        "artifact.artifact_id = target.artifact_id AND artifact.status = "
+                        "'published' WHERE engine.artifact_id = :engine ORDER BY "
+                        "target.artifact_id"
+                    ),
+                    {"engine": uuid.UUID(target_engine_artifact_id)},
+                ).scalars()
+            )
+        if expected_target_count is None:
+            raise ValueError("Target Engine selection requires --expected-target-count")
+        if len(selected_targets) != expected_target_count:
+            raise ValueError(
+                f"Target Engine resolved {len(selected_targets)} paths; "
+                f"expected {expected_target_count}"
+            )
+        target_path_artifact_ids = selected_targets
     lock_path = Path(dependency_lock_file)
     accounting = publish_accounting_engine(
         engine,
@@ -1760,9 +1788,10 @@ def build_parser() -> argparse.ArgumentParser:
         "run-release-suite",
         help="Execute published Strategy Targets across the formal cost and interval matrix",
     )
-    release_suite_parser.add_argument(
-        "--target-path-artifact-id", action="append", required=True
-    )
+    release_target_group = release_suite_parser.add_mutually_exclusive_group(required=True)
+    release_target_group.add_argument("--target-path-artifact-id", action="append")
+    release_target_group.add_argument("--target-engine-artifact-id")
+    release_suite_parser.add_argument("--expected-target-count", type=int)
     release_suite_parser.add_argument("--git-commit", required=True)
     release_suite_parser.add_argument(
         "--dependency-lock-file", default="requirements.lock"
@@ -1786,7 +1815,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     release_suite_parser.set_defaults(
         handler=lambda args: _experiment_run_release_suite(
-            tuple(args.target_path_artifact_id),
+            tuple(args.target_path_artifact_id or ()),
+            args.target_engine_artifact_id,
+            args.expected_target_count,
             args.git_commit,
             args.dependency_lock_file,
             args.as_of,

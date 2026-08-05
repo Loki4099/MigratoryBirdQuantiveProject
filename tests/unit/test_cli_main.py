@@ -151,6 +151,8 @@ class UnifiedCliTests(unittest.TestCase):
         self.assertEqual(result, 0)
         command.assert_called_once_with(
             tuple(target_ids),
+            None,
+            None,
             "abcdef0",
             "requirements.lock",
             date(2026, 8, 3),
@@ -160,6 +162,26 @@ class UnifiedCliTests(unittest.TestCase):
             1,
             253,
             True,
+        )
+
+    def test_experiment_release_suite_can_select_a_guarded_target_engine_grid(self) -> None:
+        engine_id = "00000000-0000-0000-0000-000000000099"
+        with patch(
+            "style_rotation.cli.main._experiment_run_release_suite", return_value=0
+        ) as command:
+            result = main(
+                [
+                    "experiment", "run-release-suite",
+                    "--target-engine-artifact-id", engine_id,
+                    "--expected-target-count", "630",
+                    "--git-commit", "abcdef0",
+                    "--as-of", "2026-08-03",
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with(
+            (), engine_id, 630, "abcdef0", "requirements.lock", date(2026, 8, 3),
+            None, None, "v02_formal_release", 1, 253, False,
         )
 
     def test_version_flag_uses_v02_package_version(self) -> None:
