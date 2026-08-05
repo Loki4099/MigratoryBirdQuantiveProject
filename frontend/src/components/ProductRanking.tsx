@@ -31,7 +31,7 @@ export function ProductRanking({ compact = false }: { compact?: boolean }) {
   return <section className={`product-ranking ${compact ? "compact" : ""}`}>
     <div className="section-heading"><div><p className="eyebrow">STRICT COMPARISON COHORT</p><h2>{t("ranking.title")}</h2></div>
       {!compact && <div className="ranking-controls">
-        <label>{t("ranking.cohort")}<select value={data.active_cohort_artifact_id ?? ""} onChange={(event) => setCohortId(event.target.value)}>{data.cohorts.map((cohort) => <option key={cohort.artifact_id} value={cohort.artifact_id}>{cohort.name} · v{cohort.version_number}</option>)}</select></label>
+        <label>{t("ranking.cohort")}<select value={data.active_cohort_artifact_id ?? ""} onChange={(event) => setCohortId(event.target.value)}>{data.cohorts.map((cohort) => <option key={cohort.artifact_id} value={cohort.artifact_id}>{researchLabel(cohort.template_key, i18n.resolvedLanguage)} · {cohort.cost_bps_per_side} bps · {cohort.common_simulation_start}</option>)}</select></label>
         <label>{t("ranking.metric")}<select value={metric} onChange={(event) => setMetric(event.target.value)}><option value="net_sharpe">{t("ranking.netSharpe")}</option><option value="net_cagr">{t("ranking.netCagr")}</option><option value="relative_wealth_growth">{t("ranking.relativeGrowth")}</option><option value="maximum_drawdown">{t("ranking.drawdown")}</option><option value="calmar">{t("ranking.calmar")}</option></select></label>
       </div>}
     </div>

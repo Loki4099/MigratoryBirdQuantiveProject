@@ -4,7 +4,7 @@ Versioned research platform for explainable US style rotation across IWF, IWD, I
 
 ## Status
 
-v0.2.0 has completed its M0–M9 implementation baseline. The platform includes immutable publication, typed market data, independent Factor/Signal/Model diagnostics, Strategy Products and Target Paths, reproducible SPY-benchmarked experiments, strict comparison cohorts, bilingual read-only pages, decision-level lineage, and checksum-verified PostgreSQL backup/restore testing.
+The M0–M9 architecture is implemented, but the v0.2.0 release is still being corrected and populated. The current formal display database contains one long-history canonical suite with 90 accepted cells: one five-dimension model, three Strategy variants, weekly/monthly schedules, 2/5/10 bps costs, and full/trailing 10/5/3/1-year intervals. Full population of every registered Model and K=1/3 sensitivity configuration remains a release task and must not be represented as complete.
 
 The authoritative plan is [v0.2/正式开发方案.md](v0.2/正式开发方案.md). Detailed decisions and database rationale are stored in [v0.2/设计决策记录.md](v0.2/设计决策记录.md) and [v0.2/数据库设计.md](v0.2/数据库设计.md).
 
@@ -70,14 +70,14 @@ Publish the catalogs idempotently and inspect their immutable lineage:
 style-rotation bootstrap catalogs
 style-rotation bootstrap scope
 style-rotation bootstrap data-contracts
-style-rotation data calendar --start 2000-01-01 --end 2026-12-31
-style-rotation data fetch --start 2000-01-01 --end 2026-08-03
+style-rotation data calendar --start 2006-08-07 --end 2026-08-03
+style-rotation data fetch --start 2006-08-07 --end 2026-08-03
 style-rotation data publish-market --snapshot-artifact-id <uuid> --calendar-artifact-id <uuid> --version 1
 style-rotation data publish-rate --snapshot-artifact-id <uuid> --version 1
 style-rotation bootstrap reserve-model
 style-rotation data publish-reserve --rate-dataset-artifact-id <uuid> --calendar-artifact-id <uuid> --model-artifact-id <uuid> --version 1
 style-rotation data publish-bundle --market-artifact-id <uuid> --rate-artifact-id <uuid> --reserve-artifact-id <uuid> --calendar-artifact-id <uuid> --version 1
-style-rotation data publish-eligibility --universe-artifact-id <uuid> --requirement-artifact-id <uuid> --bundle-artifact-id <uuid> --start 2010-01-01 --end 2026-08-03 --warmup-observations 253 --version 1
+style-rotation data publish-eligibility --universe-artifact-id <uuid> --requirement-artifact-id <uuid> --bundle-artifact-id <uuid> --start 2007-08-08 --end 2026-08-03 --warmup-observations 253 --version 1
 style-rotation factor bootstrap --catalog-file v0.2/catalogs/factors.v0.2.0.json
 style-rotation factor bootstrap-engine --git-commit <hex-commit> --dependency-lock-file requirements.lock --version 1
 style-rotation factor publish --factor-catalog-artifact-id <uuid> --bundle-artifact-id <uuid> --eligibility-artifact-id <uuid> --engine-artifact-id <uuid>
@@ -98,6 +98,7 @@ style-rotation strategy bootstrap --catalog-file v0.2/catalogs/strategies.v0.2.0
 style-rotation strategy publish-product --strategy-catalog-artifact-id <uuid> --model-catalog-artifact-id <uuid> --universe-artifact-id <uuid> --model-specification-key <key> --strategy-variant-key <key> --schedule-key <key>
 style-rotation strategy bootstrap-target-engine --git-commit <hex-commit> --dependency-lock-file requirements.lock --version 1
 style-rotation strategy publish-target --product-artifact-id <uuid> --model-dataset-artifact-id <uuid> --target-engine-artifact-id <uuid> [--auxiliary-signal-dataset-artifact-id <uuid>]
+style-rotation strategy publish-grid --strategy-catalog-artifact-id <uuid> --model-catalog-artifact-id <uuid> --universe-artifact-id <uuid> --data-bundle-artifact-id <uuid> --eligibility-artifact-id <uuid> --target-engine-artifact-id <uuid> --auxiliary-signal-dataset-artifact-id <uuid> [--model-specification-key <key>] [--k 2] [--frequency weekly]
 style-rotation experiment bootstrap-accounting-engine --git-commit <hex-commit> --dependency-lock-file requirements.lock --version 1
 style-rotation experiment publish-gross --target-path-artifact-id <uuid> --accounting-engine-artifact-id <uuid>
 style-rotation experiment bootstrap-cost-model --version 1
@@ -105,7 +106,7 @@ style-rotation experiment publish-net --gross-path-artifact-id <uuid> --cost-sce
 style-rotation experiment bootstrap-benchmarks --version 1
 style-rotation experiment bootstrap-benchmark-engine --git-commit <hex-commit> --dependency-lock-file requirements.lock --version 1
 style-rotation experiment publish-benchmark-target --reference-target-artifact-id <uuid> --benchmark-version-artifact-id <uuid> --benchmark-engine-artifact-id <uuid>
-style-rotation experiment run-release-cell --target-path-artifact-id <uuid> --git-commit <hex-commit> --as-of 2026-08-03 --interval full_history --cost-bps 5 --suite-key v02_release_weekly
+style-rotation experiment run-release-suite --target-path-artifact-id <uuid> [--target-path-artifact-id <uuid> ...] --git-commit <hex-commit> --as-of 2026-08-03 --suite-key v02_formal_release
 style-rotation backup create --output artifacts/v0.2-release.dump --git-commit <hex-commit> --docker-service postgres
 style-rotation backup restore-test --backup-record-id <uuid> --docker-service postgres
 style-rotation artifact list
@@ -116,6 +117,11 @@ style-rotation lineage show <artifact-uuid>
 `publish-market` and `publish-rate` parse source evidence into typed canonical datasets. Reserve
 accrual, bundles, and eligibility are separate explicit publications, so formal research never
 selects a runtime `latest` dataset or silently changes its warmup requirement.
+
+The pinned `exchange-calendars` XNYS schedule begins on 2006-08-07. A formal market dataset must
+not include earlier sessions that cannot be validated against that calendar, and its calendar end
+must equal the fixed data as-of date. The research start follows the 253-session common warm-up;
+it is not the raw-data start.
 
 Build the React application and run the combined local service:
 

@@ -70,6 +70,12 @@ from style_rotation.experiment.performance_publication import (
     publish_performance_metric_catalog,
 )
 from style_rotation.experiment.publication import GrossPathPublicationService
+from style_rotation.experiment.release import (
+    FORMAL_COSTS_BPS,
+    FORMAL_INTERVALS,
+    build_release_cells,
+    run_release_suite,
+)
 from style_rotation.experiment.suite_publication import (
     ExperimentCellRequest,
     publish_experiment_suite,
@@ -108,6 +114,7 @@ from style_rotation.strategy.engine import (
     build_strategy_target_engine_spec,
     publish_strategy_target_engine,
 )
+from style_rotation.strategy.grid import publish_strategy_target_grid
 from style_rotation.strategy.product_service import publish_strategy_product
 from style_rotation.strategy.service import publish_strategy_catalog
 from style_rotation.strategy.target_publication import StrategyTargetPublicationService
@@ -473,6 +480,37 @@ def _strategy_publish_target(
     return 0
 
 
+def _strategy_publish_grid(
+    strategy_catalog_artifact_id: str,
+    model_catalog_artifact_id: str,
+    universe_artifact_id: str,
+    data_bundle_artifact_id: str,
+    eligibility_artifact_id: str,
+    target_engine_artifact_id: str,
+    auxiliary_signal_dataset_artifact_id: str,
+    model_specification_keys: tuple[str, ...] | None,
+    k_values: tuple[int, ...],
+    frequencies: tuple[str, ...],
+) -> int:
+    result = publish_strategy_target_grid(
+        create_postgres_engine(get_settings().database_url),
+        strategy_catalog_artifact_id=uuid.UUID(strategy_catalog_artifact_id),
+        model_catalog_artifact_id=uuid.UUID(model_catalog_artifact_id),
+        universe_artifact_id=uuid.UUID(universe_artifact_id),
+        data_bundle_artifact_id=uuid.UUID(data_bundle_artifact_id),
+        eligibility_artifact_id=uuid.UUID(eligibility_artifact_id),
+        target_engine_artifact_id=uuid.UUID(target_engine_artifact_id),
+        auxiliary_signal_dataset_artifact_id=uuid.UUID(
+            auxiliary_signal_dataset_artifact_id
+        ),
+        model_specification_keys=model_specification_keys,
+        k_values=k_values,
+        frequencies=frequencies,
+    )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
 def _experiment_bootstrap_accounting_engine(
     git_commit: str, dependency_lock_file: str, version_number: int
 ) -> int:
@@ -609,9 +647,11 @@ def _experiment_run_release_cell(
             git_commit, lock_path, status.current_revision, version_number=version_number
         ),
     )
-    costs = publish_cost_catalog(engine, version_number=version_number)
-    benchmarks = publish_benchmark_catalog(engine, version_number=version_number)
-    metrics = publish_performance_metric_catalog(engine, version_number=version_number)
+    # Cost, benchmark, and metric semantics are independent from engine/release revisions.
+    # Reuse their frozen v1 identities until those definitions actually change.
+    costs = publish_cost_catalog(engine, version_number=1)
+    benchmarks = publish_benchmark_catalog(engine, version_number=1)
+    metrics = publish_performance_metric_catalog(engine, version_number=1)
     cost = next(item for item in costs.scenarios if item.cost_bps_per_side == cost_bps)
     benchmark = next(
         item for item in benchmarks.benchmarks if item.benchmark_key == "spy_buy_and_hold"
@@ -670,6 +710,84 @@ def _experiment_run_release_cell(
             ensure_ascii=False,
         )
     )
+    return 0
+
+
+def _experiment_run_release_suite(
+    target_path_artifact_ids: tuple[str, ...],
+    git_commit: str,
+    dependency_lock_file: str,
+    as_of_date: date,
+    template_keys: tuple[str, ...] | None,
+    costs_bps: tuple[int, ...] | None,
+    suite_key: str,
+    version_number: int,
+    required_warmup_observations: int,
+) -> int:
+    """Publish and execute the formal target × cost × interval release matrix."""
+    settings = get_settings()
+    engine = create_postgres_engine(settings.database_url)
+    status = database_status(settings.database_url)
+    if status.current_revision is None:
+        raise ValueError("Database must be migrated before running a release suite")
+    lock_path = Path(dependency_lock_file)
+    accounting = publish_accounting_engine(
+        engine,
+        build_accounting_engine_spec(
+            git_commit, lock_path, status.current_revision, version_number=version_number
+        ),
+    )
+    benchmark_engine = publish_benchmark_target_engine(
+        engine,
+        build_benchmark_target_engine_spec(
+            git_commit, lock_path, status.current_revision, version_number=version_number
+        ),
+    )
+    performance_engine = publish_performance_engine(
+        engine,
+        build_performance_engine_spec(
+            git_commit, lock_path, status.current_revision, version_number=version_number
+        ),
+    )
+    orchestration_engine = publish_orchestration_engine(
+        engine,
+        build_orchestration_engine_spec(
+            git_commit, lock_path, status.current_revision, version_number=version_number
+        ),
+    )
+    # Catalog identities must not be coupled to the code-engine or suite version.
+    costs = publish_cost_catalog(engine, version_number=1)
+    benchmarks = publish_benchmark_catalog(engine, version_number=1)
+    metrics = publish_performance_metric_catalog(engine, version_number=1)
+    benchmark = next(
+        item for item in benchmarks.benchmarks if item.benchmark_key == "spy_buy_and_hold"
+    )
+    cost_artifacts = {
+        int(item.cost_bps_per_side): item.artifact_id for item in costs.scenarios
+    }
+    intervals = tuple(template_keys or FORMAL_INTERVALS)
+    selected_costs = tuple(costs_bps or FORMAL_COSTS_BPS)
+    cells = build_release_cells(
+        target_path_artifact_ids=tuple(uuid.UUID(item) for item in target_path_artifact_ids),
+        benchmark_version_artifact_id=benchmark.version_artifact_id,
+        cost_scenario_artifacts=cost_artifacts,
+        metric_catalog_artifact_id=metrics.artifact_id,
+        accounting_engine_artifact_id=accounting.artifact_id,
+        benchmark_engine_artifact_id=benchmark_engine.artifact_id,
+        performance_engine_artifact_id=performance_engine.artifact_id,
+        as_of_date=as_of_date,
+        intervals=intervals,  # type: ignore[arg-type]
+        costs_bps=selected_costs,
+    )
+    result = run_release_suite(
+        engine,
+        suite_key=suite_key,
+        cells=cells,
+        orchestration_engine_artifact_id=orchestration_engine.artifact_id,
+        required_warmup_observations=required_warmup_observations,
+        version_number=version_number,
+    )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     return 0
 
 
@@ -1483,6 +1601,40 @@ def build_parser() -> argparse.ArgumentParser:
             args.auxiliary_signal_dataset_artifact_id,
         )
     )
+    strategy_grid_parser = strategy_subparsers.add_parser(
+        "publish-grid",
+        help="Publish a recoverable Model × Strategy × K × frequency target matrix",
+    )
+    strategy_grid_parser.add_argument("--strategy-catalog-artifact-id", required=True)
+    strategy_grid_parser.add_argument("--model-catalog-artifact-id", required=True)
+    strategy_grid_parser.add_argument("--universe-artifact-id", required=True)
+    strategy_grid_parser.add_argument("--data-bundle-artifact-id", required=True)
+    strategy_grid_parser.add_argument("--eligibility-artifact-id", required=True)
+    strategy_grid_parser.add_argument("--target-engine-artifact-id", required=True)
+    strategy_grid_parser.add_argument(
+        "--auxiliary-signal-dataset-artifact-id", required=True
+    )
+    strategy_grid_parser.add_argument("--model-specification-key", action="append")
+    strategy_grid_parser.add_argument(
+        "--k", action="append", type=int, choices=(1, 2, 3), default=None
+    )
+    strategy_grid_parser.add_argument(
+        "--frequency", action="append", choices=("weekly", "monthly"), default=None
+    )
+    strategy_grid_parser.set_defaults(
+        handler=lambda args: _strategy_publish_grid(
+            args.strategy_catalog_artifact_id,
+            args.model_catalog_artifact_id,
+            args.universe_artifact_id,
+            args.data_bundle_artifact_id,
+            args.eligibility_artifact_id,
+            args.target_engine_artifact_id,
+            args.auxiliary_signal_dataset_artifact_id,
+            tuple(args.model_specification_key) if args.model_specification_key else None,
+            tuple(args.k) if args.k else (2,),
+            tuple(args.frequency) if args.frequency else ("weekly", "monthly"),
+        )
+    )
 
     experiment_parser = subparsers.add_parser(
         "experiment", help="Publish versioned portfolio accounting paths"
@@ -1574,7 +1726,7 @@ def build_parser() -> argparse.ArgumentParser:
     release_cell_parser.add_argument("--as-of", required=True, type=_parse_date)
     release_cell_parser.add_argument(
         "--interval",
-        choices=("full_history", "recent_10y", "recent_5y", "recent_3y", "recent_1y"),
+        choices=FORMAL_INTERVALS,
         default="full_history",
     )
     release_cell_parser.add_argument("--cost-bps", choices=(2, 5, 10), type=int, default=5)
@@ -1589,6 +1741,42 @@ def build_parser() -> argparse.ArgumentParser:
             args.as_of,
             args.interval,
             args.cost_bps,
+            args.suite_key,
+            args.version,
+            args.required_warmup_observations,
+        )
+    )
+    release_suite_parser = experiment_subparsers.add_parser(
+        "run-release-suite",
+        help="Execute published Strategy Targets across the formal cost and interval matrix",
+    )
+    release_suite_parser.add_argument(
+        "--target-path-artifact-id", action="append", required=True
+    )
+    release_suite_parser.add_argument("--git-commit", required=True)
+    release_suite_parser.add_argument(
+        "--dependency-lock-file", default="requirements.lock"
+    )
+    release_suite_parser.add_argument("--as-of", required=True, type=_parse_date)
+    release_suite_parser.add_argument(
+        "--interval", action="append", choices=FORMAL_INTERVALS
+    )
+    release_suite_parser.add_argument(
+        "--cost-bps", action="append", choices=FORMAL_COSTS_BPS, type=int
+    )
+    release_suite_parser.add_argument("--suite-key", default="v02_formal_release")
+    release_suite_parser.add_argument("--version", type=int, default=1)
+    release_suite_parser.add_argument(
+        "--required-warmup-observations", type=int, default=253
+    )
+    release_suite_parser.set_defaults(
+        handler=lambda args: _experiment_run_release_suite(
+            tuple(args.target_path_artifact_id),
+            args.git_commit,
+            args.dependency_lock_file,
+            args.as_of,
+            tuple(args.interval) if args.interval else None,
+            tuple(args.cost_bps) if args.cost_bps else None,
             args.suite_key,
             args.version,
             args.required_warmup_observations,

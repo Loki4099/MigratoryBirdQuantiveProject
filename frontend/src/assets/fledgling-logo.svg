@@ -1,9 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img">
-  <title>Migratory Bird Lab fledgling</title>
-  <path fill="#f4edda" d="M13 38c0-14 9-25 22-25 10 0 18 6 20 16 2 11-4 23-15 27-13 5-27-3-27-18Z"/>
-  <path fill="#d7cba5" d="M42 18c9 5 13 15 9 25-3 8-10 13-19 14 12 2 24-5 26-18 2-10-4-19-16-21Z"/>
-  <path fill="#173f35" d="M25 24a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
-  <path fill="#d99a3b" d="m31 24 14 3-13 5Z"/>
-  <path fill="none" stroke="#173f35" stroke-linecap="round" stroke-width="3" d="M25 40c5-8 12-10 20-9-4 7-10 12-20 9Z"/>
-  <path fill="none" stroke="#f4edda" stroke-linecap="round" stroke-width="4" d="M35 38c3-9 8-16 15-21"/>
+  <title>Migratory Bird Lab fledgling, facing left</title>
+  <path fill="#d99a3b" d="M18 22 5 28l14 4c2-3 2-7-1-10Z"/>
+  <path fill="#f4edda" d="M16 28c0-11 8-19 19-19 8 0 14 4 17 11 7 4 10 11 8 19-2 11-12 18-25 17-14-1-22-10-19-28Z"/>
+  <path fill="#d7cba5" d="M47 18c9 6 12 16 8 25-4 8-12 13-22 13 12 3 25-3 28-15 3-11-3-21-14-23Z"/>
+  <circle cx="24" cy="22" r="3" fill="#173f35"/>
+  <path fill="#e6dcc0" stroke="#173f35" stroke-linejoin="round" stroke-width="2.4" d="M32 34c7-5 15-4 20 1-5 8-12 12-21 11 4-4 5-8 1-12Z"/>
+  <path fill="none" stroke="#173f35" stroke-linecap="round" stroke-width="2.4" d="M21 37c2 4 5 6 9 6"/>
+  <path fill="none" stroke="#d99a3b" stroke-linecap="round" stroke-width="2.4" d="M31 55v4m10-4v4"/>
 </svg>

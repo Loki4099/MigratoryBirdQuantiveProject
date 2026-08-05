@@ -29,10 +29,15 @@ export function ExperimentsPage() {
   const overview = useQuery({ queryKey: ["experiments", "overview"], queryFn: api.experimentOverview });
   const [searchParams, setSearchParams] = useSearchParams();
   const [status, setStatus] = useState("all");
+  const [interval, setInterval] = useState("full_history");
+  const [frequency, setFrequency] = useState("weekly");
+  const [cost, setCost] = useState("5");
   const [resultId, setResultId] = useState(searchParams.get("result") ?? "");
   const specifications = useMemo(() => overview.data?.specifications.filter(
-    (item) => status === "all" || item.status === status,
-  ) ?? [], [overview.data, status]);
+    (item) => (status === "all" || item.status === status) &&
+      item.template_key === interval && item.frequency === frequency &&
+      String(item.cost_bps_per_side) === cost,
+  ) ?? [], [overview.data, status, interval, frequency, cost]);
   const activeResultId = resultId || specifications.find((item) => item.result_artifact_id)?.result_artifact_id || "";
   const detail = useQuery({
     queryKey: ["experiments", "result", activeResultId],
@@ -59,7 +64,12 @@ export function ExperimentsPage() {
 
     <section className="catalog-section">
       <div className="section-heading"><div><p className="eyebrow">COMPARABLE MARKET ASSUMPTIONS</p><h2>{t("experiment.cells")}</h2></div>
-        <label className="experiment-filter">{t("common.status")}<select value={status} onChange={(event) => setStatus(event.target.value)}><option value="all">{t("experiment.all")}</option><option value="accepted">{t("experiment.accepted")}</option><option value="failed">{t("experiment.failed")}</option><option value="pending">{t("experiment.pending")}</option></select></label>
+        <div className="experiment-filters">
+          <label className="experiment-filter">{t("experiment.interval")}<select value={interval} onChange={(event) => setInterval(event.target.value)}>{["full_history", "trailing_10_years", "trailing_5_years", "trailing_3_years", "trailing_1_year"].map((key) => <option key={key} value={key}>{researchLabel(key, i18n.resolvedLanguage)}</option>)}</select></label>
+          <label className="experiment-filter">{t("experiment.frequency")}<select value={frequency} onChange={(event) => setFrequency(event.target.value)}>{["weekly", "monthly"].map((key) => <option key={key} value={key}>{researchLabel(key, i18n.resolvedLanguage)}</option>)}</select></label>
+          <label className="experiment-filter">{t("experiment.cost")}<select value={cost} onChange={(event) => setCost(event.target.value)}>{["2", "5", "10"].map((value) => <option key={value} value={value}>{value} bps</option>)}</select></label>
+          <label className="experiment-filter">{t("common.status")}<select value={status} onChange={(event) => setStatus(event.target.value)}><option value="all">{t("experiment.all")}</option><option value="accepted">{t("experiment.accepted")}</option><option value="failed">{t("experiment.failed")}</option><option value="pending">{t("experiment.pending")}</option></select></label>
+        </div>
       </div>
       <p className="scope-note">{t("experiment.comparisonNote")}</p>
       <div className="experiment-table">

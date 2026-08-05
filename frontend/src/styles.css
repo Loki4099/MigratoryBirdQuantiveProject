@@ -16,6 +16,7 @@
 
 .experiment-filter { display: grid; gap: .35rem; color: var(--muted); font-size: .75rem; }
 .experiment-filter select { min-width: 9rem; }
+.experiment-filters { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .65rem; }
 .experiment-table { display: grid; gap: .35rem; overflow-x: auto; }
 .experiment-table-head, .experiment-table > button { min-width: 980px; display: grid; grid-template-columns: 2.1fr 1.45fr repeat(4, .75fr) .7fr; gap: .75rem; align-items: center; }
 .experiment-table-head { padding: 0 .9rem .45rem; color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }

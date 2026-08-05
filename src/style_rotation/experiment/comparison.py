@@ -31,6 +31,35 @@ class ComparisonCohortPublication:
     reused: bool
 
 
+@dataclass(frozen=True, slots=True)
+class ComparableResultGroup:
+    context_fingerprint: str
+    result_artifact_ids: tuple[uuid.UUID, ...]
+
+
+def group_comparable_results(
+    engine: Engine, result_artifact_ids: tuple[uuid.UUID, ...]
+) -> tuple[ComparableResultGroup, ...]:
+    """Partition eligible accepted results by the exact cohort market context.
+
+    Excluded interval results deliberately remain part of their Experiment Suite but cannot
+    enter a product ranking cohort.
+    """
+    ordered = tuple(sorted(set(result_artifact_ids), key=str))
+    if not ordered:
+        return ()
+    with engine.connect() as connection:
+        contexts = _load_result_contexts(connection, ordered)
+    grouped: dict[str, list[uuid.UUID]] = {}
+    for row in contexts:
+        fingerprint = sha256_hexdigest(_context_payload(row))
+        grouped.setdefault(fingerprint, []).append(row["result_artifact_id"])
+    return tuple(
+        ComparableResultGroup(fingerprint, tuple(result_ids))
+        for fingerprint, result_ids in sorted(grouped.items())
+    )
+
+
 def publish_warmup_policy(
     engine: Engine,
     *,

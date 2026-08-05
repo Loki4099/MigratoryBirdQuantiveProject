@@ -103,7 +103,7 @@ class UnifiedCliTests(unittest.TestCase):
                     "--as-of",
                     "2026-08-03",
                     "--interval",
-                    "recent_3y",
+                    "trailing_3_years",
                     "--cost-bps",
                     "10",
                     "--suite-key",
@@ -116,9 +116,46 @@ class UnifiedCliTests(unittest.TestCase):
             "abcdef0",
             "requirements.lock",
             date(2026, 8, 3),
-            "recent_3y",
+            "trailing_3_years",
             10,
             "v02_release_weekly",
+            1,
+            253,
+        )
+
+    def test_experiment_release_suite_defaults_to_formal_matrix(self) -> None:
+        target_ids = [
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000002",
+        ]
+        with patch(
+            "style_rotation.cli.main._experiment_run_release_suite", return_value=0
+        ) as command:
+            result = main(
+                [
+                    "experiment",
+                    "run-release-suite",
+                    "--target-path-artifact-id",
+                    target_ids[0],
+                    "--target-path-artifact-id",
+                    target_ids[1],
+                    "--git-commit",
+                    "abcdef0",
+                    "--as-of",
+                    "2026-08-03",
+                    "--suite-key",
+                    "v02_formal",
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with(
+            tuple(target_ids),
+            "abcdef0",
+            "requirements.lock",
+            date(2026, 8, 3),
+            None,
+            None,
+            "v02_formal",
             1,
             253,
         )

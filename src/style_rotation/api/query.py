@@ -1565,7 +1565,18 @@ class ArtifactQueryService:
                                                       cohort.cost_scenario_id
                 JOIN experiment.warmup_policy_version warmup ON
                      warmup.warmup_policy_version_id = cohort.warmup_policy_version_id
-                ORDER BY cohort.created_at DESC, cohort.cohort_key
+                ORDER BY
+                    CASE cohort.template_key
+                        WHEN 'full_history' THEN 0
+                        WHEN 'trailing_10_years' THEN 1
+                        WHEN 'trailing_5_years' THEN 2
+                        WHEN 'trailing_3_years' THEN 3
+                        WHEN 'trailing_1_year' THEN 4
+                        ELSE 5
+                    END,
+                    CASE cost.cost_bps_per_side WHEN 5 THEN 0 WHEN 2 THEN 1 ELSE 2 END,
+                    cohort.common_simulation_start,
+                    cohort.cohort_key
             """)).mappings().all()
             if not cohorts:
                 return {

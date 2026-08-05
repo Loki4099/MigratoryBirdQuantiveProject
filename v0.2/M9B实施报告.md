@@ -1,10 +1,20 @@
 # M9B 实施报告：完整回测恢复、性能与数据库备份
 
-## 交付结论
+## 2026-08-05 纠偏结论
+
+项目所有者在前端验收中发现：数据库只有一个结果，“全历史”实际仅覆盖约两年。复核确认 `run-release-cell` 只是一条纵向冒烟路径，不能作为正式参数空间已完成的证据；原 M9 完成判断撤回。
+
+本轮新增 `strategy publish-grid` 和 `experiment run-release-suite`。后者按显式 Strategy Target 集合展开 3 种成本和 full/trailing 10/5/3/1-year 五个 carry-in 区间，历史不足结果保留为 excluded，eligible 结果按严格上下文自动分组。修复了旧 CLI 使用非正式 `recent_*` 区间键、不同发布域共用一个版本号，以及 10 bps 实盘长小数写入时 NUMERIC(38,24) 独立舍入导致成本对账约束失败的问题。
+
+当前正式展示数据使用 2006-08-07 至 2026-08-03 的 XNYS 可验证市场历史，253 个共同交易日暖机后研究起点为 2007-08-08。首批 canonical 套件包含一个五维等权模型、三种策略、K=2、周/月频、三种成本与五个区间，共 90/90 accepted、90/90 eligible、30 个严格 Cohort，每个 Cohort 有 3 个可比策略变体。旧两年单格与短历史语义套件已通过可追溯 invalidation 退出默认展示。
+
+这仍不是全部 35 个默认产品模型及 K=1/3 sensitivity 的完整物化，因此 v0.2.0 尚不能冻结。
+
+## 原 M9B 交付背景
 
 M9B 修复了一个发布层缺口：M7 的后端服务虽然已经能够计算完整实验，但正式 CLI 只暴露到 Benchmark Target。数据库被集成测试重建后，用户只能看到 Strategy Target，看不到 accepted Experiment Result、排行榜和 Decision Explorer。
 
-新增 `experiment run-release-cell` 后，一条命令可从指定的已发布 Strategy Target 出发，固定并发布 Accounting、Benchmark、Performance 和 Orchestration Engine，2/5/10 bps 成本模型、SPY 产品基准、Metric Catalog、Atomic Specification、Suite、accepted Result、统一暖机政策与严格 Comparison Cohort。命令不会猜测应代表发布版本的策略目标，调用者必须显式提供其 artifact ID。
+`experiment run-release-cell` 仍保留为单格冒烟与故障恢复工具，但不再作为正式发布完成入口。
 
 ## 已验证的真实结果
 

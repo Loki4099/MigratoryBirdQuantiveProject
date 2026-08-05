@@ -19,6 +19,7 @@ from style_rotation.lineage.service import ArtifactService, DependencyInput, Pub
 
 COST_MODEL_KEY = "linear_tradable_asset_notional"
 FORMAL_COST_BPS = (Decimal("2"), Decimal("5"), Decimal("10"))
+DATABASE_NUMERIC_QUANTUM = Decimal("0.000000000000000000000001")
 
 
 @dataclass(frozen=True, slots=True)
@@ -401,21 +402,29 @@ def _write_net_path(
             for row in result.daily_nav
         ],
     )
+    execution_cost_rows = []
+    for row in result.execution_costs:
+        pretrade = row.net_pretrade_nav.quantize(DATABASE_NUMERIC_QUANTUM)
+        fraction = row.cost_fraction.quantize(DATABASE_NUMERIC_QUANTUM)
+        # Derive the stored amount from the stored operands. PostgreSQL NUMERIC(38, 24)
+        # otherwise rounds all three independently and can violate exact reconciliation at
+        # the final decimal place even though the unrounded accounting result is correct.
+        stored_amount = (pretrade * fraction).quantize(DATABASE_NUMERIC_QUANTUM)
+        execution_cost_rows.append(
+            {
+                "path": path_id,
+                "execution": context.execution_ids[row.execution_date],
+                "pretrade": pretrade,
+                "notional": row.gross_traded_notional.quantize(DATABASE_NUMERIC_QUANTUM),
+                "fraction": fraction,
+                "amount": stored_amount,
+            }
+        )
     connection.execute(
         text(
             "INSERT INTO experiment.execution_cost (net_cost_path_id, portfolio_execution_id, net_pretrade_nav, gross_traded_notional, cost_fraction, cost_amount) VALUES (:path, :execution, :pretrade, :notional, :fraction, :amount)"
         ),
-        [
-            {
-                "path": path_id,
-                "execution": context.execution_ids[row.execution_date],
-                "pretrade": row.net_pretrade_nav,
-                "notional": row.gross_traded_notional,
-                "fraction": row.cost_fraction,
-                "amount": row.cost_amount,
-            }
-            for row in result.execution_costs
-        ],
+        execution_cost_rows,
     )
 
 
