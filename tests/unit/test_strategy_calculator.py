@@ -116,6 +116,17 @@ def test_pre_selection_filter_backfills_with_lower_ranked_eligible_asset() -> No
     assert result.positions[1].reason == "trend_ineligible"
 
 
+def test_k3_unfilled_trend_slots_close_asset_and_reserve_budget_exactly() -> None:
+    points = _points(("1", ".5", "0", "-.5"))
+    states = {item.asset_id: "negative" for item in points}
+    states[points[0].asset_id] = "positive"
+    states[points[1].asset_id] = "positive"
+    result = calculate_target(_variant("filter_then_rank_select", trend=True, k=3), points, states)
+    assert sum(item.target_weight for item in result.positions) + result.reserve_target_weight == 1
+    assert result.actual_holding_count == 2
+    assert result.reserve_target_weight == Decimal("0.333333333333333334")
+
+
 def test_missing_trend_state_is_error_not_reserve() -> None:
     points = _points(("1", ".5", "0", "-.5"))
     with pytest.raises(StrategyCalculationError, match="one state for every candidate"):

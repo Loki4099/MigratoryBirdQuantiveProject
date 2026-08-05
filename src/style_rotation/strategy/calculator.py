@@ -192,17 +192,19 @@ def _slot_weights(
         if len(group) > remaining_slots:
             boundary_tie_count = len(group)
         remaining_slots -= consumed
-    if remaining_slots == 0 and weights:
+    if weights:
         # NUMERIC(24,18) cannot represent thirds exactly.  Round every slot down at the
-        # storage scale, then assign only the microscopic arithmetic residual (<= n e-18)
-        # to a deterministic selected row.  This never changes selection or tie membership.
+        # storage scale.  When all slots are filled, assign only the microscopic arithmetic
+        # residual (<= n e-18) to a deterministic selected row.  Otherwise the unfilled
+        # budget becomes an exactly derived reserve weight in calculate_target().
         weights = {
             asset_id: weight.quantize(WEIGHT_QUANTUM, rounding=ROUND_DOWN)
             for asset_id, weight in weights.items()
         }
-        residual = ONE - sum(weights.values(), ZERO)
-        residual_asset = min(weights, key=str)
-        weights[residual_asset] += residual
+        if remaining_slots == 0:
+            residual = ONE - sum(weights.values(), ZERO)
+            residual_asset = min(weights, key=str)
+            weights[residual_asset] += residual
     return weights, boundary_tie_count
 
 
