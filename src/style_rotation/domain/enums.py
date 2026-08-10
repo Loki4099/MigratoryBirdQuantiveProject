@@ -8,6 +8,52 @@ class RunStatus(StrEnum):
     FAILED = "failed"
 
 
+class WorkItemStatus(StrEnum):
+    QUEUED = "queued"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+    REUSED = "reused"
+
+
+class WorkFailureClass(StrEnum):
+    INFRASTRUCTURE = "infrastructure"
+    INTERRUPTED = "interrupted"
+    DATA_QUALITY = "data_quality"
+    CAPACITY = "capacity"
+    CONTRACT = "contract"
+
+
+class ProductLifecycle(StrEnum):
+    ACTIVE = "active"
+    SUSPENDED = "suspended"
+    RETIRED = "retired"
+    INVALIDATED = "invalidated"
+
+
+class ProductHealth(StrEnum):
+    OBSERVING = "observing"
+    HEALTHY = "healthy"
+    WATCH = "watch"
+    WARNING = "warning"
+    DATA_INTERRUPTED = "data_interrupted"
+
+
+class AlertStatus(StrEnum):
+    OPEN = "open"
+    ACKNOWLEDGED = "acknowledged"
+    RESOLVED = "resolved"
+    SUPERSEDED = "superseded"
+
+
+class ReviewDecision(StrEnum):
+    CONTINUE = "continue"
+    SUSPEND = "suspend"
+    RETIRE = "retire"
+    REPLACE = "replace"
+
+
 class ExperimentStatus(StrEnum):
     DRAFT = "draft"
     RUNNING = "running"

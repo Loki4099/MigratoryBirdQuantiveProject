@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Sequence
+from datetime import date
 from decimal import Decimal
 from typing import Any, cast
 
@@ -10,18 +11,167 @@ from sqlalchemy.engine import RowMapping
 
 from style_rotation.experiment.compare import classify_comparison
 from style_rotation.experiment.ranking import RankableValue, competition_ranks
+from style_rotation.experiment.result_payload import hydrate_cell_result_row
+from style_rotation.workspace.options import Frequency, build_workspace_options
+from style_rotation.workspace.preview import build_compile_preview
 
 _RANKING_METRICS = {
     "net_sharpe": ("strategy", "absolute", "sharpe_ratio", "higher_is_better"),
     "net_cagr": ("strategy", "absolute", "cagr", "higher_is_better"),
     "relative_wealth_growth": (
-        "relative", "relative", "annualized_relative_wealth_growth", "higher_is_better"
+        "relative",
+        "relative",
+        "annualized_relative_wealth_growth",
+        "higher_is_better",
     ),
-    "maximum_drawdown": (
-        "strategy", "absolute", "maximum_drawdown", "higher_is_better"
-    ),
+    "maximum_drawdown": ("strategy", "absolute", "maximum_drawdown", "higher_is_better"),
     "calmar": ("strategy", "absolute", "calmar_ratio", "higher_is_better"),
 }
+
+
+def _v021_overview_item(source: Any) -> dict[str, Any]:
+    row = dict(source)
+    run_status = row.get("run_status")
+    result_id = row.get("result_artifact_id")
+    if result_id is not None and row.get("availability_status") == "accepted":
+        status = "accepted"
+    elif result_id is not None or run_status == "failed":
+        status = "failed"
+    elif run_status == "running":
+        status = "running"
+    else:
+        status = "pending"
+    return {
+        key: row.get(key)
+        for key in (
+            "artifact_id",
+            "result_artifact_id",
+            "suite_artifact_id",
+            "suite_mode",
+            "cell_key",
+            "ordinal",
+            "product_key",
+            "model_specification_key",
+            "variant_key",
+            "frequency",
+            "benchmark_key",
+            "benchmark_category",
+            "cost_bps_per_side",
+            "template_key",
+            "initialization_policy",
+            "as_of_date",
+            "simulation_end",
+            "availability_status",
+            "quality_status",
+            "attempt_number",
+            "error_summary",
+        )
+    } | {"status": status, "core_metrics": _v021_core_metrics(row.get("metrics") or {})}
+
+
+def _v021_core_metrics(metrics: dict[str, Any]) -> dict[str, float | None]:
+    aliases = {
+        "net_cagr": "strategy.cagr",
+        "cagr": "strategy.cagr",
+        "net_sharpe": "strategy.sharpe_ratio",
+        "sharpe_ratio": "strategy.sharpe_ratio",
+        "maximum_drawdown": "strategy.maximum_drawdown",
+        "benchmark_cagr": "benchmark.cagr",
+        "annualized_relative_wealth_growth": "relative.annualized_relative_wealth_growth",
+        "mean_rank_ic": "predictive.mean_rank_ic",
+        "target_period_coverage": "predictive.target_period_coverage",
+        "nondegenerate_target_ratio": "predictive.nondegenerate_target_ratio",
+        "target_period_count": "predictive.target_period_count",
+        "aligned_target_period_count": "predictive.aligned_target_period_count",
+    }
+    result: dict[str, float | None] = {}
+    for key, value in metrics.items():
+        if isinstance(value, dict) and key in {"strategy", "benchmark", "relative"}:
+            for nested_key, nested_value in value.items():
+                if isinstance(nested_value, (int, float)) or nested_value is None:
+                    result[f"{key}.{nested_key}"] = (
+                        float(nested_value) if nested_value is not None else None
+                    )
+        elif isinstance(value, (int, float)) or value is None:
+            normalized = key if "." in key else aliases.get(key)
+            if normalized:
+                result[normalized] = float(value) if value is not None else None
+    return result
+
+
+def _v021_metric_items(metrics: dict[str, Any]) -> list[dict[str, Any]]:
+    core = _v021_core_metrics(metrics)
+    items: list[dict[str, Any]] = []
+    for composite, value in sorted(core.items()):
+        role, key = composite.split(".", 1)
+        items.append(
+            {
+                "series_role": role,
+                "metric_scope": (
+                    "predictive"
+                    if role == "predictive"
+                    else "relative"
+                    if role == "relative"
+                    else "absolute"
+                ),
+                "metric_key": key,
+                "name": key.replace("_", " ").title(),
+                "unit": "ratio",
+                "value": value,
+                "value_status": "defined" if value is not None else "undefined",
+                "reason_code": None if value is not None else "metric_not_defined",
+                "observation_count": int(metrics.get("observation_count", 0) or 0),
+            }
+        )
+    return items
+
+
+def _v021_nav_series(series: dict[str, Any]) -> list[dict[str, Any]]:
+    raw = series.get("nav_series") or series.get("nav") or series.get("gross_nav_series", [])
+    if not isinstance(raw, list):
+        return []
+    result: list[dict[str, Any]] = []
+    peak = 0.0
+    for point in raw:
+        if not isinstance(point, dict) or not point.get("nav_date"):
+            continue
+        strategy = _numeric(
+            point.get("strategy_wealth", point.get("net_nav", point.get("wealth"))), 1.0
+        )
+        benchmark = _numeric(point.get("benchmark_wealth", point.get("benchmark_nav")), 1.0)
+        peak = max(peak, strategy)
+        result.append(
+            {
+                "nav_date": point["nav_date"],
+                "strategy_wealth": strategy,
+                "benchmark_wealth": benchmark,
+                "excess_wealth": float(point.get("excess_wealth", strategy - benchmark + 1.0)),
+                "drawdown": float(
+                    point.get("drawdown", strategy / peak - 1.0 if peak > 0 else 0.0)
+                ),
+            }
+        )
+    # Product and Experiment detail charts have a fixed-size SVG viewport.  Sending
+    # every daily point made a normal 20-year Product response approach one MB and
+    # added more than a second of JSON validation/transfer without adding visible
+    # chart resolution.  Match the legacy result contract and retain endpoints.
+    return _downsample_points(result, maximum=600)
+
+
+def _numeric(value: Any, default: float) -> float:
+    return float(value) if isinstance(value, (int, float)) else default
+
+
+def _optional_date(value: Any) -> date | str | None:
+    return value if isinstance(value, (date, str)) else None
+
+
+def _search_terms(value: str | None) -> tuple[str, ...]:
+    if not value:
+        return ()
+    normalized = value.replace(",", " ").replace("，", " ").casefold()
+    return tuple(dict.fromkeys(term for term in normalized.split() if term))
+
 
 _STRATEGY_TARGET_SUMMARY_SQL = """
     SELECT path.artifact_id, product.artifact_id AS product_artifact_id,
@@ -48,6 +198,99 @@ _STRATEGY_TARGET_SUMMARY_SQL = """
                                                     product.rebalance_schedule_version_id
     WHERE true
 """
+
+_WORKSPACE_ASSET_SELECTION_SQL = """
+    SELECT security.security_id, profile.instrument_type, profile.tradability,
+           profile.maturity,
+           EXISTS (
+             SELECT 1 FROM data.daily_bar available_bar
+             JOIN data.dataset_publication available_publication
+               ON available_publication.dataset_publication_id =
+                  available_bar.dataset_publication_id
+             JOIN lineage.artifact available_artifact
+               ON available_artifact.artifact_id = available_publication.artifact_id
+             WHERE available_bar.asset_id = security.legacy_asset_id
+               AND available_artifact.status = 'published'
+           ) AS canonical_data_available,
+           (profile.tradability <> 'reference_only'
+            AND profile.target_maturity IN (
+                'research_ready','strategy_ready','product_eligible_input'
+            )
+            AND EXISTS (
+              SELECT 1 FROM data.daily_bar bar
+              JOIN data.dataset_publication publication
+                ON publication.dataset_publication_id = bar.dataset_publication_id
+              JOIN lineage.artifact data_artifact
+                ON data_artifact.artifact_id = publication.artifact_id
+              WHERE bar.asset_id = security.legacy_asset_id
+                AND data_artifact.status = 'published'
+            )) AS selectable,
+           false AS pit_sector_available
+    FROM catalog.security_profile profile
+    JOIN catalog.security security ON security.security_id = profile.security_id
+    JOIN catalog.asset_registry_release release
+      ON release.asset_registry_release_id = profile.asset_registry_release_id
+    JOIN lineage.artifact release_artifact ON release_artifact.artifact_id = release.artifact_id
+    WHERE security.security_id = ANY(:security_ids) AND release_artifact.status = 'published'
+      AND release.version_number = (
+        SELECT max(latest.version_number) FROM catalog.asset_registry_release latest
+        JOIN lineage.artifact latest_artifact ON latest_artifact.artifact_id = latest.artifact_id
+        WHERE latest_artifact.status = 'published'
+      )
+    ORDER BY security.security_id
+"""
+
+_PRODUCT_CANDIDATE_SQL = """
+    SELECT enrollment.product_enrollment_id AS enrollment_id,
+           version.artifact_id AS product_artifact_id,
+           qualification.artifact_id AS qualification_artifact_id,
+           version.product_key, version.version_number, enrollment.name,
+           model.preset_key AS model_preset_key,
+           strategy.strategy_family_key, strategy.strategy_preset_key,
+           compiled.asset_context_key, enrollment.lifecycle, enrollment.health,
+           enrollment.revision,
+           enrollment.activated_at, enrollment.monitoring_start_at, enrollment.updated_at,
+           snapshot.as_of_session AS latest_as_of_session,
+           snapshot.primary_nav, snapshot.stress_nav,
+           COALESCE(snapshot.metrics, '{}'::jsonb) AS latest_metrics,
+           COALESCE(qualification.gate_results -> 'warning_codes', '[]'::jsonb)
+             AS warning_codes,
+           (
+             SELECT count(*)::integer FROM product.product_alert alert
+             WHERE alert.product_enrollment_id = enrollment.product_enrollment_id
+               AND COALESCE((
+                 SELECT event.to_status FROM product.product_alert_event event
+                 WHERE event.product_alert_id = alert.product_alert_id
+                 ORDER BY event.sequence_number DESC LIMIT 1
+               ), 'open') IN ('open','acknowledged')
+           ) AS open_alert_count
+    FROM product.product_enrollment enrollment
+    JOIN product.product_version version
+      ON version.product_version_id = enrollment.product_version_id
+    JOIN experiment.qualification_bundle qualification
+      ON qualification.qualification_bundle_id = version.qualification_bundle_id
+    JOIN strategy.compiled_strategy_version strategy
+      ON strategy.compiled_strategy_version_id = version.compiled_strategy_version_id
+    JOIN workspace.compiled_model_instance model
+      ON model.compiled_model_instance_id = strategy.compiled_model_instance_id
+    JOIN workspace.compiled_research_spec compiled
+      ON compiled.compiled_research_spec_id = strategy.compiled_research_spec_id
+    LEFT JOIN LATERAL (
+      SELECT monitoring.as_of_session, monitoring.primary_nav, monitoring.stress_nav,
+             monitoring.metrics
+      FROM product.monitoring_snapshot monitoring
+      WHERE monitoring.product_enrollment_id = enrollment.product_enrollment_id
+      ORDER BY monitoring.as_of_session DESC, monitoring.known_at DESC LIMIT 1
+    ) snapshot ON true
+    WHERE true
+"""
+
+
+def _downsample_points(points: list[dict[str, Any]], *, maximum: int) -> list[dict[str, Any]]:
+    if len(points) <= maximum:
+        return points
+    indices = {round(index * (len(points) - 1) / (maximum - 1)) for index in range(maximum)}
+    return [point for index, point in enumerate(points) if index in indices]
 
 
 class ArtifactQueryService:
@@ -181,16 +424,25 @@ class ArtifactQueryService:
                 raise LookupError(f"Lineage manifest not found: {artifact_id}")
             return {"artifact": detail["artifact"], **dict(row)}
 
-    def asset_catalog(self) -> dict[str, Any]:
+    def asset_catalog(
+        self,
+        *,
+        search: str | None,
+        category: str | None,
+        maturity: str | None,
+        tradability: str | None,
+        limit: int,
+        offset: int,
+    ) -> dict[str, Any]:
         with self._engine.connect() as connection:
             connection.execute(text("SET TRANSACTION READ ONLY"))
             release = (
                 connection.execute(
                     text(
                         """
-                    SELECT release.master_data_release_id, release.artifact_id,
-                           release.version_number, release.as_of_date
-                    FROM catalog.master_data_release release
+                    SELECT release.asset_registry_release_id, release.artifact_id,
+                           release.version_number, release.catalog_version, release.as_of_date
+                    FROM catalog.asset_registry_release release
                     JOIN lineage.artifact artifact ON artifact.artifact_id = release.artifact_id
                     WHERE artifact.status = 'published'
                     ORDER BY release.version_number DESC LIMIT 1
@@ -201,74 +453,826 @@ class ArtifactQueryService:
                 .one_or_none()
             )
             if release is None:
-                raise LookupError("Published research-scope catalog not found")
-            universe = (
+                raise LookupError("Published v0.21 asset registry not found")
+            release_id = release["asset_registry_release_id"]
+            clauses = ["profile.asset_registry_release_id = :release_id"]
+            parameters: dict[str, Any] = {"release_id": release_id}
+            if category:
+                clauses.append("category.category_key = :category")
+                parameters["category"] = category
+            if maturity:
+                clauses.append("profile.maturity = :maturity")
+                parameters["maturity"] = maturity
+            if tradability:
+                clauses.append("profile.tradability = :tradability")
+                parameters["tradability"] = tradability
+            for index, term in enumerate(_search_terms(search)):
+                key = f"search_{index}"
+                clauses.append(f"profile.search_document LIKE :{key}")
+                parameters[key] = f"%{term}%"
+            where_clause = " AND ".join(clauses)
+            total = connection.execute(
+                text(
+                    "SELECT count(*) FROM catalog.security_profile profile "
+                    "JOIN catalog.asset_category category "
+                    "ON category.asset_category_id = profile.asset_category_id "
+                    f"WHERE {where_clause}"
+                ),
+                parameters,
+            ).scalar_one()
+            row_parameters = {**parameters, "limit": limit, "offset": offset}
+            rows = (
+                connection.execute(
+                    text(
+                        f"""
+                    SELECT security.security_id, security.legacy_asset_id AS asset_id,
+                           security.security_key AS asset_key, security.name,
+                           category.category_key, profile.asset_class,
+                           profile.instrument_type, security.status, profile.symbol,
+                           profile.aliases, profile.venue_mic, security.currency,
+                           profile.calendar_key, profile.tradability, profile.tags,
+                           profile.maturity, profile.target_maturity,
+                           profile.missing_requirements,
+                           EXISTS (
+                               SELECT 1 FROM data.daily_bar bar
+                               JOIN data.dataset_publication publication
+                                 ON publication.dataset_publication_id = bar.dataset_publication_id
+                               JOIN lineage.artifact dataset_artifact
+                                 ON dataset_artifact.artifact_id = publication.artifact_id
+                               WHERE bar.asset_id = security.legacy_asset_id
+                                 AND dataset_artifact.status = 'published'
+                           ) AS canonical_data_available,
+                           (profile.tradability = 'tradable'
+                            AND profile.target_maturity IN (
+                                'research_ready','strategy_ready','product_eligible_input'
+                            )) AS selectable
+                    FROM catalog.security_profile profile
+                    JOIN catalog.security security ON security.security_id = profile.security_id
+                    JOIN catalog.asset_category category
+                      ON category.asset_category_id = profile.asset_category_id
+                    WHERE {where_clause}
+                    ORDER BY profile.ordinal
+                    LIMIT :limit OFFSET :offset
+                    """
+                    ),
+                    row_parameters,
+                )
+                .mappings()
+                .all()
+            )
+            categories = (
                 connection.execute(
                     text(
                         """
-                    SELECT definition.universe_key, version.universe_version_id
-                    FROM catalog.universe_version version
-                    JOIN catalog.universe_definition definition
-                      ON definition.universe_definition_id = version.universe_definition_id
-                    JOIN lineage.artifact artifact ON artifact.artifact_id = version.artifact_id
+                    SELECT category.category_key, category.name, category.description,
+                           count(profile.security_profile_id) AS asset_count
+                    FROM catalog.asset_category category
+                    LEFT JOIN catalog.security_profile profile
+                      ON profile.asset_category_id = category.asset_category_id
+                    WHERE category.asset_registry_release_id = :release_id
+                    GROUP BY category.asset_category_id
+                    ORDER BY category.ordinal
+                    """
+                    ),
+                    {"release_id": release_id},
+                )
+                .mappings()
+                .all()
+            )
+            sets = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT definition.set_key, definition.name, definition.set_type,
+                           definition.maturity, definition.formal_eligible, definition.notes,
+                           COALESCE(
+                               array_agg(member.security_id ORDER BY member.ordinal)
+                               FILTER (WHERE member.security_id IS NOT NULL), ARRAY[]::uuid[]
+                           ) AS member_security_ids
+                    FROM catalog.asset_set_definition definition
+                    LEFT JOIN catalog.asset_set_member member
+                      ON member.asset_set_definition_id = definition.asset_set_definition_id
+                    WHERE definition.asset_registry_release_id = :release_id
+                    GROUP BY definition.asset_set_definition_id
+                    ORDER BY definition.set_key
+                    """
+                    ),
+                    {"release_id": release_id},
+                )
+                .mappings()
+                .all()
+            )
+            items = [dict(row) for row in rows]
+            for item in items:
+                item["selectable"] = bool(item["selectable"] and item["canonical_data_available"])
+                item["data_inputs"] = [
+                    {
+                        "input_key": "canonical_market_bars",
+                        "name": "Canonical OHLCV and adjusted prices",
+                        "source_kind": "market",
+                        "available": bool(item["canonical_data_available"]),
+                        "selectable": bool(item["canonical_data_available"]),
+                        "point_in_time": True,
+                        "downstream_factor_keys": [
+                            "open_raw", "high_raw", "low_raw", "close_raw",
+                            "volume_raw", "open_adj", "close_adj",
+                        ],
+                        "status_note": "published canonical history"
+                        if item["canonical_data_available"]
+                        else "awaiting canonical history",
+                    }
+                ]
+                if item["category_key"] == "stocks":
+                    item["data_inputs"].append(
+                        {
+                            "input_key": "sec_filing_fundamentals",
+                            "name": "Filed fundamental facts",
+                            "source_kind": "fundamental",
+                            "available": False,
+                            "selectable": False,
+                            "point_in_time": True,
+                            "downstream_factor_keys": ["pe_ratio", "roe"],
+                            "status_note": (
+                                "planned: requires filed/accepted/available timestamps; "
+                                "current ratios are never backfilled as history"
+                            ),
+                        }
+                    )
+                if item["canonical_data_available"]:
+                    item["missing_requirements"] = [
+                        requirement
+                        for requirement in item["missing_requirements"]
+                        if requirement != "canonical_history"
+                    ]
+            return {
+                "release_artifact_id": release["artifact_id"],
+                "release_version_number": release["version_number"],
+                "catalog_version": release["catalog_version"],
+                "as_of_date": release["as_of_date"].isoformat(),
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "categories": [dict(row) for row in categories],
+                "asset_sets": [dict(row) for row in sets],
+                "items": items,
+            }
+
+    def asset_series(
+        self, security_id: uuid.UUID, *, start: str | None, end: str | None
+    ) -> dict[str, Any]:
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            dataset = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT security.security_id, security.security_key AS asset_key,
+                           profile.symbol, publication.dataset_publication_id,
+                           publication.artifact_id AS dataset_artifact_id,
+                           publication.version_number, publication.coverage_start,
+                           publication.coverage_end
+                    FROM catalog.security security
+                    JOIN catalog.security_profile profile
+                      ON profile.security_id = security.security_id
+                    JOIN catalog.asset_registry_release release
+                      ON release.asset_registry_release_id = profile.asset_registry_release_id
+                    JOIN lineage.artifact registry_artifact
+                      ON registry_artifact.artifact_id = release.artifact_id
+                    JOIN data.daily_bar bar ON bar.asset_id = security.legacy_asset_id
+                    JOIN data.dataset_publication publication
+                      ON publication.dataset_publication_id = bar.dataset_publication_id
+                    JOIN lineage.artifact dataset_artifact
+                      ON dataset_artifact.artifact_id = publication.artifact_id
+                    WHERE security.security_id = :security_id
+                      AND registry_artifact.status = 'published'
+                      AND dataset_artifact.status = 'published'
+                    ORDER BY release.version_number DESC, publication.version_number DESC
+                    LIMIT 1
+                    """
+                    ),
+                    {"security_id": security_id},
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if dataset is None:
+                raise LookupError("Published canonical series not found for asset")
+            clauses = [
+                "bar.dataset_publication_id = :publication_id",
+                "bar.asset_id = (SELECT legacy_asset_id FROM catalog.security "
+                "WHERE security_id = :security_id)",
+            ]
+            parameters: dict[str, Any] = {
+                "publication_id": dataset["dataset_publication_id"],
+                "security_id": security_id,
+            }
+            if start:
+                clauses.append("bar.session_date >= CAST(:start AS date)")
+                parameters["start"] = start
+            if end:
+                clauses.append("bar.session_date <= CAST(:end AS date)")
+                parameters["end"] = end
+            points = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT bar.session_date, bar.open_adj AS open, bar.high_adj AS high,
+                           bar.low_adj AS low, bar.close_adj AS close,
+                           bar.adj_close AS adjusted_close, bar.volume_raw AS volume
+                    FROM data.daily_bar bar WHERE """
+                        + " AND ".join(clauses)
+                        + " ORDER BY bar.session_date"
+                    ),
+                    parameters,
+                )
+                .mappings()
+                .all()
+            )
+            if not points:
+                raise LookupError("Canonical series has no observations in the requested range")
+            return {
+                "security_id": dataset["security_id"],
+                "asset_key": dataset["asset_key"],
+                "symbol": dataset["symbol"],
+                "dataset_artifact_id": dataset["dataset_artifact_id"],
+                "dataset_version_number": dataset["version_number"],
+                "coverage_start": points[0]["session_date"],
+                "coverage_end": points[-1]["session_date"],
+                "points": [dict(row) for row in points],
+            }
+
+    def workspace_options(
+        self,
+        *,
+        frequency: str,
+        selected_factor_variants: tuple[str, ...],
+        selected_signals: tuple[str, ...],
+        selected_models: tuple[str, ...] = (),
+        selected_strategies: tuple[str, ...] = (),
+        selected_assets: tuple[uuid.UUID, ...] = (),
+        selected_asset_data_inputs: dict[str, tuple[str, ...]] | None = None,
+    ) -> dict[str, Any]:
+        if frequency not in {"weekly", "monthly"}:
+            raise ValueError("Workspace frequency must be weekly or monthly")
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            row = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT catalog.artifact_id, catalog.document
+                    FROM workspace.component_catalog catalog
+                    JOIN lineage.artifact artifact ON artifact.artifact_id = catalog.artifact_id
                     WHERE artifact.status = 'published'
-                    ORDER BY version.version_number DESC LIMIT 1
+                    ORDER BY catalog.version_number DESC LIMIT 1
                     """
                     )
                 )
                 .mappings()
                 .one_or_none()
             )
-            if universe is None:
-                raise LookupError("Published research universe not found")
+            if row is None:
+                raise LookupError("Published Workspace component catalog not found")
+            asset_rows: list[dict[str, Any]] = []
+            if selected_assets:
+                selected_rows = (
+                    connection.execute(
+                        text(_WORKSPACE_ASSET_SELECTION_SQL),
+                        {"security_ids": list(selected_assets)},
+                    )
+                    .mappings()
+                    .all()
+                )
+                asset_rows = [dict(item) for item in selected_rows]
+                found = {item["security_id"] for item in selected_rows}
+                asset_rows.extend(
+                    {
+                        "security_id": security_id,
+                        "instrument_type": "unknown",
+                        "selectable": False,
+                        "pit_sector_available": False,
+                    }
+                    for security_id in selected_assets
+                    if security_id not in found
+                )
+            options = build_workspace_options(
+                cast(dict[str, Any], row["document"]),
+                frequency=cast(Frequency, frequency),
+                selected_factor_variants=selected_factor_variants,
+                selected_signals=selected_signals,
+                selected_models=selected_models,
+                selected_strategies=selected_strategies,
+                selected_assets=tuple(asset_rows),
+                selected_asset_data_inputs=selected_asset_data_inputs,
+            )
+            return {"catalog_artifact_id": row["artifact_id"], **options}
+
+    def workspace_compile_preview(
+        self,
+        *,
+        frequency: str,
+        asset_security_ids: tuple[uuid.UUID, ...],
+        asset_data_inputs: dict[str, tuple[str, ...]],
+        factor_variant_keys: tuple[str, ...],
+        signal_version_keys: tuple[str, ...],
+        model_preset_keys: tuple[str, ...],
+        strategy_preset_keys: tuple[str, ...],
+        model_target_keys: tuple[str, ...] = ("cross_sectional_relative_return__h5",),
+    ) -> dict[str, Any]:
+        if frequency not in {"weekly", "monthly"}:
+            raise ValueError("Workspace frequency must be weekly or monthly")
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            catalog = (
+                connection.execute(
+                    text("""
+                SELECT catalog.artifact_id, catalog.document
+                FROM workspace.component_catalog catalog
+                JOIN lineage.artifact artifact ON artifact.artifact_id = catalog.artifact_id
+                WHERE artifact.status = 'published'
+                ORDER BY catalog.version_number DESC LIMIT 1
+            """)
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if catalog is None:
+                raise LookupError("Published Workspace component catalog not found")
+            rows = (
+                connection.execute(
+                    text(_WORKSPACE_ASSET_SELECTION_SQL),
+                    {"security_ids": list(asset_security_ids)},
+                )
+                .mappings()
+                .all()
+            )
+        found = {row["security_id"] for row in rows}
+        selected_assets = [dict(row) for row in rows]
+        selected_assets.extend(
+            {
+                "security_id": item,
+                "instrument_type": "unknown",
+                "selectable": False,
+                "pit_sector_available": False,
+            }
+            for item in asset_security_ids
+            if item not in found
+        )
+        preview = build_compile_preview(
+            cast(dict[str, Any], catalog["document"]),
+            frequency=cast(Frequency, frequency),
+            asset_security_ids=tuple(str(item) for item in asset_security_ids),
+            asset_data_inputs=asset_data_inputs,
+            selected_assets=tuple(selected_assets),
+            factor_variant_keys=factor_variant_keys,
+            signal_version_keys=signal_version_keys,
+            model_preset_keys=model_preset_keys,
+            model_target_keys=model_target_keys,
+            strategy_preset_keys=strategy_preset_keys,
+        )
+        return {"catalog_artifact_id": catalog["artifact_id"], **preview}
+
+    def factor_values(self, artifact_id: uuid.UUID) -> dict[str, Any]:
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            dataset = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT dataset.factor_dataset_id, variant.variant_key,
+                           artifact.content_hash
+                    FROM factor.factor_dataset dataset
+                    JOIN factor.factor_variant variant
+                      ON variant.factor_variant_id = dataset.factor_variant_id
+                    JOIN lineage.artifact artifact ON artifact.artifact_id = dataset.artifact_id
+                    WHERE dataset.artifact_id = :artifact_id AND artifact.status = 'published'
+                    """
+                    ),
+                    {"artifact_id": artifact_id},
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if dataset is None:
+                raise LookupError("Published Factor Dataset not found")
             rows = (
                 connection.execute(
                     text(
                         """
-                    SELECT asset.asset_id, asset.asset_key, asset.name, asset.asset_type,
-                           asset.status, symbol.symbol, listing.venue_mic, listing.currency,
-                           listing.timezone, calendar.calendar_key,
-                           member.role AS universe_role, member.ordinal AS universe_ordinal,
-                           COALESCE(jsonb_object_agg(scheme.scheme_key, value.value_key)
-                               FILTER (WHERE scheme.scheme_key IS NOT NULL), '{}'::jsonb)
-                               AS classifications
-                    FROM catalog.asset asset
+                    SELECT value.observation_date, asset.asset_key, symbol.symbol,
+                           value.value
+                    FROM factor.factor_value value
+                    JOIN catalog.asset asset ON asset.asset_id = value.asset_id
                     JOIN catalog.asset_listing listing ON listing.asset_id = asset.asset_id
                     JOIN catalog.listing_symbol symbol
                       ON symbol.asset_listing_id = listing.asset_listing_id
                      AND symbol.symbol_type = 'ticker'
-                    JOIN catalog.calendar_definition calendar
-                      ON calendar.calendar_definition_id = listing.calendar_definition_id
-                    LEFT JOIN catalog.asset_classification assignment
-                      ON assignment.asset_id = asset.asset_id
-                    LEFT JOIN catalog.classification_value value
-                      ON value.classification_value_id = assignment.classification_value_id
-                    LEFT JOIN catalog.classification_scheme scheme
-                      ON scheme.classification_scheme_id = value.classification_scheme_id
-                    LEFT JOIN catalog.universe_member member
-                      ON member.asset_id = asset.asset_id
-                     AND member.universe_version_id = :universe_version_id
-                    WHERE asset.master_data_release_id = :release_id
-                    GROUP BY asset.asset_id, symbol.symbol, listing.venue_mic, listing.currency,
-                             listing.timezone, calendar.calendar_key, member.role, member.ordinal
-                    ORDER BY member.ordinal NULLS LAST, asset.asset_key
+                    WHERE value.factor_dataset_id = :dataset_id
+                    ORDER BY value.observation_date, asset.asset_key
                     """
                     ),
-                    {
-                        "release_id": release["master_data_release_id"],
-                        "universe_version_id": universe["universe_version_id"],
-                    },
+                    {"dataset_id": dataset["factor_dataset_id"]},
                 )
                 .mappings()
                 .all()
             )
             return {
-                "release_artifact_id": release["artifact_id"],
-                "release_version_number": release["version_number"],
-                "as_of_date": release["as_of_date"].isoformat(),
-                "universe_key": universe["universe_key"],
-                "items": [dict(row) for row in rows],
+                "variant_key": dataset["variant_key"],
+                "content_hash": dataset["content_hash"],
+                "rows": [dict(row) for row in rows],
             }
+
+    def signal_values(self, version_key: str) -> dict[str, Any]:
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            dataset = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT dataset.signal_dataset_id, dataset.artifact_id,
+                           artifact.content_hash
+                    FROM signal.signal_dataset dataset
+                    JOIN signal.signal_version version
+                      ON version.signal_version_id = dataset.signal_version_id
+                    JOIN signal.signal_definition definition
+                      ON definition.signal_definition_id = version.signal_definition_id
+                    JOIN lineage.artifact artifact ON artifact.artifact_id = dataset.artifact_id
+                    WHERE definition.signal_key = :version_key
+                      AND artifact.status = 'published'
+                    ORDER BY dataset.created_at DESC LIMIT 1
+                    """
+                    ),
+                    {"version_key": version_key},
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if dataset is None:
+                raise LookupError(f"Published Signal Dataset not found: {version_key}")
+            rows = (
+                connection.execute(
+                    text(
+                        """
+                    SELECT value.observation_date, asset.asset_key, symbol.symbol,
+                           value.score, value.state, value.event
+                    FROM signal.signal_value value
+                    JOIN catalog.asset asset ON asset.asset_id = value.asset_id
+                    JOIN catalog.asset_listing listing ON listing.asset_id = asset.asset_id
+                    JOIN catalog.listing_symbol symbol
+                      ON symbol.asset_listing_id = listing.asset_listing_id
+                     AND symbol.symbol_type = 'ticker'
+                    WHERE value.signal_dataset_id = :dataset_id
+                    ORDER BY value.observation_date, asset.asset_key
+                    """
+                    ),
+                    {"dataset_id": dataset["signal_dataset_id"]},
+                )
+                .mappings()
+                .all()
+            )
+        return {
+            "version_key": version_key,
+            "artifact_id": dataset["artifact_id"],
+            "content_hash": dataset["content_hash"],
+            "rows": [dict(row) for row in rows],
+        }
+
+    def product_catalog(self) -> dict[str, Any]:
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            rows = connection.execute(
+                text(_PRODUCT_CANDIDATE_SQL + " ORDER BY enrollment.updated_at DESC")
+            )
+            return {"items": [dict(row) for row in rows.mappings().all()]}
+
+    def product_detail(self, enrollment_id: uuid.UUID) -> dict[str, Any]:
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            candidate = (
+                connection.execute(
+                    text(_PRODUCT_CANDIDATE_SQL + " AND enrollment.product_enrollment_id = :id"),
+                    {"id": enrollment_id},
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if candidate is None:
+                raise LookupError(f"Product Research Candidate not found: {enrollment_id}")
+            enrollment = (
+                connection.execute(
+                    text("""
+                SELECT enrollment.selection_reason, enrollment.note,
+                       qualification.gate_results AS qualification_gate_results,
+                       qualification.source_suite_artifact_id,
+                       qualification.result_artifact_ids,
+                       qualification.selection_context
+                FROM product.product_enrollment enrollment
+                JOIN product.product_version version
+                  ON version.product_version_id = enrollment.product_version_id
+                JOIN experiment.qualification_bundle qualification
+                  ON qualification.qualification_bundle_id = version.qualification_bundle_id
+                WHERE enrollment.product_enrollment_id = :id
+            """),
+                    {"id": enrollment_id},
+                )
+                .mappings()
+                .one()
+            )
+            selection_context = dict(enrollment["selection_context"] or {})
+            # New Products freeze one exact branch.  The normalized_selection
+            # fallback keeps already-published Product records queryable.
+            exact_selection = selection_context.get("exact_selection")
+            normalized_selection = dict(
+                exact_selection
+                if isinstance(exact_selection, dict)
+                else selection_context.get("normalized_selection") or {}
+            )
+            selected_model = dict(normalized_selection.get("model") or {})
+            selected_strategy = dict(normalized_selection.get("strategy") or {})
+            selected_result_value = selection_context.get("selected_result_artifact_id")
+            selected_result_id = (
+                uuid.UUID(str(selected_result_value)) if selected_result_value is not None else None
+            )
+            selected_asset_ids = [
+                uuid.UUID(str(value))
+                for value in normalized_selection.get("asset_security_ids", [])
+            ]
+            asset_rows: list[Any] = []
+            if selected_asset_ids:
+                asset_rows = list(
+                    connection.execute(
+                        text("""
+                    SELECT DISTINCT ON (security.security_id)
+                           security.security_id, security.security_key AS asset_key,
+                           security.legacy_asset_id,
+                           COALESCE(profile.symbol, security.security_key) AS symbol,
+                           security.name, category.category_key
+                    FROM catalog.security security
+                    LEFT JOIN catalog.security_profile profile
+                      ON profile.security_id = security.security_id
+                    LEFT JOIN catalog.asset_registry_release release
+                      ON release.asset_registry_release_id = profile.asset_registry_release_id
+                    LEFT JOIN lineage.artifact release_artifact
+                      ON release_artifact.artifact_id = release.artifact_id
+                    LEFT JOIN catalog.asset_category category
+                      ON category.asset_category_id = profile.asset_category_id
+                    WHERE security.security_id = ANY(:security_ids)
+                      AND (release_artifact.artifact_id IS NULL
+                           OR release_artifact.status = 'published')
+                    ORDER BY security.security_id, release.version_number DESC NULLS LAST
+                """),
+                        {"security_ids": selected_asset_ids},
+                    )
+                    .mappings()
+                    .all()
+                )
+            assets_by_id = {row["security_id"]: dict(row) for row in asset_rows}
+            research_assets = [
+                {
+                    key: value
+                    for key, value in assets_by_id[security_id].items()
+                    if key != "legacy_asset_id"
+                }
+                for security_id in selected_asset_ids
+                if security_id in assets_by_id
+            ]
+            qualification_backtest_source = (
+                self._v021_experiment_result(connection, selected_result_id)
+                if selected_result_id is not None
+                else None
+            )
+            events = (
+                connection.execute(
+                    text("""
+                SELECT sequence_number, from_lifecycle, to_lifecycle, reason_code, reason,
+                       researcher_id, requested_at, effective_at
+                FROM product.product_lifecycle_event WHERE product_enrollment_id = :id
+                ORDER BY sequence_number DESC
+            """),
+                    {"id": enrollment_id},
+                )
+                .mappings()
+                .all()
+            )
+            alerts = (
+                connection.execute(
+                    text("""
+                SELECT alert.product_alert_id AS alert_id, alert.alert_key, alert.alert_type,
+                       alert.severity, alert.opened_at, alert.evidence,
+                       COALESCE(latest.to_status, 'open') AS status
+                FROM product.product_alert alert
+                LEFT JOIN LATERAL (
+                    SELECT event.to_status FROM product.product_alert_event event
+                    WHERE event.product_alert_id = alert.product_alert_id
+                    ORDER BY event.sequence_number DESC LIMIT 1
+                ) latest ON true
+                WHERE alert.product_enrollment_id = :id ORDER BY alert.opened_at DESC
+            """),
+                    {"id": enrollment_id},
+                )
+                .mappings()
+                .all()
+            )
+            snapshots = (
+                connection.execute(
+                    text("""
+                SELECT artifact_id, as_of_session, known_at, health, session_count,
+                       decision_count, primary_nav, stress_nav, metrics, health_components
+                FROM product.monitoring_snapshot WHERE product_enrollment_id = :id
+                ORDER BY as_of_session DESC, known_at DESC LIMIT 400
+            """),
+                    {"id": enrollment_id},
+                )
+                .mappings()
+                .all()
+            )
+            frozen_anchor_value = (
+                qualification_backtest_source["resolved_end"]
+                if qualification_backtest_source is not None
+                else None
+            )
+            frozen_anchor_session = (
+                date.fromisoformat(frozen_anchor_value)
+                if isinstance(frozen_anchor_value, str)
+                else frozen_anchor_value
+            )
+            legacy_asset_ids = tuple(
+                row["legacy_asset_id"]
+                for row in asset_rows
+                if row["legacy_asset_id"] is not None
+            )
+            latest_bundle = None
+            if legacy_asset_ids and len(legacy_asset_ids) == len(selected_asset_ids):
+                latest_bundle = (
+                    connection.execute(
+                        text("""
+                        SELECT bundle.coverage_end, artifact.created_at AS known_at,
+                               calendar.calendar_version_id
+                        FROM data.data_bundle_version bundle
+                        JOIN lineage.artifact artifact
+                          ON artifact.artifact_id = bundle.artifact_id
+                         AND artifact.status = 'published'
+                        JOIN data.data_bundle_member member
+                          ON member.data_bundle_version_id = bundle.data_bundle_version_id
+                         AND member.role = 'canonical_market'
+                        JOIN data.data_bundle_member calendar
+                          ON calendar.data_bundle_version_id = bundle.data_bundle_version_id
+                         AND calendar.role = 'trading_calendar'
+                        JOIN data.daily_bar bar
+                          ON bar.dataset_publication_id = member.dataset_publication_id
+                        WHERE bar.asset_id IN :asset_ids
+                        GROUP BY bundle.data_bundle_version_id, artifact.created_at,
+                                 calendar.calendar_version_id
+                        HAVING count(DISTINCT bar.asset_id) = :asset_count
+                        ORDER BY bundle.coverage_end DESC, artifact.created_at DESC
+                        LIMIT 1
+                    """).bindparams(bindparam("asset_ids", expanding=True)),
+                        {
+                            "asset_ids": legacy_asset_ids,
+                            "asset_count": len(legacy_asset_ids),
+                        },
+                    )
+                    .mappings()
+                    .one_or_none()
+                )
+            latest_published_data_session = (
+                latest_bundle["coverage_end"] if latest_bundle is not None else None
+            )
+            post_freeze_session_count = 0
+            prospective_oos_session_count = 0
+            if frozen_anchor_session is not None and latest_bundle is not None:
+                counts = connection.execute(
+                    text("""
+                        SELECT
+                            count(*) FILTER (
+                                WHERE session_date > :frozen_anchor
+                                  AND session_date <= :latest_data
+                            ) AS post_freeze_count,
+                            count(*) FILTER (
+                                WHERE session_date > GREATEST(:frozen_anchor, :activation_session)
+                                  AND session_date <= :latest_data
+                            ) AS prospective_count
+                        FROM catalog.calendar_session
+                        WHERE calendar_version_id = :calendar_version_id
+                    """),
+                    {
+                        "frozen_anchor": frozen_anchor_session,
+                        "activation_session": candidate["activated_at"].date(),
+                        "latest_data": latest_published_data_session,
+                        "calendar_version_id": latest_bundle["calendar_version_id"],
+                    },
+                ).mappings().one()
+                post_freeze_session_count = int(counts["post_freeze_count"] or 0)
+                prospective_oos_session_count = int(counts["prospective_count"] or 0)
+            if frozen_anchor_session is None:
+                oos_status = "awaiting_frozen_anchor"
+                oos_reason_codes = ["qualification_frozen_anchor_unavailable"]
+            elif (
+                latest_published_data_session is None
+                or latest_published_data_session <= frozen_anchor_session
+            ):
+                oos_status = "awaiting_post_freeze_data"
+                oos_reason_codes = ["published_data_has_not_passed_frozen_anchor"]
+            elif not snapshots:
+                oos_status = "awaiting_first_snapshot"
+                oos_reason_codes = ["post_freeze_data_awaiting_monitoring_snapshot"]
+            else:
+                oos_status = "observing"
+                oos_reason_codes = []
+            reviews = (
+                connection.execute(
+                    text(
+                        """
+                        SELECT product_review_id, reviewed_at, researcher_id,
+                               decision, reason, evidence
+                        FROM product.product_review
+                        WHERE product_enrollment_id = :id
+                        ORDER BY reviewed_at DESC, product_review_id DESC
+                        """
+                    ),
+                    {"id": enrollment_id},
+                )
+                .mappings()
+                .all()
+            )
+        return {
+            "candidate": dict(candidate),
+            "qualification_gate_results": enrollment["qualification_gate_results"],
+            "selection_reason": enrollment["selection_reason"],
+            "note": enrollment["note"],
+            "events": [dict(row) for row in events],
+            "alerts": [dict(row) for row in alerts],
+            "snapshots": [dict(row) for row in snapshots],
+            "oos_window": {
+                "frozen_anchor_session": frozen_anchor_session,
+                "activation_session": candidate["activated_at"].date(),
+                "latest_published_data_session": latest_published_data_session,
+                "latest_published_data_known_at": (
+                    latest_bundle["known_at"] if latest_bundle is not None else None
+                ),
+                "latest_snapshot_session": (
+                    snapshots[0]["as_of_session"] if snapshots else None
+                ),
+                "post_freeze_session_count": post_freeze_session_count,
+                "prospective_oos_session_count": prospective_oos_session_count,
+                "status": oos_status,
+                "reason_codes": oos_reason_codes,
+            },
+            "reviews": [dict(row) for row in reviews],
+            "research_chain": (
+                {
+                    "source_suite_artifact_id": enrollment["source_suite_artifact_id"],
+                    "selected_result_artifact_id": selected_result_id,
+                    "selected_branch_key": str(
+                        selected_strategy.get("branch_key")
+                        or selection_context.get("selected_branch_key", "")
+                    ),
+                    "frequency": str(normalized_selection.get("frequency", "")),
+                    "assets": research_assets,
+                    "factor_variant_keys": list(
+                        normalized_selection.get("factor_variant_keys", [])
+                    ),
+                    "signal_version_keys": list(
+                        normalized_selection.get("signal_version_keys", [])
+                    ),
+                    "model_preset_keys": list(
+                        [selected_model["preset_key"]]
+                        if selected_model.get("preset_key") is not None
+                        else normalized_selection.get("model_preset_keys", [])
+                    ),
+                    "model_target_keys": list(
+                        [selected_model["target_key"]]
+                        if selected_model.get("target_key") is not None
+                        else normalized_selection.get("model_target_keys", [])
+                    ),
+                    "strategy_preset_keys": list(
+                        [selected_strategy["preset_key"]]
+                        if selected_strategy.get("preset_key") is not None
+                        else normalized_selection.get("strategy_preset_keys", [])
+                    ),
+                    "qualification_result_artifact_ids": list(
+                        enrollment["result_artifact_ids"] or []
+                    ),
+                }
+                if selected_result_id is not None
+                else None
+            ),
+            "qualification_backtest": (
+                {
+                    "result_artifact_id": qualification_backtest_source["result_artifact_id"],
+                    "specification": qualification_backtest_source["specification"],
+                    "resolved_start": qualification_backtest_source["resolved_start"],
+                    "resolved_end": qualification_backtest_source["resolved_end"],
+                    "observation_count": qualification_backtest_source["observation_count"],
+                    "run_status": qualification_backtest_source["run_status"],
+                    "metrics": qualification_backtest_source["metrics"],
+                    "nav_series": qualification_backtest_source["nav_series"],
+                    "quality_checks": qualification_backtest_source["quality_checks"],
+                }
+                if qualification_backtest_source is not None
+                else None
+            ),
+        }
 
     def data_requirements(self) -> dict[str, Any]:
         with self._engine.connect() as connection:
@@ -1409,67 +2413,268 @@ class ArtifactQueryService:
             )["positions"].append({key: row[key] for key in position_fields})
         return {"target_path": dict(path), **dict(context), "decisions": list(decisions.values())}
 
-    def experiment_overview(self) -> dict[str, Any]:
-        """Return published experiment cells and their latest auditable state."""
+    def experiment_overview(
+        self,
+        *,
+        research_suite_id: uuid.UUID | None = None,
+        status: str | None = None,
+        template_key: str | None = None,
+        frequency: str | None = None,
+        cost_bps_per_side: float | None = None,
+        ranking_metric: str = "strategy.sharpe_ratio",
+        limit: int = 50,
+        offset: int = 0,
+    ) -> dict[str, Any]:
+        """Return one server-filtered page of published experiment cells.
+
+        The legacy v0.2 release contains thousands of cells.  Loading every metric for
+        every cell made the page size cosmetic only, so filtering and metric ranking
+        happen before the display metrics for the requested page are materialized.
+        """
+        if ranking_metric not in {
+            "strategy.sharpe_ratio",
+            "strategy.cagr",
+            "strategy.maximum_drawdown",
+            "relative.annualized_relative_wealth_growth",
+            "predictive.mean_rank_ic",
+        }:
+            raise ValueError(f"Unsupported experiment ranking metric: {ranking_metric}")
         with self._engine.connect() as connection:
             connection.execute(text("SET TRANSACTION READ ONLY"))
-            suites = connection.execute(text("""
+            v021_suite_count = int(
+                connection.execute(text("SELECT count(*) FROM experiment.research_suite"))
+                .scalar_one()
+            )
+            visible_suite_id = research_suite_id
+            if visible_suite_id is not None:
+                exists = connection.execute(
+                    text(
+                        "SELECT 1 FROM experiment.research_suite "
+                        "WHERE research_suite_id = :suite_id"
+                    ),
+                    {"suite_id": visible_suite_id},
+                ).scalar_one_or_none()
+                if exists is None:
+                    raise LookupError(f"Research Suite not found: {visible_suite_id}")
+            elif v021_suite_count:
+                # Product qualification keeps its exact six Portfolio Cells and one
+                # Predictive Cell as immutable evidence.  That evidence belongs on
+                # the Product page, not in the ordinary Experiment workbench.  With
+                # no explicit Suite URL, show only the latest non-Product Suite.
+                visible_suite_id = connection.execute(
+                    text("""
+                        SELECT suite.research_suite_id
+                        FROM experiment.research_suite suite
+                        WHERE NOT EXISTS (
+                            SELECT 1 FROM experiment.qualification_bundle qualification
+                            WHERE qualification.source_suite_artifact_id = suite.artifact_id
+                        )
+                        ORDER BY suite.created_at DESC, suite.research_suite_id DESC
+                        LIMIT 1
+                    """)
+                ).scalar_one_or_none()
+
+            # Legacy v0.2 results remain a fallback only before the first targeted
+            # v0.21 Suite exists.  Once v0.21 is active, mixing generations makes a
+            # newly submitted run indistinguishable from retained Product evidence.
+            suites = (
+                connection.execute(
+                    text("""
                 SELECT suite.artifact_id, suite.suite_key, suite.version_number, suite.name,
                        suite.description, suite.specification_count
                 FROM experiment.experiment_suite suite
                 JOIN lineage.artifact artifact ON artifact.artifact_id = suite.artifact_id
                 WHERE artifact.status = 'published'
                 ORDER BY suite.version_number DESC, suite.suite_key
-            """)).mappings().all()
-            specifications = self._experiment_specifications(connection)
-            result_ids = [row["interval_performance_result_id"] for row in specifications
-                          if row["interval_performance_result_id"] is not None]
-            core_by_result: dict[uuid.UUID, dict[str, float | None]] = {
-                result_id: {} for result_id in result_ids
-            }
-            if result_ids:
-                metrics = connection.execute(text("""
-                    SELECT value.interval_performance_result_id, value.series_role,
-                           definition.metric_key, value.metric_value
-                    FROM experiment.performance_metric_value value
-                    JOIN experiment.performance_metric_definition definition ON
-                         definition.performance_metric_definition_id =
-                         value.performance_metric_definition_id
-                    WHERE value.interval_performance_result_id IN :result_ids
-                      AND ((value.series_role IN ('strategy','benchmark') AND
-                            definition.metric_key IN ('cagr','sharpe_ratio','maximum_drawdown'))
-                           OR (value.series_role = 'relative' AND
-                               definition.metric_key = 'annualized_relative_wealth_growth'))
-                """).bindparams(bindparam("result_ids", expanding=True)),
-                    {"result_ids": tuple(result_ids)}).mappings().all()
-                for metric in metrics:
-                    key = f"{metric['series_role']}.{metric['metric_key']}"
-                    value = metric["metric_value"]
-                    core_by_result[metric["interval_performance_result_id"]][key] = (
-                        float(value) if value is not None else None
-                    )
-        items = []
-        for source in specifications:
-            row = dict(source)
-            result_id = row.pop("interval_performance_result_id")
-            run_status = row.pop("run_status")
-            row.pop("run_attempt_id")
-            if row["result_artifact_id"] is not None:
-                row["status"] = "accepted"
-            elif run_status == "failed":
-                row["status"] = "failed"
-            elif run_status in {"queued", "running"}:
-                row["status"] = "running"
+            """)
+                )
+                .mappings()
+                .all()
+            )
+            if v021_suite_count:
+                suites = []
+                specifications = []
+                legacy_counts = {
+                    "accepted": 0,
+                    "failed": 0,
+                    "running": 0,
+                    "pending": 0,
+                    "total": 0,
+                }
             else:
-                row["status"] = "pending"
-            row["core_metrics"] = core_by_result.get(result_id, {})
-            items.append(row)
-        return {"suites": [dict(row) for row in suites], "specifications": items}
+                specifications = self._experiment_specifications(
+                    connection,
+                    template_key=template_key,
+                    frequency=frequency,
+                    cost_bps_per_side=cost_bps_per_side,
+                )
+                legacy_counts = self._legacy_experiment_status_counts(connection)
+            v021_specifications = (
+                self._v021_experiment_specifications(connection, visible_suite_id)
+                if visible_suite_id is not None
+                else []
+            )
+            v021_suites = (
+                connection.execute(
+                    text("""
+                SELECT research_suite_id, artifact_id, suite_key, version_number,
+                       'v0.21 targeted research suite' AS name,
+                       'Immutable compiled v0.21 research matrix' AS description,
+                       predictive_cell_count + portfolio_cell_count AS specification_count
+                FROM experiment.research_suite
+                WHERE research_suite_id = :suite_id
+                ORDER BY created_at DESC
+            """),
+                    {"suite_id": visible_suite_id},
+                )
+                .mappings()
+                .all()
+            )
+            items: list[dict[str, Any]] = []
+            interval_by_artifact: dict[uuid.UUID, uuid.UUID] = {}
+            for source in specifications:
+                row = dict(source)
+                row["suite_mode"] = "legacy"
+                interval_id = row.pop("interval_performance_result_id")
+                run_status = row.pop("run_status")
+                row.pop("run_attempt_id")
+                if row["result_artifact_id"] is not None:
+                    row["status"] = "accepted"
+                elif run_status == "failed":
+                    row["status"] = "failed"
+                elif run_status in {"queued", "running"}:
+                    row["status"] = "running"
+                else:
+                    row["status"] = "pending"
+                row["core_metrics"] = {}
+                if row["result_artifact_id"] is not None and interval_id is not None:
+                    interval_by_artifact[row["result_artifact_id"]] = interval_id
+                items.append(row)
+            items.extend(_v021_overview_item(row) for row in v021_specifications)
+
+            counts = {
+                key: int(legacy_counts[key]) for key in ("accepted", "failed", "running", "pending")
+            }
+            for source in v021_specifications:
+                counts[_v021_overview_item(source)["status"]] += 1
+            filtered = [
+                item
+                for item in items
+                if (status is None or item["status"] == status)
+                and (template_key is None or item["template_key"] == template_key)
+                and (frequency is None or item["frequency"] == frequency)
+                and (
+                    cost_bps_per_side is None
+                    or float(item["cost_bps_per_side"]) == cost_bps_per_side
+                )
+            ]
+
+            legacy_candidates = [
+                interval_by_artifact[item["result_artifact_id"]]
+                for item in filtered
+                if item["result_artifact_id"] in interval_by_artifact
+            ]
+            ranking_values = self._experiment_core_metrics(
+                connection,
+                legacy_candidates,
+                requested_keys=(ranking_metric,),
+            )
+            for item in filtered:
+                result_artifact_id = item["result_artifact_id"]
+                interval_id = interval_by_artifact.get(result_artifact_id)
+                if interval_id is not None:
+                    item["core_metrics"].update(ranking_values.get(interval_id, {}))
+            filtered.sort(
+                key=lambda item: (
+                    item.get("suite_mode") in {"formal", "exploratory"},
+                    item["core_metrics"].get(ranking_metric) is not None,
+                    item["core_metrics"].get(ranking_metric)
+                    if item["core_metrics"].get(ranking_metric) is not None
+                    else float("-inf"),
+                    str(item["artifact_id"]),
+                ),
+                reverse=True,
+            )
+            filtered_count = len(filtered)
+            page = filtered[offset : offset + limit]
+
+            page_intervals = [
+                interval_by_artifact[item["result_artifact_id"]]
+                for item in page
+                if item["result_artifact_id"] in interval_by_artifact
+            ]
+            display_values = self._experiment_core_metrics(
+                connection,
+                page_intervals,
+                requested_keys=(
+                    "strategy.cagr",
+                    "benchmark.cagr",
+                    "strategy.sharpe_ratio",
+                    "strategy.maximum_drawdown",
+                    "relative.annualized_relative_wealth_growth",
+                ),
+            )
+            for item in page:
+                interval_id = interval_by_artifact.get(item["result_artifact_id"])
+                if interval_id is not None:
+                    item["core_metrics"].update(display_values.get(interval_id, {}))
+        return {
+            "suites": [dict(row) for row in suites] + [dict(row) for row in v021_suites],
+            "specifications": page,
+            "total_specification_count": int(legacy_counts["total"]) + len(v021_specifications),
+            "filtered_specification_count": filtered_count,
+            "accepted_count": counts["accepted"],
+            "failed_count": counts["failed"],
+            "running_count": counts["running"],
+            "pending_count": counts["pending"],
+            "limit": limit,
+            "offset": offset,
+        }
+
+    @staticmethod
+    def _experiment_core_metrics(
+        connection: Any,
+        result_ids: Sequence[uuid.UUID],
+        *,
+        requested_keys: Sequence[str],
+    ) -> dict[uuid.UUID, dict[str, float | None]]:
+        if not result_ids:
+            return {}
+        requested = set(requested_keys)
+        rows = (
+            connection.execute(
+                text("""
+                SELECT value.interval_performance_result_id, value.series_role,
+                       definition.metric_key, value.metric_value
+                FROM experiment.performance_metric_value value
+                JOIN experiment.performance_metric_definition definition ON
+                     definition.performance_metric_definition_id =
+                     value.performance_metric_definition_id
+                WHERE value.interval_performance_result_id IN :result_ids
+                  AND (value.series_role || '.' || definition.metric_key) IN :metric_keys
+            """)
+                .bindparams(bindparam("result_ids", expanding=True))
+                .bindparams(bindparam("metric_keys", expanding=True)),
+                {"result_ids": tuple(set(result_ids)), "metric_keys": tuple(requested)},
+            )
+            .mappings()
+            .all()
+        )
+        result: dict[uuid.UUID, dict[str, float | None]] = {}
+        for row in rows:
+            value = row["metric_value"]
+            result.setdefault(row["interval_performance_result_id"], {})[
+                f"{row['series_role']}.{row['metric_key']}"
+            ] = float(value) if value is not None else None
+        return result
 
     def experiment_result(self, artifact_id: uuid.UUID) -> dict[str, Any]:
         """Return one accepted result with metrics, run events, checks, and artifacts."""
         with self._engine.connect() as connection:
             connection.execute(text("SET TRANSACTION READ ONLY"))
+            v021 = self._v021_experiment_result(connection, artifact_id)
+            if v021 is not None:
+                return v021
             rows = self._experiment_specifications(connection, result_artifact_id=artifact_id)
             if not rows:
                 raise LookupError(f"Published Experiment result not found: {artifact_id}")
@@ -1478,15 +2683,24 @@ class ArtifactQueryService:
             specification.pop("run_status")
             specification["status"] = "accepted"
             specification["core_metrics"] = {}
-            interval = connection.execute(text("""
+            interval = (
+                connection.execute(
+                    text("""
                 SELECT result.artifact_id AS interval_result_artifact_id,
                        result.requested_start, result.requested_end, result.resolved_start,
                        result.resolved_end, result.normalization_nav_date,
                        result.observation_count, result.metric_value_count
                 FROM experiment.interval_performance_result result
                 WHERE result.interval_performance_result_id = :result
-            """), {"result": interval_id}).mappings().one()
-            metrics = connection.execute(text("""
+            """),
+                    {"result": interval_id},
+                )
+                .mappings()
+                .one()
+            )
+            metrics = (
+                connection.execute(
+                    text("""
                 SELECT value.series_role, definition.metric_scope, definition.metric_key,
                        definition.name, definition.unit, value.metric_value AS value,
                        value.value_status, value.reason_code, value.observation_count
@@ -1497,29 +2711,101 @@ class ArtifactQueryService:
                 WHERE value.interval_performance_result_id = :result
                 ORDER BY CASE value.series_role WHEN 'strategy' THEN 0
                          WHEN 'benchmark' THEN 1 ELSE 2 END, definition.ordinal
-            """), {"result": interval_id}).mappings().all()
+            """),
+                    {"result": interval_id},
+                )
+                .mappings()
+                .all()
+            )
             run_id = specification["run_attempt_id"]
-            run = connection.execute(text("""
+            run = (
+                connection.execute(
+                    text("""
                 SELECT status AS run_status, started_at, completed_at
                 FROM ops.run_attempt WHERE run_attempt_id = :run
-            """), {"run": run_id}).mappings().one()
-            events = connection.execute(text("""
+            """),
+                    {"run": run_id},
+                )
+                .mappings()
+                .one()
+            )
+            events = (
+                connection.execute(
+                    text("""
                 SELECT sequence_number, event_type, severity, message, occurred_at
                 FROM ops.run_event WHERE run_attempt_id = :run ORDER BY sequence_number
-            """), {"run": run_id}).mappings().all()
-            checks = connection.execute(text("""
+            """),
+                    {"run": run_id},
+                )
+                .mappings()
+                .all()
+            )
+            checks = (
+                connection.execute(
+                    text("""
                 SELECT check_key, scope_key, status, severity, message
                 FROM ops.quality_check_result WHERE run_attempt_id = :run
                 ORDER BY check_key, scope_key
-            """), {"run": run_id}).mappings().all()
-            artifacts = connection.execute(text("""
+            """),
+                    {"run": run_id},
+                )
+                .mappings()
+                .all()
+            )
+            artifacts = (
+                connection.execute(
+                    text("""
                 SELECT link.artifact_id, link.role, artifact.artifact_type,
                        artifact.artifact_key
                 FROM ops.run_artifact link
                 JOIN lineage.artifact artifact ON artifact.artifact_id = link.artifact_id
                 WHERE link.run_attempt_id = :run
                 ORDER BY link.role, artifact.artifact_type, artifact.artifact_key
-            """), {"run": run_id}).mappings().all()
+            """),
+                    {"run": run_id},
+                )
+                .mappings()
+                .all()
+            )
+            nav_rows = (
+                connection.execute(
+                    text("""
+                SELECT strategy.nav_date, strategy.net_nav AS strategy_nav,
+                       benchmark.net_nav AS benchmark_nav
+                FROM experiment.interval_performance_result result
+                JOIN experiment.net_daily_nav strategy
+                  ON strategy.net_cost_path_id = result.strategy_net_cost_path_id
+                JOIN experiment.net_daily_nav benchmark
+                  ON benchmark.net_cost_path_id = result.benchmark_net_cost_path_id
+                 AND benchmark.nav_date = strategy.nav_date
+                WHERE result.interval_performance_result_id = :result
+                  AND strategy.nav_date BETWEEN result.resolved_start AND result.resolved_end
+                ORDER BY strategy.nav_date
+            """),
+                    {"result": interval_id},
+                )
+                .mappings()
+                .all()
+            )
+        nav_series: list[dict[str, Any]] = []
+        if nav_rows:
+            strategy_base = float(nav_rows[0]["strategy_nav"])
+            benchmark_base = float(nav_rows[0]["benchmark_nav"])
+            running_peak = 0.0
+            for row in nav_rows:
+                strategy_wealth = float(row["strategy_nav"]) / strategy_base
+                benchmark_wealth = float(row["benchmark_nav"]) / benchmark_base
+                running_peak = max(running_peak, strategy_wealth)
+                nav_series.append(
+                    {
+                        "nav_date": row["nav_date"],
+                        "strategy_wealth": strategy_wealth,
+                        "benchmark_wealth": benchmark_wealth,
+                        "excess_wealth": strategy_wealth / benchmark_wealth,
+                        "drawdown": strategy_wealth / running_peak - 1.0,
+                    }
+                )
+            nav_series = _downsample_points(nav_series, maximum=600)
         specification.pop("run_attempt_id")
         specification["attempt_number"] = specification.get("attempt_number")
         return {
@@ -1532,6 +2818,17 @@ class ArtifactQueryService:
             "events": [dict(row) for row in events],
             "quality_checks": [dict(row) for row in checks],
             "artifacts": [dict(row) for row in artifacts],
+            "nav_series": nav_series,
+            # Legacy v0.2 results cannot be promoted one-by-one. A v0.21 Research
+            # Candidate is created only from one complete immutable six-cell bundle.
+            "promotion_eligible": False,
+            "promotion_reason_codes": [
+                "v021_six_cell_qualification_bundle_missing",
+                "pit_universe_gate_open",
+                "terminal_event_gate_open",
+                "impact_policy_gate_open",
+            ],
+            "qualification_bundle_artifact_id": None,
         }
 
     def product_ranking(
@@ -1544,7 +2841,9 @@ class ArtifactQueryService:
         series_role, metric_scope, definition_key, direction = metric
         with self._engine.connect() as connection:
             connection.execute(text("SET TRANSACTION READ ONLY"))
-            cohorts = connection.execute(text("""
+            cohorts = (
+                connection.execute(
+                    text("""
                 WITH latest_cohort AS (
                     SELECT DISTINCT ON (cohort_version.cohort_key)
                            cohort_version.comparison_cohort_version_id
@@ -1590,19 +2889,31 @@ class ArtifactQueryService:
                     CASE cohort.target_k WHEN 2 THEN 0 WHEN 1 THEN 1 ELSE 2 END,
                     cohort.common_simulation_start,
                     cohort.cohort_key
-            """)).mappings().all()
+            """)
+                )
+                .mappings()
+                .all()
+            )
             if not cohorts:
                 return {
-                    "cohorts": [], "active_cohort_artifact_id": None,
-                    "selected_metric": metric_key, "ranking_direction": direction,
-                    "candidate_count": 0, "ranked_count": 0, "entries": [],
+                    "cohorts": [],
+                    "active_cohort_artifact_id": None,
+                    "selected_metric": metric_key,
+                    "ranking_direction": direction,
+                    "candidate_count": 0,
+                    "ranked_count": 0,
+                    "entries": [],
                 }
-            active = next(
-                (row for row in cohorts if row["artifact_id"] == cohort_artifact_id), None
-            ) if cohort_artifact_id else cohorts[0]
+            active = (
+                next((row for row in cohorts if row["artifact_id"] == cohort_artifact_id), None)
+                if cohort_artifact_id
+                else cohorts[0]
+            )
             if active is None:
                 raise LookupError(f"Published Comparison Cohort not found: {cohort_artifact_id}")
-            rows = connection.execute(text("""
+            rows = (
+                connection.execute(
+                    text("""
                 SELECT publication.artifact_id AS result_artifact_id,
                        product.artifact_id AS product_artifact_id,
                        product_definition.product_key,
@@ -1654,16 +2965,25 @@ class ArtifactQueryService:
                      AND selected.series_role = :series_role
                 WHERE cohort.artifact_id = :cohort
                 ORDER BY member.ordinal
-            """), {
-                "cohort": active["artifact_id"], "series_role": series_role,
-                "metric_scope": metric_scope, "definition_key": definition_key,
-            }).mappings().all()
+            """),
+                    {
+                        "cohort": active["artifact_id"],
+                        "series_role": series_role,
+                        "metric_scope": metric_scope,
+                        "definition_key": definition_key,
+                    },
+                )
+                .mappings()
+                .all()
+            )
             interval_ids = tuple(row["interval_performance_result_id"] for row in rows)
             core_by_interval: dict[uuid.UUID, dict[str, float | None]] = {
                 interval_id: {} for interval_id in interval_ids
             }
             if interval_ids:
-                core_rows = connection.execute(text("""
+                core_rows = (
+                    connection.execute(
+                        text("""
                     SELECT value.interval_performance_result_id, value.series_role,
                            definition.metric_key, value.metric_value
                     FROM experiment.performance_metric_value value
@@ -1677,7 +2997,11 @@ class ArtifactQueryService:
                            OR (value.series_role = 'relative' AND definition.metric_key =
                                'annualized_relative_wealth_growth'))
                 """).bindparams(bindparam("result_ids", expanding=True)),
-                    {"result_ids": interval_ids}).mappings().all()
+                        {"result_ids": interval_ids},
+                    )
+                    .mappings()
+                    .all()
+                )
                 for core in core_rows:
                     value = core["metric_value"]
                     core_by_interval[core["interval_performance_result_id"]][
@@ -1699,14 +3023,19 @@ class ArtifactQueryService:
             row["rank"] = ranks[str(row["result_artifact_id"])]
             row["core_metrics"] = core_by_interval[interval_id]
             entries.append(row)
-        entries.sort(key=lambda item: (
-            item["rank"] is None, item["rank"] or 0, item["product_key"],
-            str(item["result_artifact_id"]),
-        ))
+        entries.sort(
+            key=lambda item: (
+                item["rank"] is None,
+                item["rank"] or 0,
+                item["product_key"],
+                str(item["result_artifact_id"]),
+            )
+        )
         return {
             "cohorts": [dict(row) for row in cohorts],
             "active_cohort_artifact_id": active["artifact_id"],
-            "selected_metric": metric_key, "ranking_direction": direction,
+            "selected_metric": metric_key,
+            "ranking_direction": direction,
             "candidate_count": len(entries),
             "ranked_count": sum(item["rank"] is not None for item in entries),
             "entries": entries,
@@ -1719,7 +3048,9 @@ class ArtifactQueryService:
             raise ValueError("Product Compare requires between two and six distinct results")
         with self._engine.connect() as connection:
             connection.execute(text("SET TRANSACTION READ ONLY"))
-            rows = connection.execute(text("""
+            rows = (
+                connection.execute(
+                    text("""
                 SELECT publication.artifact_id AS result_artifact_id,
                        product_definition.product_key,
                        model_specification.specification_key AS model_specification_key,
@@ -1782,13 +3113,19 @@ class ArtifactQueryService:
                                                       specification.cost_scenario_id
                 WHERE publication.artifact_id IN :artifacts
             """).bindparams(bindparam("artifacts", expanding=True)),
-                {"artifacts": ordered_ids}).mappings().all()
+                    {"artifacts": ordered_ids},
+                )
+                .mappings()
+                .all()
+            )
             by_id = {row["result_artifact_id"]: row for row in rows}
             if len(by_id) != len(ordered_ids):
                 raise LookupError("Every Product Compare result must be published and accepted")
             rows = [by_id[item] for item in ordered_ids]
             interval_ids = tuple(row["interval_performance_result_id"] for row in rows)
-            metric_rows = connection.execute(text("""
+            metric_rows = (
+                connection.execute(
+                    text("""
                 SELECT value.interval_performance_result_id, value.series_role,
                        definition.metric_scope, definition.metric_key, definition.name,
                        definition.unit, value.metric_value, value.value_status,
@@ -1800,7 +3137,11 @@ class ArtifactQueryService:
                 WHERE value.interval_performance_result_id IN :results
                 ORDER BY definition.ordinal, value.series_role
             """).bindparams(bindparam("results", expanding=True)),
-                {"results": interval_ids}).mappings().all()
+                    {"results": interval_ids},
+                )
+                .mappings()
+                .all()
+            )
         metrics: dict[uuid.UUID, list[dict[str, Any]]] = {item: [] for item in interval_ids}
         for metric in metric_rows:
             payload = dict(metric)
@@ -1811,16 +3152,28 @@ class ArtifactQueryService:
         classification = classify_comparison([dict(row) for row in rows])
         entries = []
         visible_fields = (
-            "result_artifact_id", "product_key", "model_specification_key",
-            "strategy_template_key", "variant_key", "target_k", "frequency",
-            "cost_bps_per_side", "template_key", "initialization_policy",
-            "availability_status", "quality_status", "resolved_start", "resolved_end",
+            "result_artifact_id",
+            "product_key",
+            "model_specification_key",
+            "strategy_template_key",
+            "variant_key",
+            "target_k",
+            "frequency",
+            "cost_bps_per_side",
+            "template_key",
+            "initialization_policy",
+            "availability_status",
+            "quality_status",
+            "resolved_start",
+            "resolved_end",
         )
         for row in rows:
-            entries.append({
-                **{field: row[field] for field in visible_fields},
-                "metrics": metrics[row["interval_performance_result_id"]],
-            })
+            entries.append(
+                {
+                    **{field: row[field] for field in visible_fields},
+                    "metrics": metrics[row["interval_performance_result_id"]],
+                }
+            )
         return {
             "mode": classification.mode,
             "changed_dimensions": list(classification.changed_dimensions),
@@ -1834,7 +3187,14 @@ class ArtifactQueryService:
         """Trace one accepted result decision through Model, Signal, Factor, and Data."""
         with self._engine.connect() as connection:
             connection.execute(text("SET TRANSACTION READ ONLY"))
-            context = connection.execute(text("""
+            v021 = self._v021_decision_explorer(
+                connection, result_artifact_id=result_artifact_id, decision_date=decision_date
+            )
+            if v021 is not None:
+                return v021
+            context = (
+                connection.execute(
+                    text("""
                 SELECT publication.artifact_id AS result_artifact_id,
                        target.artifact_id AS target_path_artifact_id,
                        model_dataset.artifact_id AS model_dataset_artifact_id,
@@ -1872,13 +3232,23 @@ class ArtifactQueryService:
                 JOIN catalog.eligibility_snapshot eligibility ON
                      eligibility.eligibility_snapshot_id = target.eligibility_snapshot_id
                 WHERE publication.artifact_id = :result
-            """), {"result": result_artifact_id}).mappings().one_or_none()
+            """),
+                    {"result": result_artifact_id},
+                )
+                .mappings()
+                .one_or_none()
+            )
             if context is None:
                 raise LookupError(f"Published accepted result not found: {result_artifact_id}")
-            dates = tuple(connection.execute(text("""
+            dates = tuple(
+                connection.execute(
+                    text("""
                 SELECT decision_date FROM strategy.portfolio_decision
                 WHERE portfolio_target_path_id = :path ORDER BY decision_date DESC
-            """), {"path": context["portfolio_target_path_id"]}).scalars())
+            """),
+                    {"path": context["portfolio_target_path_id"]},
+                ).scalars()
+            )
             if not dates:
                 raise LookupError("Accepted result target path has no decisions")
             selected_date = decision_date or dates[0]
@@ -1886,7 +3256,9 @@ class ArtifactQueryService:
                 raise LookupError(
                     f"Decision date is not present in the target path: {selected_date}"
                 )
-            positions = connection.execute(text("""
+            positions = (
+                connection.execute(
+                    text("""
                 SELECT decision.target_k, decision.actual_holding_count,
                        decision.reserve_target_weight, asset.asset_id, asset.asset_key,
                        symbol.symbol, position.selected, position.model_score,
@@ -1907,9 +3279,15 @@ class ArtifactQueryService:
                 WHERE decision.portfolio_target_path_id = :path
                   AND decision.decision_date = :date
                 ORDER BY position.model_rank, asset.asset_key
-            """), {"path": context["portfolio_target_path_id"], "date": selected_date}
-            ).mappings().all()
-            component_rows = connection.execute(text("""
+            """),
+                    {"path": context["portfolio_target_path_id"], "date": selected_date},
+                )
+                .mappings()
+                .all()
+            )
+            component_rows = (
+                connection.execute(
+                    text("""
                 SELECT asset.asset_id, dimension.dimension_key,
                        dimension.weight AS dimension_weight,
                        dimension.input_transform AS dimension_transform,
@@ -1956,21 +3334,28 @@ class ArtifactQueryService:
                 JOIN catalog.asset asset ON asset.asset_id = signal_value.asset_id
                 WHERE input.model_dataset_id = :dataset
                 ORDER BY asset.asset_key, dimension.ordinal, component.ordinal
-            """), {"dataset": context["model_dataset_id"], "date": selected_date}
-            ).mappings().all()
+            """),
+                    {"dataset": context["model_dataset_id"], "date": selected_date},
+                )
+                .mappings()
+                .all()
+            )
         components_by_asset: dict[uuid.UUID, list[dict[str, Any]]] = {}
         for source in component_rows:
             row = dict(source)
             asset_id = row.pop("asset_id")
             signal_score = Decimal(row["signal_score"])
-            transformed = signal_score if row["input_transform"] == "identity" else Decimal(
-                1 if signal_score > 0 else -1 if signal_score < 0 else 0
+            transformed = (
+                signal_score
+                if row["input_transform"] == "identity"
+                else Decimal(1 if signal_score > 0 else -1 if signal_score < 0 else 0)
             )
             weighted = transformed * Decimal(row["component_weight"])
             exact = (
                 weighted * Decimal(row["dimension_weight"])
                 if context["method_key"] == "weighted_mean"
-                and row.pop("dimension_transform") == "identity" else None
+                and row["dimension_transform"] == "identity"
+                else None
             )
             row["signal_score"] = float(signal_score)
             row["dimension_weight"] = float(row["dimension_weight"])
@@ -1979,35 +3364,513 @@ class ArtifactQueryService:
             row["weighted_component_input"] = float(weighted)
             row["overall_contribution"] = float(exact) if exact is not None else None
             components_by_asset.setdefault(asset_id, []).append(row)
-        visible_context = {key: context[key] for key in (
-            "result_artifact_id", "target_path_artifact_id", "model_dataset_artifact_id",
-            "model_specification_artifact_id", "universe_artifact_id",
-            "data_bundle_artifact_id", "eligibility_artifact_id",
-        )}
+        visible_context = {
+            key: context[key]
+            for key in (
+                "result_artifact_id",
+                "target_path_artifact_id",
+                "model_dataset_artifact_id",
+                "model_specification_artifact_id",
+                "universe_artifact_id",
+                "data_bundle_artifact_id",
+                "eligibility_artifact_id",
+            )
+        }
         first = positions[0]
         return {
-            **visible_context, "model_method_key": context["method_key"],
-            "available_dates": list(dates), "selected_date": selected_date,
+            **visible_context,
+            "model_method_key": context["method_key"],
+            "available_dates": list(dates),
+            "selected_date": selected_date,
             "target_k": first["target_k"],
             "actual_holding_count": first["actual_holding_count"],
             "reserve_target_weight": float(first["reserve_target_weight"]),
-            "positions": [{
-                **{key: (float(row[key]) if key in {"model_score", "model_rank", "target_weight"}
-                         else row[key]) for key in (
-                    "asset_key", "symbol", "selected", "model_score", "model_rank",
-                    "trend_state", "target_weight", "decision_reason")},
-                "components": components_by_asset.get(row["asset_id"], []),
-            } for row in positions],
+            "positions": [
+                {
+                    **{
+                        key: (
+                            float(row[key])
+                            if key in {"model_score", "model_rank", "target_weight"}
+                            else row[key]
+                        )
+                        for key in (
+                            "asset_key",
+                            "symbol",
+                            "selected",
+                            "model_score",
+                            "model_rank",
+                            "trend_state",
+                            "target_weight",
+                            "decision_reason",
+                        )
+                    },
+                    "components": components_by_asset.get(row["asset_id"], []),
+                }
+                for row in positions
+            ],
+        }
+
+    @staticmethod
+    def _v021_decision_explorer(
+        connection: Any, *, result_artifact_id: uuid.UUID, decision_date: Any | None
+    ) -> dict[str, Any] | None:
+        row = (
+            connection.execute(
+                text(
+                    """
+                    SELECT result.series, result.diagnostics,
+                           result.payload_storage_uri, result.payload_content_hash,
+                           result.payload_storage_format, result.payload_schema_version,
+                           result.payload_byte_size,
+                           cell.artifact_id AS cell_artifact_id,
+                           spec.artifact_id AS compiled_spec_artifact_id,
+                           model.family_key AS model_method_key,
+                           strategy.rule_graph -> 'parameters' ->> 'target_k' AS target_k,
+                           context.universe_history_artifact_id,
+                           context.data_bundle_artifact_id,
+                           COALESCE(
+                               pit.document ->> 'eligibility_snapshot_artifact_id',
+                               context.universe_history_artifact_id::text
+                           ) AS eligibility_artifact_id,
+                           predictive.series AS predictive_series,
+                           predictive.diagnostics AS predictive_diagnostics,
+                           predictive.payload_storage_uri
+                               AS predictive_payload_storage_uri,
+                           predictive.payload_content_hash
+                               AS predictive_payload_content_hash,
+                           predictive.payload_storage_format
+                               AS predictive_payload_storage_format,
+                           predictive.payload_schema_version
+                               AS predictive_payload_schema_version,
+                           predictive.payload_byte_size AS predictive_payload_byte_size
+                    FROM experiment.cell_result result
+                    JOIN experiment.portfolio_cell_specification cell
+                      ON cell.artifact_id = result.cell_artifact_id
+                    JOIN strategy.compiled_strategy_version strategy
+                      ON strategy.compiled_strategy_version_id = cell.compiled_strategy_version_id
+                    JOIN workspace.compiled_model_instance model
+                      ON model.compiled_model_instance_id = strategy.compiled_model_instance_id
+                    JOIN workspace.compiled_research_spec spec
+                      ON spec.compiled_research_spec_id = strategy.compiled_research_spec_id
+                    JOIN experiment.research_suite suite
+                      ON suite.research_suite_id = cell.research_suite_id
+                    JOIN experiment.execution_policy_catalog policy
+                      ON policy.execution_policy_catalog_id = suite.execution_policy_catalog_id
+                    JOIN experiment.comparison_context context
+                      ON context.artifact_id = CAST(
+                         policy.document ->> 'comparison_context_artifact_id' AS uuid)
+                    LEFT JOIN workspace.release_gate_evidence pit
+                      ON pit.artifact_id = CAST(
+                         policy.document #>> '{release_gate_artifact_ids,pit_universe}' AS uuid)
+                    JOIN experiment.predictive_cell_specification predictive_cell
+                      ON predictive_cell.research_suite_id = suite.research_suite_id
+                     AND predictive_cell.compiled_model_instance_id =
+                         model.compiled_model_instance_id
+                    JOIN experiment.cell_result predictive
+                      ON predictive.cell_artifact_id = predictive_cell.artifact_id
+                     AND predictive.availability_status = 'accepted'
+                    WHERE result.artifact_id = :result_id
+                      AND result.result_type = 'portfolio'
+                    """
+                ),
+                {"result_id": result_artifact_id},
+            )
+            .mappings()
+            .one_or_none()
+        )
+        if row is None:
+            return None
+        predictive_result = hydrate_cell_result_row(
+            {
+                "series": row["predictive_series"],
+                "diagnostics": row["predictive_diagnostics"],
+                "payload_storage_uri": row["predictive_payload_storage_uri"],
+                "payload_content_hash": row["predictive_payload_content_hash"],
+                "payload_storage_format": row["predictive_payload_storage_format"],
+                "payload_schema_version": row["predictive_payload_schema_version"],
+                "payload_byte_size": row["predictive_payload_byte_size"],
+            }
+        )
+        row = hydrate_cell_result_row(row)
+        row["predictive_series"] = predictive_result["series"]
+        decisions = row["series"].get("decisions", [])
+        dates = tuple(date.fromisoformat(item["decision_date"]) for item in decisions)
+        if not dates:
+            raise LookupError("v0.21 Result has no frozen Decisions")
+        selected_date = decision_date or dates[-1]
+        if selected_date not in dates:
+            raise LookupError(f"Decision date is not present in the Result: {selected_date}")
+        decision = next(
+            item for item in decisions if item["decision_date"] == selected_date.isoformat()
+        )
+        selected = {item["asset_key"]: item for item in decision["positions"]}
+        scores = [
+            item
+            for item in row["predictive_series"].get("model_scores", [])
+            if item["observation_date"] == selected_date.isoformat()
+        ]
+        ordered_scores = sorted((Decimal(item["score"]) for item in scores), reverse=True)
+        rank_by_score = {
+            score: 1 + sum(other > score for other in ordered_scores)
+            for score in set(ordered_scores)
+        }
+        audits = {
+            item["asset_key"]: item
+            for item in row["predictive_series"].get("model_input_audit", [])
+            if item["observation_date"] == selected_date.isoformat()
+        }
+        positions: list[dict[str, Any]] = []
+        for score in sorted(scores, key=lambda item: Decimal(item["score"]), reverse=True):
+            asset_key = score["asset_key"]
+            components = []
+            for source in audits.get(asset_key, {}).get("inputs", []):
+                factor = (
+                    connection.execute(
+                        text(
+                            """
+                            SELECT definition.factor_key, variant.variant_key
+                            FROM factor.factor_variant variant
+                            JOIN factor.factor_definition_version version
+                              ON version.factor_definition_version_id =
+                                 variant.factor_definition_version_id
+                            JOIN factor.factor_definition definition
+                              ON definition.factor_definition_id = version.factor_definition_id
+                            WHERE variant.artifact_id = :factor_variant_artifact_id
+                            """
+                        ),
+                        {
+                            "factor_variant_artifact_id": uuid.UUID(
+                                source["factor_variant_artifact_id"]
+                            ),
+                        },
+                    )
+                    .mappings()
+                    .one()
+                )
+                components.append(
+                    {
+                        "dimension_key": source["dimension_key"],
+                        "dimension_weight": 1.0,
+                        "dimension_transform": "common_valid_asset_cross_section",
+                        "signal_key": source["signal_version_key"],
+                        "signal_version_artifact_id": source["signal_version_artifact_id"],
+                        "signal_dataset_artifact_id": source["signal_dataset_artifact_id"],
+                        "signal_score": float(source["raw_signal_value"]),
+                        "signal_state": None,
+                        "input_transform": "branch_local_centered_percentile_rank_-1_1",
+                        "component_weight": 1.0,
+                        "transformed_signal_score": float(source["normalized_input_value"]),
+                        "weighted_component_input": float(source["contribution"]),
+                        "overall_contribution": float(source["contribution"]),
+                        "factor_key": factor["factor_key"],
+                        "factor_variant_key": factor["variant_key"],
+                        # Ad-hoc Workspace Factor values are computed on demand rather
+                        # than published as a canonical Factor Dataset snapshot.
+                        "factor_dataset_artifact_id": source[
+                            "factor_variant_artifact_id"
+                        ],
+                        "factor_value": None,
+                        "data_bundle_artifact_id": row["data_bundle_artifact_id"],
+                    }
+                )
+            model_score = Decimal(score["score"])
+            selection = selected.get(asset_key)
+            positions.append(
+                {
+                    "asset_key": asset_key,
+                    "symbol": asset_key,
+                    "selected": selection is not None,
+                    "model_score": float(model_score),
+                    "model_rank": float(rank_by_score[model_score]),
+                    "trend_state": None,
+                    "target_weight": float(selection["target_weight"]) if selection else 0.0,
+                    "decision_reason": "selected_top_k" if selection else "outside_top_k",
+                    "components": components,
+                }
+            )
+        return {
+            "result_artifact_id": result_artifact_id,
+            "target_path_artifact_id": row["cell_artifact_id"],
+            "model_dataset_artifact_id": row["compiled_spec_artifact_id"],
+            "model_specification_artifact_id": row["compiled_spec_artifact_id"],
+            "universe_artifact_id": row["universe_history_artifact_id"],
+            "data_bundle_artifact_id": row["data_bundle_artifact_id"],
+            "eligibility_artifact_id": uuid.UUID(row["eligibility_artifact_id"]),
+            "model_method_key": row["model_method_key"],
+            "available_dates": list(dates),
+            "selected_date": selected_date,
+            "target_k": int(row["target_k"]),
+            "actual_holding_count": len(selected),
+            "reserve_target_weight": float(
+                decision.get("reserve_target_weight", decision["defense_budget"])
+            ),
+            "positions": positions,
+        }
+
+    @staticmethod
+    def _v021_experiment_specifications(
+        connection: Any, research_suite_id: uuid.UUID
+    ) -> list[Any]:
+        return list(
+            connection.execute(
+                text("""
+                SELECT cell.artifact_id, result.artifact_id AS result_artifact_id,
+                       suite.artifact_id AS suite_artifact_id, suite.suite_mode,
+                       cell.cell_key, cell.ordinal,
+                       strategy.branch_key AS product_key,
+                       model.preset_key AS model_specification_key,
+                       strategy.strategy_preset_key AS variant_key, spec.frequency,
+                       'SPY' AS benchmark_key, 'equity' AS benchmark_category,
+                       cell.cost_bps_per_side::float AS cost_bps_per_side,
+                       CASE cell.window_key WHEN 'full_common_history' THEN 'full_history'
+                            ELSE cell.window_key END AS template_key,
+                       cell.initialization_policy, NULL::date AS as_of_date,
+                       NULL::date AS simulation_end, result.availability_status,
+                       result.quality_status, item.work_item_id AS run_attempt_id,
+                       item.attempt_count AS attempt_number, item.status AS run_status,
+                       item.failure_details ->> 'message' AS error_summary,
+                       result.metrics
+                FROM experiment.portfolio_cell_specification cell
+                JOIN experiment.research_suite suite
+                  ON suite.research_suite_id = cell.research_suite_id
+                JOIN strategy.compiled_strategy_version strategy
+                  ON strategy.compiled_strategy_version_id = cell.compiled_strategy_version_id
+                JOIN workspace.compiled_model_instance model
+                  ON model.compiled_model_instance_id = strategy.compiled_model_instance_id
+                JOIN workspace.compiled_research_spec spec
+                  ON spec.compiled_research_spec_id = strategy.compiled_research_spec_id
+                LEFT JOIN experiment.research_suite_work_item link
+                  ON link.research_suite_id = cell.research_suite_id
+                 AND link.cell_artifact_id = cell.artifact_id
+                LEFT JOIN ops.work_item item ON item.work_item_id = link.work_item_id
+                LEFT JOIN experiment.cell_result result
+                  ON result.cell_artifact_id = cell.artifact_id
+                WHERE suite.research_suite_id = :suite_id
+                UNION ALL
+                SELECT cell.artifact_id, result.artifact_id AS result_artifact_id,
+                       suite.artifact_id AS suite_artifact_id, suite.suite_mode,
+                       cell.cell_key, 0 AS ordinal,
+                       'predictive_diagnostic' AS product_key,
+                       model.preset_key AS model_specification_key,
+                       model.preset_key AS variant_key, cell.frequency,
+                       cell.evaluation_target_key AS benchmark_key,
+                       'predictive_target' AS benchmark_category,
+                       0::float AS cost_bps_per_side,
+                       'predictive_diagnostic' AS template_key,
+                       'compiled_model_input' AS initialization_policy,
+                       NULL::date AS as_of_date, NULL::date AS simulation_end,
+                       result.availability_status, result.quality_status,
+                       item.work_item_id AS run_attempt_id,
+                       item.attempt_count AS attempt_number, item.status AS run_status,
+                       item.failure_details ->> 'message' AS error_summary,
+                       result.metrics
+                FROM experiment.predictive_cell_specification cell
+                JOIN experiment.research_suite suite
+                  ON suite.research_suite_id = cell.research_suite_id
+                JOIN workspace.compiled_model_instance model
+                  ON model.compiled_model_instance_id = cell.compiled_model_instance_id
+                LEFT JOIN experiment.research_suite_work_item link
+                  ON link.research_suite_id = cell.research_suite_id
+                 AND link.cell_artifact_id = cell.artifact_id
+                LEFT JOIN ops.work_item item ON item.work_item_id = link.work_item_id
+                LEFT JOIN experiment.cell_result result
+                  ON result.cell_artifact_id = cell.artifact_id
+                WHERE suite.research_suite_id = :suite_id
+                ORDER BY suite_artifact_id DESC, product_key, ordinal
+            """),
+                {"suite_id": research_suite_id},
+            )
+            .mappings()
+            .all()
+        )
+
+    @staticmethod
+    def _v021_experiment_result(
+        connection: Any, result_artifact_id: uuid.UUID
+    ) -> dict[str, Any] | None:
+        row = (
+            connection.execute(
+                text("""
+            SELECT source.*, artifact.created_at AS result_created_at
+            FROM (
+                SELECT cell.artifact_id, result.artifact_id AS result_artifact_id,
+                       suite.artifact_id AS suite_artifact_id, suite.suite_mode,
+                       cell.cell_key, cell.ordinal,
+                       strategy.branch_key AS product_key,
+                       model.preset_key AS model_specification_key,
+                       strategy.strategy_preset_key AS variant_key, spec.frequency,
+                       'SPY' AS benchmark_key, 'equity' AS benchmark_category,
+                       cell.cost_bps_per_side::float AS cost_bps_per_side,
+                       CASE cell.window_key WHEN 'full_common_history' THEN 'full_history'
+                            ELSE cell.window_key END AS template_key,
+                       cell.initialization_policy, result.availability_status,
+                       result.quality_status, item.work_item_id AS run_attempt_id,
+                       item.attempt_count AS attempt_number, item.status AS run_status,
+                       item.created_at AS started_at, item.updated_at AS completed_at,
+                       item.failure_details ->> 'message' AS error_summary,
+                        result.metrics, result.series, result.diagnostics,
+                        result.payload_storage_uri, result.payload_content_hash,
+                        result.payload_storage_format, result.payload_schema_version,
+                        result.payload_byte_size
+                FROM experiment.cell_result result
+                JOIN experiment.portfolio_cell_specification cell
+                  ON cell.artifact_id = result.cell_artifact_id
+                JOIN experiment.research_suite suite
+                  ON suite.research_suite_id = cell.research_suite_id
+                JOIN strategy.compiled_strategy_version strategy
+                  ON strategy.compiled_strategy_version_id = cell.compiled_strategy_version_id
+                JOIN workspace.compiled_model_instance model
+                  ON model.compiled_model_instance_id = strategy.compiled_model_instance_id
+                JOIN workspace.compiled_research_spec spec
+                  ON spec.compiled_research_spec_id = strategy.compiled_research_spec_id
+                JOIN ops.work_item item ON item.work_item_id = result.work_item_id
+                WHERE result.artifact_id = :result_id
+                UNION ALL
+                SELECT cell.artifact_id, result.artifact_id AS result_artifact_id,
+                       suite.artifact_id AS suite_artifact_id, suite.suite_mode,
+                       cell.cell_key, 0 AS ordinal,
+                       'predictive_diagnostic' AS product_key,
+                       model.preset_key AS model_specification_key,
+                       model.preset_key AS variant_key, cell.frequency,
+                       cell.evaluation_target_key AS benchmark_key,
+                       'predictive_target' AS benchmark_category,
+                       0::float AS cost_bps_per_side,
+                       'predictive_diagnostic' AS template_key,
+                       'compiled_model_input' AS initialization_policy,
+                       result.availability_status, result.quality_status,
+                       item.work_item_id AS run_attempt_id,
+                       item.attempt_count AS attempt_number, item.status AS run_status,
+                       item.created_at AS started_at, item.updated_at AS completed_at,
+                       item.failure_details ->> 'message' AS error_summary,
+                       result.metrics, result.series, result.diagnostics,
+                       result.payload_storage_uri, result.payload_content_hash,
+                       result.payload_storage_format, result.payload_schema_version,
+                       result.payload_byte_size
+                FROM experiment.cell_result result
+                JOIN experiment.predictive_cell_specification cell
+                  ON cell.artifact_id = result.cell_artifact_id
+                JOIN experiment.research_suite suite
+                  ON suite.research_suite_id = cell.research_suite_id
+                JOIN workspace.compiled_model_instance model
+                  ON model.compiled_model_instance_id = cell.compiled_model_instance_id
+                JOIN ops.work_item item ON item.work_item_id = result.work_item_id
+                WHERE result.artifact_id = :result_id
+            ) source
+            JOIN lineage.artifact artifact ON artifact.artifact_id = source.result_artifact_id
+            WHERE artifact.status = 'published'
+        """),
+                {"result_id": result_artifact_id},
+            )
+            .mappings()
+            .one_or_none()
+        )
+        if row is None:
+            return None
+        row = hydrate_cell_result_row(row)
+        specification = _v021_overview_item(row)
+        metrics = _v021_metric_items(row["metrics"] or {})
+        nav_series = _v021_nav_series(row["series"] or {})
+        diagnostics = row["diagnostics"] or {}
+        events = [
+            {
+                "sequence_number": event["sequence_number"],
+                "event_type": event["event_type"],
+                "severity": "info",
+                "message": (event["details"] or {}).get("message", event["event_type"]),
+                "occurred_at": event["created_at"],
+            }
+            for event in connection.execute(
+                text(
+                    "SELECT sequence_number, event_type, details, occurred_at AS created_at "
+                    "FROM ops.work_item_event WHERE work_item_id = :id "
+                    "ORDER BY sequence_number"
+                ),
+                {"id": row["run_attempt_id"]},
+            )
+            .mappings()
+            .all()
+        ]
+        checks = [
+            {
+                "check_key": check.get("check_key", f"quality_check_{index + 1}"),
+                "scope_key": check.get("scope_key", "v021_cell"),
+                "status": check.get("status", "unknown"),
+                "severity": check.get("severity", "info"),
+                "message": check.get("message", check.get("check_key", "quality check")),
+            }
+            for index, check in enumerate(diagnostics.get("quality_checks", []))
+            if isinstance(check, dict)
+        ]
+        resolved_start = _optional_date(diagnostics.get("resolved_start"))
+        resolved_end = _optional_date(diagnostics.get("resolved_end"))
+        return {
+            "result_artifact_id": row["result_artifact_id"],
+            "specification": specification,
+            "interval_result_artifact_id": row["result_artifact_id"],
+            "requested_start": _optional_date(diagnostics.get("requested_start")),
+            "requested_end": _optional_date(diagnostics.get("requested_end")),
+            "resolved_start": resolved_start,
+            "resolved_end": resolved_end,
+            "normalization_nav_date": _optional_date(diagnostics.get("normalization_nav_date")),
+            "observation_count": int(diagnostics.get("observation_count", len(nav_series))),
+            "metric_value_count": len(metrics),
+            "run_attempt_id": row["run_attempt_id"],
+            "run_status": row["run_status"],
+            "started_at": row["started_at"],
+            "completed_at": row["completed_at"],
+            "metrics": metrics,
+            "events": events,
+            "quality_checks": checks,
+            "artifacts": [
+                {
+                    "artifact_id": row["result_artifact_id"],
+                    "role": "result",
+                    "artifact_type": "v021_cell_result",
+                    "artifact_key": str(row["result_artifact_id"]),
+                },
+                {
+                    "artifact_id": row["artifact_id"],
+                    "role": "cell_specification",
+                    "artifact_type": (
+                        "predictive_cell_specification"
+                        if row["template_key"] == "predictive_diagnostic"
+                        else "portfolio_cell_specification"
+                    ),
+                    "artifact_key": row["cell_key"],
+                },
+            ],
+            "nav_series": nav_series,
+            "promotion_eligible": False,
+            "promotion_reason_codes": [],
+            "qualification_bundle_artifact_id": None,
         }
 
     @staticmethod
     def _experiment_specifications(
-        connection: Any, *, result_artifact_id: uuid.UUID | None = None
+        connection: Any,
+        *,
+        result_artifact_id: uuid.UUID | None = None,
+        template_key: str | None = None,
+        frequency: str | None = None,
+        cost_bps_per_side: float | None = None,
     ) -> list[Any]:
-        result_filter = (
-            " AND publication.artifact_id = :result_artifact" if result_artifact_id else ""
-        )
-        statement = text("""
+        filters: list[str] = []
+        parameters: dict[str, Any] = {}
+        if result_artifact_id is not None:
+            filters.append("publication.artifact_id = :result_artifact")
+            parameters["result_artifact"] = result_artifact_id
+        if template_key is not None:
+            filters.append("specification.template_key = :template_key")
+            parameters["template_key"] = template_key
+        if frequency is not None:
+            filters.append("schedule.frequency = :frequency")
+            parameters["frequency"] = frequency
+        if cost_bps_per_side is not None:
+            filters.append("cost.cost_bps_per_side = :cost_bps_per_side")
+            parameters["cost_bps_per_side"] = cost_bps_per_side
+        extra_filter = "".join(f" AND {condition}" for condition in filters)
+        statement = text(
+            """
             SELECT specification.artifact_id, publication.artifact_id AS result_artifact_id,
                    suite.artifact_id AS suite_artifact_id, cell.cell_key, cell.ordinal,
                    product_definition.product_key, model_specification.specification_key AS
@@ -2063,9 +3926,68 @@ class ArtifactQueryService:
                 ORDER BY attempt.attempt_number DESC LIMIT 1
             ) latest ON true
             WHERE (publication.artifact_id IS NULL OR publication_artifact.artifact_id IS NOT NULL)
-        """ + result_filter + " ORDER BY suite.version_number DESC, cell.ordinal")
-        parameters = {"result_artifact": result_artifact_id} if result_artifact_id else {}
+        """
+            + extra_filter
+            + " ORDER BY suite.version_number DESC, cell.ordinal"
+        )
         return list(connection.execute(statement, parameters).mappings().all())
+
+    @staticmethod
+    def _legacy_experiment_status_counts(connection: Any) -> dict[str, int]:
+        row = (
+            connection.execute(
+                text("""
+                WITH latest AS (
+                    SELECT DISTINCT ON (attempt.root_artifact_id)
+                           attempt.root_artifact_id, attempt.status
+                    FROM ops.run_attempt attempt
+                    WHERE attempt.run_type = 'experiment_specification'
+                    ORDER BY attempt.root_artifact_id, attempt.attempt_number DESC
+                )
+                SELECT count(*)::integer AS total,
+                       count(*) FILTER (
+                           WHERE publication.artifact_id IS NOT NULL
+                       )::integer AS accepted,
+                       count(*) FILTER (
+                           WHERE publication.artifact_id IS NULL
+                             AND latest.status = 'failed'
+                       )::integer AS failed,
+                       count(*) FILTER (
+                           WHERE publication.artifact_id IS NULL
+                             AND latest.status IN ('queued', 'running')
+                       )::integer AS running,
+                       count(*) FILTER (
+                           WHERE publication.artifact_id IS NULL
+                             AND (latest.status IS NULL OR latest.status NOT IN
+                                  ('failed', 'queued', 'running'))
+                       )::integer AS pending
+                FROM experiment.experiment_suite_cell cell
+                JOIN experiment.experiment_suite suite
+                  ON suite.experiment_suite_id = cell.experiment_suite_id
+                JOIN lineage.artifact suite_artifact
+                  ON suite_artifact.artifact_id = suite.artifact_id
+                 AND suite_artifact.status = 'published'
+                JOIN experiment.experiment_specification specification
+                  ON specification.experiment_specification_id =
+                     cell.experiment_specification_id
+                JOIN lineage.artifact specification_artifact
+                  ON specification_artifact.artifact_id = specification.artifact_id
+                 AND specification_artifact.status = 'published'
+                LEFT JOIN experiment.result_publication publication
+                  ON publication.experiment_specification_id =
+                     specification.experiment_specification_id
+                LEFT JOIN lineage.artifact publication_artifact
+                  ON publication_artifact.artifact_id = publication.artifact_id
+                 AND publication_artifact.status = 'published'
+                LEFT JOIN latest ON latest.root_artifact_id = specification.artifact_id
+                WHERE publication.artifact_id IS NULL
+                   OR publication_artifact.artifact_id IS NOT NULL
+            """)
+            )
+            .mappings()
+            .one()
+        )
+        return {key: int(row[key]) for key in ("total", "accepted", "failed", "running", "pending")}
 
     @staticmethod
     def _latest_bundle(connection: Any) -> dict[str, Any] | None:

@@ -74,9 +74,7 @@ def test_boundary_tie_shares_remaining_slot_without_ticker_tiebreak() -> None:
 
 
 def test_k3_weights_close_the_finite_decimal_budget_exactly() -> None:
-    result = calculate_target(
-        _variant("rank_then_select", k=3), _points(("1", ".5", "0", "-.5"))
-    )
+    result = calculate_target(_variant("rank_then_select", k=3), _points(("1", ".5", "0", "-.5")))
     assert sum(item.target_weight for item in result.positions) == Decimal(1)
     assert result.reserve_target_weight == Decimal(0)
     assert result.actual_holding_count == 3

@@ -11,7 +11,10 @@ def test_competition_ranks_share_ties_and_exclude_undefined_values() -> None:
         RankableValue("missing", None),
     )
     assert competition_ranks(values, "higher_is_better") == {
-        "a": 1, "b": 2, "c": 2, "missing": None,
+        "a": 1,
+        "b": 2,
+        "c": 2,
+        "missing": None,
     }
 
 

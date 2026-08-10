@@ -59,8 +59,16 @@ class SourceAcquisitionService:
             raise ValueError("Market symbols must be unique")
         results: list[AcquiredSnapshot] = []
         if include_market:
-            for symbol in symbols:
-                fetched = self._market.fetch(symbol, start, end_inclusive + timedelta(days=1))
+            fetch_many = getattr(self._market, "fetch_many", None)
+            fetched_items = (
+                fetch_many(symbols, start, end_inclusive + timedelta(days=1))
+                if callable(fetch_many) and len(symbols) > 1
+                else tuple(
+                    (symbol, self._market.fetch(symbol, start, end_inclusive + timedelta(days=1)))
+                    for symbol in symbols
+                )
+            )
+            for symbol, fetched in fetched_items:
                 results.append(
                     self._publish(
                         symbol,

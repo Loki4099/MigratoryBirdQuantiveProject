@@ -1002,9 +1002,7 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     assert suite_counts == (2, 2, 3, 2)
     with engine.connect() as connection:
         with pytest.raises(DBAPIError):
-            connection.execute(
-                text("UPDATE experiment.experiment_suite_cell SET ordinal = 9")
-            )
+            connection.execute(text("UPDATE experiment.experiment_suite_cell SET ordinal = 9"))
         connection.rollback()
 
     orchestration_spec = build_orchestration_engine_spec(
@@ -1122,15 +1120,17 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
             result_artifact_ids=(accepted_excluded.result_artifact_id,),
         )
     with engine.connect() as connection:
-        cohort_counts = connection.execute(text(
-            "SELECT (SELECT count(*) FROM experiment.warmup_policy_version), "
-            "(SELECT count(*) FROM experiment.comparison_cohort_version), "
-            "(SELECT count(*) FROM experiment.comparison_cohort_member)"
-        )).one()
+        cohort_counts = connection.execute(
+            text(
+                "SELECT (SELECT count(*) FROM experiment.warmup_policy_version), "
+                "(SELECT count(*) FROM experiment.comparison_cohort_version), "
+                "(SELECT count(*) FROM experiment.comparison_cohort_member)"
+            )
+        ).one()
         with pytest.raises(DBAPIError):
-            connection.execute(text(
-                "UPDATE experiment.comparison_cohort_version SET name = 'changed'"
-            ))
+            connection.execute(
+                text("UPDATE experiment.comparison_cohort_version SET name = 'changed'")
+            )
         connection.rollback()
     assert cohort_counts == (1, 1, 1)
 
@@ -1140,14 +1140,11 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     experiment_payload = experiment_overview.json()
     assert len(experiment_payload["suites"]) == 3
     assert len(experiment_payload["specifications"]) == 4
-    assert sum(
-        item["status"] == "accepted" for item in experiment_payload["specifications"]
-    ) == 3
-    assert sum(
-        item["status"] == "failed" for item in experiment_payload["specifications"]
-    ) == 1
+    assert sum(item["status"] == "accepted" for item in experiment_payload["specifications"]) == 3
+    assert sum(item["status"] == "failed" for item in experiment_payload["specifications"]) == 1
     eligible_cell = next(
-        item for item in experiment_payload["specifications"]
+        item
+        for item in experiment_payload["specifications"]
         if item["availability_status"] == "eligible"
     )
     assert eligible_cell["core_metrics"]["strategy.cagr"] is not None
@@ -1172,10 +1169,13 @@ def test_factor_engine_publishes_all_catalog_variants_atomically_and_reuses_them
     assert ranking_payload["entries"][0]["rank"] == 1
     assert ranking_payload["entries"][0]["metric_value"] is not None
     assert ranking_payload["cohorts"][0]["required_warmup_observations"] == 253
-    accepted_ids = list(dict.fromkeys(
-        item["result_artifact_id"] for item in experiment_payload["specifications"]
-        if item["result_artifact_id"] is not None
-    ))
+    accepted_ids = list(
+        dict.fromkeys(
+            item["result_artifact_id"]
+            for item in experiment_payload["specifications"]
+            if item["result_artifact_id"] is not None
+        )
+    )
     comparison = experiment_client.get(
         "/api/v2/compare/products",
         params=[("result_artifact_id", item) for item in accepted_ids[:2]],

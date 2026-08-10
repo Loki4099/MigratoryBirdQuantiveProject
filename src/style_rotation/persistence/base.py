@@ -21,6 +21,8 @@ SCHEMA_NAMES = (
     "model",
     "strategy",
     "experiment",
+    "workspace",
+    "product",
     "lineage",
     "ops",
 )

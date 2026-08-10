@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "style-rotation-engine"
-version = "0.2.0"
-description = "Versioned US style rotation research platform"
+version = "0.21.0"
+description = "Targeted cross-sectional research and candidate monitoring platform"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -14,6 +14,7 @@ dependencies = [
   "fastapi>=0.116,<1",
   "httpx>=0.28,<1",
   "pandas>=3.0.3,<4",
+  "pyarrow>=23,<24",
   "psycopg[binary]>=3.2,<4",
   "pydantic>=2.11,<3",
   "pydantic-settings>=2.10,<3",

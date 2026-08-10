@@ -22,7 +22,10 @@ function displayMetric(metric: { metric_key: string; value: number | null; value
 
 export function ComparePage() {
   const { t, i18n } = useTranslation();
-  const overview = useQuery({ queryKey: ["experiments", "overview"], queryFn: api.experimentOverview });
+  const overview = useQuery({
+    queryKey: ["experiments", "overview"],
+    queryFn: () => api.experimentOverview(),
+  });
   const candidates = useMemo(() => {
     const seen = new Set<string>();
     return (overview.data?.specifications ?? []).filter((item) => {

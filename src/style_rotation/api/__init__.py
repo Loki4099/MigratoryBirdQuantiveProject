@@ -1,3 +1,3 @@
-"""Read-only HTTP contracts for v0.2 research data."""
+"""HTTP query and command contracts for the local v0.21 research platform."""
 
 MODULE_KEY = "api"

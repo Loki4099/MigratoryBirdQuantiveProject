@@ -11,8 +11,7 @@
             "type": "string"
           },
           "read_only": {
-            "const": true,
-            "default": true,
+            "default": false,
             "title": "Read Only",
             "type": "boolean"
           },
@@ -209,37 +208,97 @@
       "AssetCatalogItem": {
         "additionalProperties": false,
         "properties": {
-          "asset_id": {
-            "format": "uuid",
-            "title": "Asset Id",
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Aliases",
+            "type": "array"
+          },
+          "asset_class": {
+            "title": "Asset Class",
             "type": "string"
+          },
+          "asset_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Id"
           },
           "asset_key": {
             "title": "Asset Key",
             "type": "string"
           },
-          "asset_type": {
-            "title": "Asset Type",
-            "type": "string"
-          },
           "calendar_key": {
-            "title": "Calendar Key",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calendar Key"
           },
-          "classifications": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "title": "Classifications",
-            "type": "object"
+          "canonical_data_available": {
+            "title": "Canonical Data Available",
+            "type": "boolean"
+          },
+          "category_key": {
+            "title": "Category Key",
+            "type": "string"
           },
           "currency": {
-            "title": "Currency",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "data_inputs": {
+            "items": {
+              "$ref": "#/components/schemas/AssetDataInputOption"
+            },
+            "title": "Data Inputs",
+            "type": "array"
+          },
+          "instrument_type": {
+            "title": "Instrument Type",
             "type": "string"
+          },
+          "maturity": {
+            "title": "Maturity",
+            "type": "string"
+          },
+          "missing_requirements": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Requirements",
+            "type": "array"
           },
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "security_id": {
+            "format": "uuid",
+            "title": "Security Id",
+            "type": "string"
+          },
+          "selectable": {
+            "title": "Selectable",
+            "type": "boolean"
           },
           "status": {
             "title": "Status",
@@ -249,22 +308,22 @@
             "title": "Symbol",
             "type": "string"
           },
-          "timezone": {
-            "title": "Timezone",
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "target_maturity": {
+            "title": "Target Maturity",
             "type": "string"
           },
-          "universe_ordinal": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Universe Ordinal"
+          "tradability": {
+            "title": "Tradability",
+            "type": "string"
           },
-          "universe_role": {
+          "venue_mic": {
             "anyOf": [
               {
                 "type": "string"
@@ -273,27 +332,30 @@
                 "type": "null"
               }
             ],
-            "title": "Universe Role"
-          },
-          "venue_mic": {
-            "title": "Venue Mic",
-            "type": "string"
+            "title": "Venue Mic"
           }
         },
         "required": [
+          "security_id",
           "asset_id",
           "asset_key",
           "name",
-          "asset_type",
+          "category_key",
+          "asset_class",
+          "instrument_type",
           "status",
           "symbol",
+          "aliases",
           "venue_mic",
           "currency",
-          "timezone",
           "calendar_key",
-          "classifications",
-          "universe_role",
-          "universe_ordinal"
+          "tradability",
+          "tags",
+          "maturity",
+          "target_maturity",
+          "missing_requirements",
+          "canonical_data_available",
+          "selectable"
         ],
         "title": "AssetCatalogItem",
         "type": "object"
@@ -305,6 +367,24 @@
             "title": "As Of Date",
             "type": "string"
           },
+          "asset_sets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetSetItem"
+            },
+            "title": "Asset Sets",
+            "type": "array"
+          },
+          "catalog_version": {
+            "title": "Catalog Version",
+            "type": "string"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/AssetCategoryItem"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
           "context": {
             "$ref": "#/components/schemas/ApiContext"
           },
@@ -314,6 +394,14 @@
             },
             "title": "Items",
             "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
           },
           "quality": {
             "$ref": "#/components/schemas/QualitySummary"
@@ -327,9 +415,9 @@
             "title": "Release Version Number",
             "type": "integer"
           },
-          "universe_key": {
-            "title": "Universe Key",
-            "type": "string"
+          "total": {
+            "title": "Total",
+            "type": "integer"
           }
         },
         "required": [
@@ -337,11 +425,254 @@
           "quality",
           "release_artifact_id",
           "release_version_number",
+          "catalog_version",
           "as_of_date",
-          "universe_key",
+          "total",
+          "limit",
+          "offset",
+          "categories",
+          "asset_sets",
           "items"
         ],
         "title": "AssetCatalogResponse",
+        "type": "object"
+      },
+      "AssetCategoryItem": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_count": {
+            "title": "Asset Count",
+            "type": "integer"
+          },
+          "category_key": {
+            "title": "Category Key",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category_key",
+          "name",
+          "description",
+          "asset_count"
+        ],
+        "title": "AssetCategoryItem",
+        "type": "object"
+      },
+      "AssetDataInputOption": {
+        "additionalProperties": false,
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "downstream_factor_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Downstream Factor Keys",
+            "type": "array"
+          },
+          "input_key": {
+            "title": "Input Key",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "point_in_time": {
+            "title": "Point In Time",
+            "type": "boolean"
+          },
+          "selectable": {
+            "title": "Selectable",
+            "type": "boolean"
+          },
+          "source_kind": {
+            "title": "Source Kind",
+            "type": "string"
+          },
+          "status_note": {
+            "title": "Status Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "input_key",
+          "name",
+          "source_kind",
+          "available",
+          "selectable",
+          "point_in_time",
+          "downstream_factor_keys",
+          "status_note"
+        ],
+        "title": "AssetDataInputOption",
+        "type": "object"
+      },
+      "AssetSeriesPoint": {
+        "additionalProperties": false,
+        "properties": {
+          "adjusted_close": {
+            "title": "Adjusted Close",
+            "type": "number"
+          },
+          "close": {
+            "title": "Close",
+            "type": "number"
+          },
+          "high": {
+            "title": "High",
+            "type": "number"
+          },
+          "low": {
+            "title": "Low",
+            "type": "number"
+          },
+          "open": {
+            "title": "Open",
+            "type": "number"
+          },
+          "session_date": {
+            "format": "date",
+            "title": "Session Date",
+            "type": "string"
+          },
+          "volume": {
+            "title": "Volume",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "session_date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "adjusted_close",
+          "volume"
+        ],
+        "title": "AssetSeriesPoint",
+        "type": "object"
+      },
+      "AssetSeriesResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_key": {
+            "title": "Asset Key",
+            "type": "string"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "coverage_end": {
+            "format": "date",
+            "title": "Coverage End",
+            "type": "string"
+          },
+          "coverage_start": {
+            "format": "date",
+            "title": "Coverage Start",
+            "type": "string"
+          },
+          "dataset_artifact_id": {
+            "format": "uuid",
+            "title": "Dataset Artifact Id",
+            "type": "string"
+          },
+          "dataset_version_number": {
+            "title": "Dataset Version Number",
+            "type": "integer"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/AssetSeriesPoint"
+            },
+            "title": "Points",
+            "type": "array"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "security_id": {
+            "format": "uuid",
+            "title": "Security Id",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "security_id",
+          "asset_key",
+          "symbol",
+          "dataset_artifact_id",
+          "dataset_version_number",
+          "coverage_start",
+          "coverage_end",
+          "points"
+        ],
+        "title": "AssetSeriesResponse",
+        "type": "object"
+      },
+      "AssetSetItem": {
+        "additionalProperties": false,
+        "properties": {
+          "formal_eligible": {
+            "title": "Formal Eligible",
+            "type": "boolean"
+          },
+          "maturity": {
+            "title": "Maturity",
+            "type": "string"
+          },
+          "member_security_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Member Security Ids",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "notes": {
+            "title": "Notes",
+            "type": "string"
+          },
+          "set_key": {
+            "title": "Set Key",
+            "type": "string"
+          },
+          "set_type": {
+            "title": "Set Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "set_key",
+          "name",
+          "set_type",
+          "maturity",
+          "formal_eligible",
+          "notes",
+          "member_security_ids"
+        ],
+        "title": "AssetSetItem",
         "type": "object"
       },
       "CapabilitiesResponse": {
@@ -395,6 +726,21 @@
           "languages"
         ],
         "title": "CapabilitiesResponse",
+        "type": "object"
+      },
+      "CommandIdempotencyRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "idempotency_key": {
+            "format": "uuid",
+            "title": "Idempotency Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "idempotency_key"
+        ],
+        "title": "CommandIdempotencyRequest",
         "type": "object"
       },
       "ComparisonCohortItem": {
@@ -970,6 +1316,10 @@
             "title": "Dimension Key",
             "type": "string"
           },
+          "dimension_transform": {
+            "title": "Dimension Transform",
+            "type": "string"
+          },
           "dimension_weight": {
             "title": "Dimension Weight",
             "type": "number"
@@ -984,8 +1334,15 @@
             "type": "string"
           },
           "factor_value": {
-            "title": "Factor Value",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Factor Value"
           },
           "factor_variant_key": {
             "title": "Factor Variant Key",
@@ -1047,6 +1404,7 @@
         "required": [
           "dimension_key",
           "dimension_weight",
+          "dimension_transform",
           "signal_key",
           "signal_version_artifact_id",
           "signal_dataset_artifact_id",
@@ -1527,7 +1885,8 @@
           "metric_scope": {
             "enum": [
               "absolute",
-              "relative"
+              "relative",
+              "predictive"
             ],
             "title": "Metric Scope",
             "type": "string"
@@ -1555,7 +1914,8 @@
             "enum": [
               "strategy",
               "benchmark",
-              "relative"
+              "relative",
+              "predictive"
             ],
             "title": "Series Role",
             "type": "string"
@@ -1594,14 +1954,77 @@
         "title": "ExperimentMetricItem",
         "type": "object"
       },
+      "ExperimentNavPoint": {
+        "additionalProperties": false,
+        "properties": {
+          "benchmark_wealth": {
+            "title": "Benchmark Wealth",
+            "type": "number"
+          },
+          "drawdown": {
+            "title": "Drawdown",
+            "type": "number"
+          },
+          "excess_wealth": {
+            "title": "Excess Wealth",
+            "type": "number"
+          },
+          "nav_date": {
+            "format": "date",
+            "title": "Nav Date",
+            "type": "string"
+          },
+          "strategy_wealth": {
+            "title": "Strategy Wealth",
+            "type": "number"
+          }
+        },
+        "required": [
+          "nav_date",
+          "strategy_wealth",
+          "benchmark_wealth",
+          "excess_wealth",
+          "drawdown"
+        ],
+        "title": "ExperimentNavPoint",
+        "type": "object"
+      },
       "ExperimentOverviewResponse": {
         "additionalProperties": false,
         "properties": {
+          "accepted_count": {
+            "title": "Accepted Count",
+            "type": "integer"
+          },
           "context": {
             "$ref": "#/components/schemas/ApiContext"
           },
+          "failed_count": {
+            "title": "Failed Count",
+            "type": "integer"
+          },
+          "filtered_specification_count": {
+            "title": "Filtered Specification Count",
+            "type": "integer"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "pending_count": {
+            "title": "Pending Count",
+            "type": "integer"
+          },
           "quality": {
             "$ref": "#/components/schemas/QualitySummary"
+          },
+          "running_count": {
+            "title": "Running Count",
+            "type": "integer"
           },
           "specifications": {
             "items": {
@@ -1616,13 +2039,25 @@
             },
             "title": "Suites",
             "type": "array"
+          },
+          "total_specification_count": {
+            "title": "Total Specification Count",
+            "type": "integer"
           }
         },
         "required": [
           "context",
           "quality",
           "suites",
-          "specifications"
+          "specifications",
+          "total_specification_count",
+          "filtered_specification_count",
+          "accepted_count",
+          "failed_count",
+          "running_count",
+          "pending_count",
+          "limit",
+          "offset"
         ],
         "title": "ExperimentOverviewResponse",
         "type": "object"
@@ -1709,6 +2144,13 @@
             "title": "Metrics",
             "type": "array"
           },
+          "nav_series": {
+            "items": {
+              "$ref": "#/components/schemas/ExperimentNavPoint"
+            },
+            "title": "Nav Series",
+            "type": "array"
+          },
           "normalization_nav_date": {
             "anyOf": [
               {
@@ -1725,6 +2167,29 @@
             "title": "Observation Count",
             "type": "integer"
           },
+          "promotion_eligible": {
+            "title": "Promotion Eligible",
+            "type": "boolean"
+          },
+          "promotion_reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Promotion Reason Codes",
+            "type": "array"
+          },
+          "qualification_bundle_artifact_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qualification Bundle Artifact Id"
+          },
           "quality": {
             "$ref": "#/components/schemas/QualitySummary"
           },
@@ -1736,14 +2201,28 @@
             "type": "array"
           },
           "requested_end": {
-            "format": "date",
-            "title": "Requested End",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested End"
           },
           "requested_start": {
-            "format": "date",
-            "title": "Requested Start",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Start"
           },
           "resolved_end": {
             "anyOf": [
@@ -1819,7 +2298,11 @@
           "metrics",
           "events",
           "quality_checks",
-          "artifacts"
+          "artifacts",
+          "nav_series",
+          "promotion_eligible",
+          "promotion_reason_codes",
+          "qualification_bundle_artifact_id"
         ],
         "title": "ExperimentResultResponse",
         "type": "object"
@@ -1868,9 +2351,16 @@
             "type": "string"
           },
           "as_of_date": {
-            "format": "date",
-            "title": "As Of Date",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of Date"
           },
           "attempt_number": {
             "anyOf": [
@@ -1983,9 +2473,16 @@
             "title": "Result Artifact Id"
           },
           "simulation_end": {
-            "format": "date",
-            "title": "Simulation End",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Simulation End"
           },
           "status": {
             "enum": [
@@ -2000,6 +2497,16 @@
           "suite_artifact_id": {
             "format": "uuid",
             "title": "Suite Artifact Id",
+            "type": "string"
+          },
+          "suite_mode": {
+            "default": "legacy",
+            "enum": [
+              "formal",
+              "exploratory",
+              "legacy"
+            ],
+            "title": "Suite Mode",
             "type": "string"
           },
           "template_key": {
@@ -2053,6 +2560,18 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "research_suite_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research Suite Id"
           },
           "specification_count": {
             "title": "Specification Count",
@@ -3117,6 +3636,431 @@
         "title": "ModelWindowMetricItem",
         "type": "object"
       },
+      "ProductAlertChangeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "idempotency_key": {
+            "format": "uuid",
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "researcher_id": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Researcher Id",
+            "type": "string"
+          },
+          "target": {
+            "enum": [
+              "acknowledged",
+              "resolved",
+              "superseded"
+            ],
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "idempotency_key",
+          "target",
+          "researcher_id",
+          "occurred_at"
+        ],
+        "title": "ProductAlertChangeRequest",
+        "type": "object"
+      },
+      "ProductAlertChangeResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "alert_id": {
+            "format": "uuid",
+            "title": "Alert Id",
+            "type": "string"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "from_status": {
+            "title": "From Status",
+            "type": "string"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "sequence_number": {
+            "title": "Sequence Number",
+            "type": "integer"
+          },
+          "to_status": {
+            "title": "To Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "alert_id",
+          "from_status",
+          "to_status",
+          "sequence_number",
+          "occurred_at"
+        ],
+        "title": "ProductAlertChangeResponse",
+        "type": "object"
+      },
+      "ProductAlertItem": {
+        "additionalProperties": false,
+        "properties": {
+          "alert_id": {
+            "format": "uuid",
+            "title": "Alert Id",
+            "type": "string"
+          },
+          "alert_key": {
+            "title": "Alert Key",
+            "type": "string"
+          },
+          "alert_type": {
+            "title": "Alert Type",
+            "type": "string"
+          },
+          "evidence": {
+            "additionalProperties": true,
+            "title": "Evidence",
+            "type": "object"
+          },
+          "opened_at": {
+            "format": "date-time",
+            "title": "Opened At",
+            "type": "string"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "alert_id",
+          "alert_key",
+          "alert_type",
+          "severity",
+          "opened_at",
+          "status",
+          "evidence"
+        ],
+        "title": "ProductAlertItem",
+        "type": "object"
+      },
+      "ProductBacktestMetricItem": {
+        "additionalProperties": false,
+        "properties": {
+          "metric_key": {
+            "title": "Metric Key",
+            "type": "string"
+          },
+          "metric_scope": {
+            "title": "Metric Scope",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "observation_count": {
+            "title": "Observation Count",
+            "type": "integer"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Code"
+          },
+          "series_role": {
+            "title": "Series Role",
+            "type": "string"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "value_status": {
+            "title": "Value Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "series_role",
+          "metric_scope",
+          "metric_key",
+          "name",
+          "unit",
+          "value",
+          "value_status",
+          "reason_code",
+          "observation_count"
+        ],
+        "title": "ProductBacktestMetricItem",
+        "type": "object"
+      },
+      "ProductBacktestNavPoint": {
+        "additionalProperties": false,
+        "properties": {
+          "benchmark_wealth": {
+            "title": "Benchmark Wealth",
+            "type": "number"
+          },
+          "drawdown": {
+            "title": "Drawdown",
+            "type": "number"
+          },
+          "excess_wealth": {
+            "title": "Excess Wealth",
+            "type": "number"
+          },
+          "nav_date": {
+            "format": "date",
+            "title": "Nav Date",
+            "type": "string"
+          },
+          "strategy_wealth": {
+            "title": "Strategy Wealth",
+            "type": "number"
+          }
+        },
+        "required": [
+          "nav_date",
+          "strategy_wealth",
+          "benchmark_wealth",
+          "excess_wealth",
+          "drawdown"
+        ],
+        "title": "ProductBacktestNavPoint",
+        "type": "object"
+      },
+      "ProductCandidateItem": {
+        "additionalProperties": false,
+        "properties": {
+          "activated_at": {
+            "format": "date-time",
+            "title": "Activated At",
+            "type": "string"
+          },
+          "asset_context_key": {
+            "title": "Asset Context Key",
+            "type": "string"
+          },
+          "enrollment_id": {
+            "format": "uuid",
+            "title": "Enrollment Id",
+            "type": "string"
+          },
+          "health": {
+            "title": "Health",
+            "type": "string"
+          },
+          "latest_as_of_session": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest As Of Session"
+          },
+          "latest_metrics": {
+            "additionalProperties": true,
+            "title": "Latest Metrics",
+            "type": "object"
+          },
+          "lifecycle": {
+            "title": "Lifecycle",
+            "type": "string"
+          },
+          "model_preset_key": {
+            "title": "Model Preset Key",
+            "type": "string"
+          },
+          "monitoring_start_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitoring Start At"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "open_alert_count": {
+            "title": "Open Alert Count",
+            "type": "integer"
+          },
+          "primary_nav": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Nav"
+          },
+          "product_artifact_id": {
+            "format": "uuid",
+            "title": "Product Artifact Id",
+            "type": "string"
+          },
+          "product_key": {
+            "title": "Product Key",
+            "type": "string"
+          },
+          "qualification_artifact_id": {
+            "format": "uuid",
+            "title": "Qualification Artifact Id",
+            "type": "string"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "strategy_family_key": {
+            "title": "Strategy Family Key",
+            "type": "string"
+          },
+          "strategy_preset_key": {
+            "title": "Strategy Preset Key",
+            "type": "string"
+          },
+          "stress_nav": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stress Nav"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version_number": {
+            "title": "Version Number",
+            "type": "integer"
+          },
+          "warning_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warning Codes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "enrollment_id",
+          "product_artifact_id",
+          "qualification_artifact_id",
+          "product_key",
+          "version_number",
+          "name",
+          "model_preset_key",
+          "strategy_family_key",
+          "strategy_preset_key",
+          "asset_context_key",
+          "lifecycle",
+          "health",
+          "revision",
+          "activated_at",
+          "monitoring_start_at",
+          "updated_at",
+          "latest_as_of_session",
+          "primary_nav",
+          "stress_nav",
+          "latest_metrics",
+          "open_alert_count"
+        ],
+        "title": "ProductCandidateItem",
+        "type": "object"
+      },
+      "ProductCatalogResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductCandidateItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "items"
+        ],
+        "title": "ProductCatalogResponse",
+        "type": "object"
+      },
       "ProductCompareEntry": {
         "additionalProperties": false,
         "properties": {
@@ -3274,6 +4218,550 @@
           "entries"
         ],
         "title": "ProductCompareResponse",
+        "type": "object"
+      },
+      "ProductDetailResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "alerts": {
+            "items": {
+              "$ref": "#/components/schemas/ProductAlertItem"
+            },
+            "title": "Alerts",
+            "type": "array"
+          },
+          "candidate": {
+            "$ref": "#/components/schemas/ProductCandidateItem"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/ProductEventItem"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "oos_window": {
+            "$ref": "#/components/schemas/ProductOosWindow"
+          },
+          "qualification_backtest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductQualificationBacktest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "qualification_gate_results": {
+            "additionalProperties": true,
+            "title": "Qualification Gate Results",
+            "type": "object"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "research_chain": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductResearchChain"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reviews": {
+            "items": {
+              "$ref": "#/components/schemas/ProductReviewItem"
+            },
+            "title": "Reviews",
+            "type": "array"
+          },
+          "selection_reason": {
+            "title": "Selection Reason",
+            "type": "string"
+          },
+          "snapshots": {
+            "items": {
+              "$ref": "#/components/schemas/ProductSnapshotItem"
+            },
+            "title": "Snapshots",
+            "type": "array"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "candidate",
+          "qualification_gate_results",
+          "selection_reason",
+          "note",
+          "events",
+          "alerts",
+          "snapshots",
+          "oos_window",
+          "reviews"
+        ],
+        "title": "ProductDetailResponse",
+        "type": "object"
+      },
+      "ProductEventItem": {
+        "additionalProperties": false,
+        "properties": {
+          "effective_at": {
+            "format": "date-time",
+            "title": "Effective At",
+            "type": "string"
+          },
+          "from_lifecycle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Lifecycle"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "reason_code": {
+            "title": "Reason Code",
+            "type": "string"
+          },
+          "requested_at": {
+            "format": "date-time",
+            "title": "Requested At",
+            "type": "string"
+          },
+          "researcher_id": {
+            "title": "Researcher Id",
+            "type": "string"
+          },
+          "sequence_number": {
+            "title": "Sequence Number",
+            "type": "integer"
+          },
+          "to_lifecycle": {
+            "title": "To Lifecycle",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sequence_number",
+          "from_lifecycle",
+          "to_lifecycle",
+          "reason_code",
+          "reason",
+          "researcher_id",
+          "requested_at",
+          "effective_at"
+        ],
+        "title": "ProductEventItem",
+        "type": "object"
+      },
+      "ProductLifecycleChangeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "effective_at": {
+            "format": "date-time",
+            "title": "Effective At",
+            "type": "string"
+          },
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "idempotency_key": {
+            "format": "uuid",
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "reason": {
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "reason_code": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Reason Code",
+            "type": "string"
+          },
+          "requested_at": {
+            "format": "date-time",
+            "title": "Requested At",
+            "type": "string"
+          },
+          "researcher_id": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Researcher Id",
+            "type": "string"
+          },
+          "target": {
+            "enum": [
+              "active",
+              "suspended",
+              "retired",
+              "invalidated"
+            ],
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "idempotency_key",
+          "target",
+          "expected_revision",
+          "reason_code",
+          "reason",
+          "researcher_id",
+          "requested_at",
+          "effective_at"
+        ],
+        "title": "ProductLifecycleChangeRequest",
+        "type": "object"
+      },
+      "ProductLifecycleChangeResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "applied": {
+            "title": "Applied",
+            "type": "boolean"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "effective_at": {
+            "format": "date-time",
+            "title": "Effective At",
+            "type": "string"
+          },
+          "enrollment_id": {
+            "format": "uuid",
+            "title": "Enrollment Id",
+            "type": "string"
+          },
+          "event_sequence": {
+            "title": "Event Sequence",
+            "type": "integer"
+          },
+          "from_lifecycle": {
+            "title": "From Lifecycle",
+            "type": "string"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "to_lifecycle": {
+            "title": "To Lifecycle",
+            "type": "string"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "enrollment_id",
+          "from_lifecycle",
+          "to_lifecycle",
+          "revision",
+          "event_sequence",
+          "effective_at",
+          "applied"
+        ],
+        "title": "ProductLifecycleChangeResponse",
+        "type": "object"
+      },
+      "ProductOosWindow": {
+        "additionalProperties": false,
+        "properties": {
+          "activation_session": {
+            "format": "date",
+            "title": "Activation Session",
+            "type": "string"
+          },
+          "frozen_anchor_session": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frozen Anchor Session"
+          },
+          "latest_published_data_known_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Published Data Known At"
+          },
+          "latest_published_data_session": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Published Data Session"
+          },
+          "latest_snapshot_session": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Snapshot Session"
+          },
+          "post_freeze_session_count": {
+            "title": "Post Freeze Session Count",
+            "type": "integer"
+          },
+          "prospective_oos_session_count": {
+            "title": "Prospective Oos Session Count",
+            "type": "integer"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "awaiting_frozen_anchor",
+              "awaiting_post_freeze_data",
+              "awaiting_first_snapshot",
+              "observing"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "frozen_anchor_session",
+          "activation_session",
+          "latest_published_data_session",
+          "latest_published_data_known_at",
+          "latest_snapshot_session",
+          "post_freeze_session_count",
+          "prospective_oos_session_count",
+          "status"
+        ],
+        "title": "ProductOosWindow",
+        "type": "object"
+      },
+      "ProductPromotionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "idempotency_key": {
+            "format": "uuid",
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 240,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "researcher_id": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Researcher Id",
+            "type": "string"
+          },
+          "selection_reason": {
+            "minLength": 1,
+            "title": "Selection Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "idempotency_key",
+          "name",
+          "researcher_id",
+          "selection_reason"
+        ],
+        "title": "ProductPromotionRequest",
+        "type": "object"
+      },
+      "ProductPromotionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "lifecycle": {
+            "title": "Lifecycle",
+            "type": "string"
+          },
+          "product_enrollment_id": {
+            "format": "uuid",
+            "title": "Product Enrollment Id",
+            "type": "string"
+          },
+          "product_version_artifact_id": {
+            "format": "uuid",
+            "title": "Product Version Artifact Id",
+            "type": "string"
+          },
+          "qualification_bundle_artifact_id": {
+            "format": "uuid",
+            "title": "Qualification Bundle Artifact Id",
+            "type": "string"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "product_enrollment_id",
+          "product_version_artifact_id",
+          "qualification_bundle_artifact_id",
+          "lifecycle",
+          "revision"
+        ],
+        "title": "ProductPromotionResponse",
+        "type": "object"
+      },
+      "ProductQualificationBacktest": {
+        "additionalProperties": false,
+        "properties": {
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/ProductBacktestMetricItem"
+            },
+            "title": "Metrics",
+            "type": "array"
+          },
+          "nav_series": {
+            "items": {
+              "$ref": "#/components/schemas/ProductBacktestNavPoint"
+            },
+            "title": "Nav Series",
+            "type": "array"
+          },
+          "observation_count": {
+            "title": "Observation Count",
+            "type": "integer"
+          },
+          "quality_checks": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Quality Checks",
+            "type": "array"
+          },
+          "resolved_end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved End"
+          },
+          "resolved_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved Start"
+          },
+          "result_artifact_id": {
+            "format": "uuid",
+            "title": "Result Artifact Id",
+            "type": "string"
+          },
+          "run_status": {
+            "title": "Run Status",
+            "type": "string"
+          },
+          "specification": {
+            "additionalProperties": true,
+            "title": "Specification",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result_artifact_id",
+          "specification",
+          "resolved_start",
+          "resolved_end",
+          "observation_count",
+          "run_status",
+          "metrics",
+          "nav_series",
+          "quality_checks"
+        ],
+        "title": "ProductQualificationBacktest",
         "type": "object"
       },
       "ProductRankingEntry": {
@@ -3457,6 +4945,652 @@
         "title": "ProductRankingResponse",
         "type": "object"
       },
+      "ProductRecommendationPosition": {
+        "additionalProperties": false,
+        "properties": {
+          "allocation_role": {
+            "enum": [
+              "risk",
+              "defense",
+              "reserve"
+            ],
+            "title": "Allocation Role",
+            "type": "string"
+          },
+          "asset_key": {
+            "title": "Asset Key",
+            "type": "string"
+          },
+          "model_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Score"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank"
+          },
+          "retained_by_buffer": {
+            "title": "Retained By Buffer",
+            "type": "boolean"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "target_weight": {
+            "title": "Target Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "asset_key",
+          "symbol",
+          "name",
+          "allocation_role",
+          "model_score",
+          "rank",
+          "target_weight",
+          "retained_by_buffer"
+        ],
+        "title": "ProductRecommendationPosition",
+        "type": "object"
+      },
+      "ProductRecommendationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "coverage_ratio": {
+            "title": "Coverage Ratio",
+            "type": "number"
+          },
+          "data_as_of_session": {
+            "format": "date",
+            "title": "Data As Of Session",
+            "type": "string"
+          },
+          "data_bundle_artifact_id": {
+            "format": "uuid",
+            "title": "Data Bundle Artifact Id",
+            "type": "string"
+          },
+          "data_known_at": {
+            "format": "date-time",
+            "title": "Data Known At",
+            "type": "string"
+          },
+          "decision_session": {
+            "format": "date",
+            "title": "Decision Session",
+            "type": "string"
+          },
+          "eligible_count": {
+            "title": "Eligible Count",
+            "type": "integer"
+          },
+          "frequency": {
+            "title": "Frequency",
+            "type": "string"
+          },
+          "next_expected_signal_session": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Expected Signal Session"
+          },
+          "not_oos": {
+            "title": "Not Oos",
+            "type": "boolean"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/ProductRecommendationPosition"
+            },
+            "title": "Positions",
+            "type": "array"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "rankable_count": {
+            "title": "Rankable Count",
+            "type": "integer"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "recommended_execution_session": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended Execution Session"
+          },
+          "refresh_policy": {
+            "title": "Refresh Policy",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "accepted",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "available",
+          "status",
+          "reason_codes",
+          "frequency",
+          "data_bundle_artifact_id",
+          "data_as_of_session",
+          "data_known_at",
+          "decision_session",
+          "recommended_execution_session",
+          "next_expected_signal_session",
+          "eligible_count",
+          "rankable_count",
+          "coverage_ratio",
+          "positions",
+          "not_oos",
+          "refresh_policy"
+        ],
+        "title": "ProductRecommendationResponse",
+        "type": "object"
+      },
+      "ProductResearchAssetItem": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_key": {
+            "title": "Asset Key",
+            "type": "string"
+          },
+          "category_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Key"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "security_id": {
+            "format": "uuid",
+            "title": "Security Id",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "security_id",
+          "asset_key",
+          "symbol",
+          "name"
+        ],
+        "title": "ProductResearchAssetItem",
+        "type": "object"
+      },
+      "ProductResearchChain": {
+        "additionalProperties": false,
+        "properties": {
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/ProductResearchAssetItem"
+            },
+            "title": "Assets",
+            "type": "array"
+          },
+          "factor_variant_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Factor Variant Keys",
+            "type": "array"
+          },
+          "frequency": {
+            "title": "Frequency",
+            "type": "string"
+          },
+          "model_preset_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Model Preset Keys",
+            "type": "array"
+          },
+          "model_target_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Model Target Keys",
+            "type": "array"
+          },
+          "qualification_result_artifact_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Qualification Result Artifact Ids",
+            "type": "array"
+          },
+          "selected_branch_key": {
+            "title": "Selected Branch Key",
+            "type": "string"
+          },
+          "selected_result_artifact_id": {
+            "format": "uuid",
+            "title": "Selected Result Artifact Id",
+            "type": "string"
+          },
+          "signal_version_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Signal Version Keys",
+            "type": "array"
+          },
+          "source_suite_artifact_id": {
+            "format": "uuid",
+            "title": "Source Suite Artifact Id",
+            "type": "string"
+          },
+          "strategy_preset_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Strategy Preset Keys",
+            "type": "array"
+          }
+        },
+        "required": [
+          "source_suite_artifact_id",
+          "selected_result_artifact_id",
+          "selected_branch_key",
+          "frequency",
+          "assets",
+          "factor_variant_keys",
+          "signal_version_keys",
+          "model_preset_keys",
+          "model_target_keys",
+          "strategy_preset_keys",
+          "qualification_result_artifact_ids"
+        ],
+        "title": "ProductResearchChain",
+        "type": "object"
+      },
+      "ProductReviewItem": {
+        "additionalProperties": false,
+        "properties": {
+          "decision": {
+            "title": "Decision",
+            "type": "string"
+          },
+          "evidence": {
+            "additionalProperties": true,
+            "title": "Evidence",
+            "type": "object"
+          },
+          "product_review_id": {
+            "format": "uuid",
+            "title": "Product Review Id",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "researcher_id": {
+            "title": "Researcher Id",
+            "type": "string"
+          },
+          "reviewed_at": {
+            "format": "date-time",
+            "title": "Reviewed At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_review_id",
+          "reviewed_at",
+          "researcher_id",
+          "decision",
+          "reason",
+          "evidence"
+        ],
+        "title": "ProductReviewItem",
+        "type": "object"
+      },
+      "ProductReviewRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "decision": {
+            "enum": [
+              "continue",
+              "suspend",
+              "retire",
+              "replace"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "evidence": {
+            "additionalProperties": true,
+            "title": "Evidence",
+            "type": "object"
+          },
+          "idempotency_key": {
+            "format": "uuid",
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "reason": {
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "researcher_id": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Researcher Id",
+            "type": "string"
+          },
+          "reviewed_at": {
+            "format": "date-time",
+            "title": "Reviewed At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "idempotency_key",
+          "decision",
+          "researcher_id",
+          "reason",
+          "reviewed_at"
+        ],
+        "title": "ProductReviewRequest",
+        "type": "object"
+      },
+      "ProductReviewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "decision": {
+            "title": "Decision",
+            "type": "string"
+          },
+          "product_enrollment_id": {
+            "format": "uuid",
+            "title": "Product Enrollment Id",
+            "type": "string"
+          },
+          "product_review_id": {
+            "format": "uuid",
+            "title": "Product Review Id",
+            "type": "string"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "reviewed_at": {
+            "format": "date-time",
+            "title": "Reviewed At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "product_review_id",
+          "product_enrollment_id",
+          "decision",
+          "reviewed_at"
+        ],
+        "title": "ProductReviewResponse",
+        "type": "object"
+      },
+      "ProductSnapshotItem": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "format": "uuid",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "as_of_session": {
+            "format": "date",
+            "title": "As Of Session",
+            "type": "string"
+          },
+          "decision_count": {
+            "title": "Decision Count",
+            "type": "integer"
+          },
+          "health": {
+            "title": "Health",
+            "type": "string"
+          },
+          "health_components": {
+            "additionalProperties": true,
+            "title": "Health Components",
+            "type": "object"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "metrics": {
+            "additionalProperties": true,
+            "title": "Metrics",
+            "type": "object"
+          },
+          "primary_nav": {
+            "title": "Primary Nav",
+            "type": "number"
+          },
+          "session_count": {
+            "title": "Session Count",
+            "type": "integer"
+          },
+          "stress_nav": {
+            "title": "Stress Nav",
+            "type": "number"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "as_of_session",
+          "known_at",
+          "health",
+          "session_count",
+          "decision_count",
+          "primary_nav",
+          "stress_nav",
+          "metrics",
+          "health_components"
+        ],
+        "title": "ProductSnapshotItem",
+        "type": "object"
+      },
+      "PromotionQualificationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "cell_artifact_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Cell Artifact Ids",
+            "type": "array"
+          },
+          "comparison_context_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Context Id"
+          },
+          "compiled_strategy_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Compiled Strategy Version Id"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "eligible": {
+            "title": "Eligible",
+            "type": "boolean"
+          },
+          "predictive_cell_artifact_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Predictive Cell Artifact Ids",
+            "type": "array"
+          },
+          "predictive_result_artifact_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Predictive Result Artifact Ids",
+            "type": "array"
+          },
+          "qualification_bundle_artifact_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qualification Bundle Artifact Id"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "result_artifact_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Result Artifact Ids",
+            "type": "array"
+          },
+          "selection_context": {
+            "additionalProperties": true,
+            "title": "Selection Context",
+            "type": "object"
+          },
+          "source_suite_artifact_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Suite Artifact Id"
+          },
+          "warning_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warning Codes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "eligible",
+          "reason_codes",
+          "compiled_strategy_version_id",
+          "source_suite_artifact_id",
+          "comparison_context_id",
+          "qualification_bundle_artifact_id"
+        ],
+        "title": "PromotionQualificationResponse",
+        "type": "object"
+      },
       "QualitySummary": {
         "additionalProperties": false,
         "properties": {
@@ -3482,6 +5616,41 @@
           "state"
         ],
         "title": "QualitySummary",
+        "type": "object"
+      },
+      "ReleaseGateResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "formal_enabled": {
+            "title": "Formal Enabled",
+            "type": "boolean"
+          },
+          "product_enabled": {
+            "title": "Product Enabled",
+            "type": "boolean"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "formal_enabled",
+          "product_enabled",
+          "reason_codes"
+        ],
+        "title": "ReleaseGateResponse",
         "type": "object"
       },
       "SignalDiagnosticIssueItem": {
@@ -3806,6 +5975,188 @@
           "high_correlation"
         ],
         "title": "SignalPairDiagnosticItem",
+        "type": "object"
+      },
+      "SignalResearchExportJobResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "attempt_count": {
+            "title": "Attempt Count",
+            "type": "integer"
+          },
+          "byte_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Byte Size"
+          },
+          "content_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Hash"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "download_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Download Url"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "export_job_id": {
+            "format": "uuid",
+            "title": "Export Job Id",
+            "type": "string"
+          },
+          "failure_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Class"
+          },
+          "failure_details": {
+            "additionalProperties": true,
+            "title": "Failure Details",
+            "type": "object"
+          },
+          "max_attempts": {
+            "title": "Max Attempts",
+            "type": "integer"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "request_fingerprint": {
+            "title": "Request Fingerprint",
+            "type": "string"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "running",
+              "completed",
+              "failed",
+              "cancelled"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "status_url": {
+            "title": "Status Url",
+            "type": "string"
+          },
+          "work_item_id": {
+            "format": "uuid",
+            "title": "Work Item Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "export_job_id",
+          "work_item_id",
+          "request_fingerprint",
+          "status",
+          "stage",
+          "attempt_count",
+          "max_attempts",
+          "status_url"
+        ],
+        "title": "SignalResearchExportJobResponse",
+        "type": "object"
+      },
+      "SignalResearchExportRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_data_inputs": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "propertyNames": {
+              "format": "uuid"
+            },
+            "title": "Asset Data Inputs",
+            "type": "object"
+          },
+          "asset_security_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Asset Security Ids",
+            "type": "array"
+          },
+          "frequency": {
+            "enum": [
+              "weekly",
+              "monthly"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "include_targets": {
+            "default": true,
+            "title": "Include Targets",
+            "type": "boolean"
+          },
+          "signal_version_keys": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Signal Version Keys",
+            "type": "array"
+          }
+        },
+        "required": [
+          "frequency",
+          "asset_security_ids",
+          "signal_version_keys"
+        ],
+        "title": "SignalResearchExportRequest",
         "type": "object"
       },
       "SignalWindowMetricItem": {
@@ -4677,13 +7028,1283 @@
         ],
         "title": "ValidationError",
         "type": "object"
+      },
+      "WorkspaceAssetDataInputBlocker": {
+        "additionalProperties": false,
+        "properties": {
+          "input_key": {
+            "title": "Input Key",
+            "type": "string"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "security_id": {
+            "format": "uuid",
+            "title": "Security Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "security_id",
+          "input_key",
+          "reason_codes"
+        ],
+        "title": "WorkspaceAssetDataInputBlocker",
+        "type": "object"
+      },
+      "WorkspaceCompileBlocker": {
+        "additionalProperties": false,
+        "properties": {
+          "layer": {
+            "title": "Layer",
+            "type": "string"
+          },
+          "object_key": {
+            "title": "Object Key",
+            "type": "string"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "layer",
+          "object_key",
+          "reason_codes"
+        ],
+        "title": "WorkspaceCompileBlocker",
+        "type": "object"
+      },
+      "WorkspaceCompilePreviewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "blockers": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceCompileBlocker"
+            },
+            "title": "Blockers",
+            "type": "array"
+          },
+          "catalog_artifact_id": {
+            "format": "uuid",
+            "title": "Catalog Artifact Id",
+            "type": "string"
+          },
+          "catalog_version": {
+            "title": "Catalog Version",
+            "type": "string"
+          },
+          "compiled": {
+            "additionalProperties": true,
+            "title": "Compiled",
+            "type": "object"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "selected_asset_count": {
+            "title": "Selected Asset Count",
+            "type": "integer"
+          },
+          "usable_asset_count": {
+            "title": "Usable Asset Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "catalog_artifact_id",
+          "catalog_version",
+          "selected_asset_count",
+          "usable_asset_count",
+          "compiled",
+          "blockers"
+        ],
+        "title": "WorkspaceCompilePreviewResponse",
+        "type": "object"
+      },
+      "WorkspaceCompileRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_data_inputs": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "propertyNames": {
+              "format": "uuid"
+            },
+            "title": "Asset Data Inputs",
+            "type": "object"
+          },
+          "asset_security_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Asset Security Ids",
+            "type": "array"
+          },
+          "factor_variant_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Factor Variant Keys",
+            "type": "array"
+          },
+          "frequency": {
+            "enum": [
+              "weekly",
+              "monthly"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "model_preset_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Model Preset Keys",
+            "type": "array"
+          },
+          "model_target_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Model Target Keys",
+            "type": "array"
+          },
+          "signal_version_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Signal Version Keys",
+            "type": "array"
+          },
+          "strategy_preset_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Strategy Preset Keys",
+            "type": "array"
+          }
+        },
+        "required": [
+          "frequency",
+          "asset_security_ids",
+          "factor_variant_keys",
+          "signal_version_keys",
+          "model_preset_keys",
+          "strategy_preset_keys"
+        ],
+        "title": "WorkspaceCompileRequest",
+        "type": "object"
+      },
+      "WorkspaceDraftResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "draft_key": {
+            "title": "Draft Key",
+            "type": "string"
+          },
+          "last_compiled_artifact_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Compiled Artifact Id"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "research_draft_id": {
+            "format": "uuid",
+            "title": "Research Draft Id",
+            "type": "string"
+          },
+          "researcher_id": {
+            "title": "Researcher Id",
+            "type": "string"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/WorkspaceDraftSelection"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "research_draft_id",
+          "researcher_id",
+          "draft_key",
+          "name",
+          "revision",
+          "selection",
+          "last_compiled_artifact_id"
+        ],
+        "title": "WorkspaceDraftResponse",
+        "type": "object"
+      },
+      "WorkspaceDraftSaveRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "draft_key": {
+            "maxLength": 180,
+            "minLength": 1,
+            "title": "Draft Key",
+            "type": "string"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "idempotency_key": {
+            "format": "uuid",
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 240,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "researcher_id": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Researcher Id",
+            "type": "string"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/WorkspaceDraftSelection"
+          }
+        },
+        "required": [
+          "idempotency_key",
+          "researcher_id",
+          "draft_key",
+          "name",
+          "selection"
+        ],
+        "title": "WorkspaceDraftSaveRequest",
+        "type": "object"
+      },
+      "WorkspaceDraftSelection": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_data_inputs": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "propertyNames": {
+              "format": "uuid"
+            },
+            "title": "Asset Data Inputs",
+            "type": "object"
+          },
+          "asset_security_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Asset Security Ids",
+            "type": "array"
+          },
+          "factor_variant_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Factor Variant Keys",
+            "type": "array"
+          },
+          "frequency": {
+            "enum": [
+              "weekly",
+              "monthly"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "model_preset_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Model Preset Keys",
+            "type": "array"
+          },
+          "model_target_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Model Target Keys",
+            "type": "array"
+          },
+          "signal_version_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Signal Version Keys",
+            "type": "array"
+          },
+          "strategy_preset_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Strategy Preset Keys",
+            "type": "array"
+          }
+        },
+        "required": [
+          "frequency",
+          "asset_security_ids",
+          "factor_variant_keys",
+          "signal_version_keys",
+          "model_preset_keys",
+          "strategy_preset_keys"
+        ],
+        "title": "WorkspaceDraftSelection",
+        "type": "object"
+      },
+      "WorkspaceFactorFamilyOption": {
+        "additionalProperties": false,
+        "properties": {
+          "definition_version": {
+            "default": 1,
+            "title": "Definition Version",
+            "type": "integer"
+          },
+          "family": {
+            "title": "Family",
+            "type": "string"
+          },
+          "formula": {
+            "title": "Formula",
+            "type": "string"
+          },
+          "implementation_key": {
+            "title": "Implementation Key",
+            "type": "string"
+          },
+          "inputs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "output_unit": {
+            "title": "Output Unit",
+            "type": "string"
+          },
+          "raw": {
+            "title": "Raw",
+            "type": "boolean"
+          },
+          "required_asset_input_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Required Asset Input Keys",
+            "type": "array"
+          },
+          "time_semantics": {
+            "title": "Time Semantics",
+            "type": "string"
+          },
+          "variants": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceFactorVariantOption"
+            },
+            "title": "Variants",
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "family",
+          "formula",
+          "inputs",
+          "required_asset_input_keys",
+          "implementation_key",
+          "output_unit",
+          "time_semantics",
+          "raw",
+          "variants"
+        ],
+        "title": "WorkspaceFactorFamilyOption",
+        "type": "object"
+      },
+      "WorkspaceFactorVariantOption": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "title": "Parameters",
+            "type": "object"
+          },
+          "preset_type": {
+            "title": "Preset Type",
+            "type": "string"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "required_price_observations": {
+            "title": "Required Price Observations",
+            "type": "integer"
+          },
+          "selectable": {
+            "default": true,
+            "title": "Selectable",
+            "type": "boolean"
+          },
+          "selected": {
+            "title": "Selected",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "parameters",
+          "required_price_observations",
+          "preset_type",
+          "selected"
+        ],
+        "title": "WorkspaceFactorVariantOption",
+        "type": "object"
+      },
+      "WorkspaceModelFamilyOption": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "implementation_status": {
+            "title": "Implementation Status",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "presets": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceModelPresetOption"
+            },
+            "title": "Presets",
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "description",
+          "implementation_status",
+          "presets"
+        ],
+        "title": "WorkspaceModelFamilyOption",
+        "type": "object"
+      },
+      "WorkspaceModelPresetOption": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_signal_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Accepted Signal Keys",
+            "type": "array"
+          },
+          "input_slots": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceModelSlotOption"
+            },
+            "title": "Input Slots",
+            "type": "array"
+          },
+          "output_comparability": {
+            "title": "Output Comparability",
+            "type": "string"
+          },
+          "output_type": {
+            "title": "Output Type",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "title": "Parameters",
+            "type": "object"
+          },
+          "preset_key": {
+            "title": "Preset Key",
+            "type": "string"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "selectable": {
+            "title": "Selectable",
+            "type": "boolean"
+          },
+          "supported_frequencies": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Supported Frequencies",
+            "type": "array"
+          },
+          "target_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Key"
+          }
+        },
+        "required": [
+          "preset_key",
+          "output_type",
+          "output_comparability",
+          "supported_frequencies",
+          "parameters",
+          "target_key",
+          "input_slots",
+          "selectable",
+          "reason_codes",
+          "accepted_signal_keys"
+        ],
+        "title": "WorkspaceModelPresetOption",
+        "type": "object"
+      },
+      "WorkspaceModelSlotOption": {
+        "additionalProperties": false,
+        "properties": {
+          "allowed_dimension_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Dimension Keys",
+            "type": "array"
+          },
+          "allowed_output_types": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Output Types",
+            "type": "array"
+          },
+          "maximum_count": {
+            "title": "Maximum Count",
+            "type": "integer"
+          },
+          "minimum_count": {
+            "title": "Minimum Count",
+            "type": "integer"
+          },
+          "slot_key": {
+            "title": "Slot Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slot_key",
+          "allowed_dimension_keys",
+          "allowed_output_types",
+          "minimum_count",
+          "maximum_count"
+        ],
+        "title": "WorkspaceModelSlotOption",
+        "type": "object"
+      },
+      "WorkspaceModelTargetOption": {
+        "additionalProperties": false,
+        "properties": {
+          "horizon_sessions": {
+            "enum": [
+              5,
+              21,
+              63
+            ],
+            "title": "Horizon Sessions",
+            "type": "integer"
+          },
+          "recommended": {
+            "title": "Recommended",
+            "type": "boolean"
+          },
+          "target_key": {
+            "title": "Target Key",
+            "type": "string"
+          },
+          "target_kind": {
+            "enum": [
+              "future_return",
+              "cross_sectional_relative_return"
+            ],
+            "title": "Target Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "target_key",
+          "target_kind",
+          "horizon_sessions",
+          "recommended"
+        ],
+        "title": "WorkspaceModelTargetOption",
+        "type": "object"
+      },
+      "WorkspaceOptionsResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_data_input_blockers": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceAssetDataInputBlocker"
+            },
+            "title": "Asset Data Input Blockers",
+            "type": "array"
+          },
+          "catalog_artifact_id": {
+            "format": "uuid",
+            "title": "Catalog Artifact Id",
+            "type": "string"
+          },
+          "catalog_version": {
+            "title": "Catalog Version",
+            "type": "string"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "factor_families": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceFactorFamilyOption"
+            },
+            "title": "Factor Families",
+            "type": "array"
+          },
+          "frequency": {
+            "title": "Frequency",
+            "type": "string"
+          },
+          "model_families": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceModelFamilyOption"
+            },
+            "title": "Model Families",
+            "type": "array"
+          },
+          "model_target_options": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceModelTargetOption"
+            },
+            "title": "Model Target Options",
+            "type": "array"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "selected_asset_count": {
+            "title": "Selected Asset Count",
+            "type": "integer"
+          },
+          "selected_asset_type_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Selected Asset Type Counts",
+            "type": "object"
+          },
+          "signal_families": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceSignalFamilyOption"
+            },
+            "title": "Signal Families",
+            "type": "array"
+          },
+          "strategy_families": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceStrategyFamilyOption"
+            },
+            "title": "Strategy Families",
+            "type": "array"
+          },
+          "unknown_factor_variant_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unknown Factor Variant Keys",
+            "type": "array"
+          },
+          "unknown_model_preset_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unknown Model Preset Keys",
+            "type": "array"
+          },
+          "unknown_signal_version_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unknown Signal Version Keys",
+            "type": "array"
+          },
+          "usable_asset_count": {
+            "title": "Usable Asset Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "catalog_artifact_id",
+          "catalog_version",
+          "frequency",
+          "model_target_options",
+          "unknown_factor_variant_keys",
+          "unknown_signal_version_keys",
+          "unknown_model_preset_keys",
+          "asset_data_input_blockers",
+          "selected_asset_count",
+          "usable_asset_count",
+          "selected_asset_type_counts",
+          "factor_families",
+          "signal_families",
+          "model_families",
+          "strategy_families"
+        ],
+        "title": "WorkspaceOptionsResponse",
+        "type": "object"
+      },
+      "WorkspaceSignalFamilyOption": {
+        "additionalProperties": false,
+        "properties": {
+          "dimension_hint": {
+            "title": "Dimension Hint",
+            "type": "string"
+          },
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          },
+          "economic_family": {
+            "title": "Economic Family",
+            "type": "string"
+          },
+          "factor_variants": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Factor Variants",
+            "type": "array"
+          },
+          "form": {
+            "title": "Form",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "output_type": {
+            "title": "Output Type",
+            "type": "string"
+          },
+          "product_eligible": {
+            "title": "Product Eligible",
+            "type": "boolean"
+          },
+          "rationale": {
+            "title": "Rationale",
+            "type": "string"
+          },
+          "rationale_type": {
+            "title": "Rationale Type",
+            "type": "string"
+          },
+          "research_tier": {
+            "title": "Research Tier",
+            "type": "string"
+          },
+          "rule": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceSignalVersionOption"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "factor_variants",
+          "form",
+          "output_type",
+          "direction",
+          "economic_family",
+          "dimension_hint",
+          "rationale_type",
+          "rationale",
+          "research_tier",
+          "product_eligible",
+          "versions"
+        ],
+        "title": "WorkspaceSignalFamilyOption",
+        "type": "object"
+      },
+      "WorkspaceSignalVersionOption": {
+        "additionalProperties": false,
+        "properties": {
+          "factor_variant_key": {
+            "title": "Factor Variant Key",
+            "type": "string"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "selectable": {
+            "title": "Selectable",
+            "type": "boolean"
+          },
+          "selected": {
+            "title": "Selected",
+            "type": "boolean"
+          },
+          "version_key": {
+            "title": "Version Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version_key",
+          "factor_variant_key",
+          "selected",
+          "selectable",
+          "reason_codes"
+        ],
+        "title": "WorkspaceSignalVersionOption",
+        "type": "object"
+      },
+      "WorkspaceStrategyFamilyOption": {
+        "additionalProperties": false,
+        "properties": {
+          "compatible_model_output_types": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Compatible Model Output Types",
+            "type": "array"
+          },
+          "coverage_ratio": {
+            "title": "Coverage Ratio",
+            "type": "number"
+          },
+          "defaults": {
+            "additionalProperties": true,
+            "title": "Defaults",
+            "type": "object"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "formal_minimum_eligible_assets": {
+            "title": "Formal Minimum Eligible Assets",
+            "type": "integer"
+          },
+          "implementation_status": {
+            "title": "Implementation Status",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "minimum_eligible_assets": {
+            "title": "Minimum Eligible Assets",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "parameter_options": {
+            "additionalProperties": {
+              "items": {},
+              "type": "array"
+            },
+            "title": "Parameter Options",
+            "type": "object"
+          },
+          "presets": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceStrategyPresetOption"
+            },
+            "title": "Presets",
+            "type": "array"
+          },
+          "primary_benchmark": {
+            "title": "Primary Benchmark",
+            "type": "string"
+          },
+          "required_instrument_type": {
+            "title": "Required Instrument Type",
+            "type": "string"
+          },
+          "research_benchmark": {
+            "title": "Research Benchmark",
+            "type": "string"
+          },
+          "supported_frequencies": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Supported Frequencies",
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "description",
+          "implementation_status",
+          "required_instrument_type",
+          "minimum_eligible_assets",
+          "formal_minimum_eligible_assets",
+          "coverage_ratio",
+          "supported_frequencies",
+          "compatible_model_output_types",
+          "parameter_options",
+          "defaults",
+          "primary_benchmark",
+          "research_benchmark",
+          "presets"
+        ],
+        "title": "WorkspaceStrategyFamilyOption",
+        "type": "object"
+      },
+      "WorkspaceStrategyPresetOption": {
+        "additionalProperties": false,
+        "properties": {
+          "parameters": {
+            "additionalProperties": true,
+            "title": "Parameters",
+            "type": "object"
+          },
+          "preset_key": {
+            "title": "Preset Key",
+            "type": "string"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "research_mode": {
+            "title": "Research Mode",
+            "type": "string"
+          },
+          "selectable": {
+            "title": "Selectable",
+            "type": "boolean"
+          },
+          "selected": {
+            "title": "Selected",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "preset_key",
+          "parameters",
+          "selected",
+          "selectable",
+          "reason_codes",
+          "research_mode"
+        ],
+        "title": "WorkspaceStrategyPresetOption",
+        "type": "object"
+      },
+      "WorkspaceSuiteCancelResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "affected_work_items": {
+            "title": "Affected Work Items",
+            "type": "integer"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "research_suite_id": {
+            "format": "uuid",
+            "title": "Research Suite Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "research_suite_id",
+          "affected_work_items"
+        ],
+        "title": "WorkspaceSuiteCancelResponse",
+        "type": "object"
+      },
+      "WorkspaceSuiteStatusResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "complete": {
+            "title": "Complete",
+            "type": "boolean"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "research_suite_id": {
+            "format": "uuid",
+            "title": "Research Suite Id",
+            "type": "string"
+          },
+          "status_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Status Counts",
+            "type": "object"
+          },
+          "suite_mode": {
+            "default": "formal",
+            "enum": [
+              "formal",
+              "exploratory"
+            ],
+            "title": "Suite Mode",
+            "type": "string"
+          },
+          "terminal": {
+            "title": "Terminal",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "research_suite_id",
+          "total",
+          "terminal",
+          "complete",
+          "status_counts"
+        ],
+        "title": "WorkspaceSuiteStatusResponse",
+        "type": "object"
+      },
+      "WorkspaceSuiteSubmitRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "draft_key": {
+            "title": "Draft Key",
+            "type": "string"
+          },
+          "expected_revision": {
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "idempotency_key": {
+            "format": "uuid",
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "researcher_id": {
+            "title": "Researcher Id",
+            "type": "string"
+          },
+          "suite_mode": {
+            "default": "exploratory",
+            "enum": [
+              "formal",
+              "exploratory"
+            ],
+            "title": "Suite Mode",
+            "type": "string"
+          }
+        },
+        "required": [
+          "idempotency_key",
+          "researcher_id",
+          "draft_key",
+          "expected_revision"
+        ],
+        "title": "WorkspaceSuiteSubmitRequest",
+        "type": "object"
+      },
+      "WorkspaceSuiteSubmitResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/ApiContext"
+          },
+          "portfolio_cell_count": {
+            "title": "Portfolio Cell Count",
+            "type": "integer"
+          },
+          "predictive_cell_count": {
+            "title": "Predictive Cell Count",
+            "type": "integer"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualitySummary"
+          },
+          "queued_work_item_count": {
+            "title": "Queued Work Item Count",
+            "type": "integer"
+          },
+          "research_suite_id": {
+            "format": "uuid",
+            "title": "Research Suite Id",
+            "type": "string"
+          },
+          "reused": {
+            "title": "Reused",
+            "type": "boolean"
+          },
+          "suite_artifact_id": {
+            "format": "uuid",
+            "title": "Suite Artifact Id",
+            "type": "string"
+          },
+          "suite_fingerprint": {
+            "title": "Suite Fingerprint",
+            "type": "string"
+          },
+          "suite_key": {
+            "title": "Suite Key",
+            "type": "string"
+          },
+          "suite_mode": {
+            "default": "formal",
+            "enum": [
+              "formal",
+              "exploratory"
+            ],
+            "title": "Suite Mode",
+            "type": "string"
+          }
+        },
+        "required": [
+          "context",
+          "quality",
+          "research_suite_id",
+          "suite_artifact_id",
+          "suite_key",
+          "suite_fingerprint",
+          "predictive_cell_count",
+          "portfolio_cell_count",
+          "queued_work_item_count",
+          "reused"
+        ],
+        "title": "WorkspaceSuiteSubmitResponse",
+        "type": "object"
       }
     }
   },
   "info": {
-    "description": "Read-only v0.2 research identity, quality, and lineage interface.",
+    "description": "Local v0.21 research identity, query, and controlled command interface.",
     "title": "Style Rotation Research API",
-    "version": "0.2.0"
+    "version": "0.21.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -4949,6 +8570,108 @@
         "operationId": "asset_catalog_api_v2_catalog_assets_get",
         "parameters": [
           {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 80,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "in": "query",
+            "name": "maturity",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "cataloged",
+                    "reference_data",
+                    "canonical_ready",
+                    "research_ready",
+                    "strategy_ready",
+                    "product_eligible_input"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Maturity"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tradability",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "tradable",
+                    "reference_only",
+                    "synthetic"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tradability"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 60,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
             "in": "header",
             "name": "if-none-match",
             "required": false,
@@ -4991,6 +8714,158 @@
           }
         },
         "summary": "Asset Catalog",
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/api/v2/catalog/assets/{security_id}/download.csv": {
+      "get": {
+        "operationId": "asset_download_api_v2_catalog_assets__security_id__download_csv_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "security_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Security Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "start",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "in": "query",
+            "name": "end",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Asset Download",
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/api/v2/catalog/assets/{security_id}/series": {
+      "get": {
+        "operationId": "asset_series_api_v2_catalog_assets__security_id__series_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "security_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Security Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "start",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "in": "query",
+            "name": "end",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetSeriesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Asset Series",
         "tags": [
           "catalog"
         ]
@@ -5171,6 +9046,140 @@
       "get": {
         "operationId": "experiment_overview_api_v2_experiments_overview_get",
         "parameters": [
+          {
+            "in": "query",
+            "name": "research_suite_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Research Suite Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "accepted",
+                    "failed",
+                    "running",
+                    "pending"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "template_key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 80,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Template Key"
+            }
+          },
+          {
+            "in": "query",
+            "name": "frequency",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "weekly",
+                    "monthly"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Frequency"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cost_bps_per_side",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 1000,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cost Bps Per Side"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ranking_metric",
+            "required": false,
+            "schema": {
+              "default": "strategy.sharpe_ratio",
+              "enum": [
+                "strategy.sharpe_ratio",
+                "strategy.cagr",
+                "strategy.maximum_drawdown",
+                "relative.annualized_relative_wealth_growth",
+                "predictive.mean_rank_ic"
+              ],
+              "title": "Ranking Metric",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
           {
             "in": "header",
             "name": "if-none-match",
@@ -5360,6 +9369,145 @@
         ]
       }
     },
+    "/api/v2/experiments/results/{artifact_id}/promote": {
+      "post": {
+        "operationId": "promote_experiment_result_api_v2_experiments_results__artifact_id__promote_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductPromotionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductPromotionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Promote Experiment Result",
+        "tags": [
+          "experiment",
+          "product"
+        ]
+      }
+    },
+    "/api/v2/experiments/results/{artifact_id}/qualification": {
+      "get": {
+        "operationId": "promotion_qualification_api_v2_experiments_results__artifact_id__qualification_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromotionQualificationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Promotion Qualification",
+        "tags": [
+          "experiment",
+          "product"
+        ]
+      }
+    },
+    "/api/v2/factors/datasets/{artifact_id}/download.csv": {
+      "get": {
+        "operationId": "factor_download_api_v2_factors_datasets__artifact_id__download_csv_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Factor Download",
+        "tags": [
+          "factor"
+        ]
+      }
+    },
     "/api/v2/factors/overview": {
       "get": {
         "operationId": "factor_overview_api_v2_factors_overview_get",
@@ -5499,6 +9647,272 @@
         ]
       }
     },
+    "/api/v2/products": {
+      "get": {
+        "operationId": "products_api_v2_products_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductCatalogResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Products",
+        "tags": [
+          "product"
+        ]
+      }
+    },
+    "/api/v2/products/alerts/{alert_id}/status": {
+      "post": {
+        "operationId": "change_product_alert_api_v2_products_alerts__alert_id__status_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "alert_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Alert Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductAlertChangeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductAlertChangeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Change Product Alert",
+        "tags": [
+          "product"
+        ]
+      }
+    },
+    "/api/v2/products/{enrollment_id}": {
+      "get": {
+        "operationId": "product_detail_api_v2_products__enrollment_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrollment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrollment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDetailResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Product Detail",
+        "tags": [
+          "product"
+        ]
+      }
+    },
+    "/api/v2/products/{enrollment_id}/lifecycle": {
+      "post": {
+        "operationId": "change_product_lifecycle_api_v2_products__enrollment_id__lifecycle_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrollment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrollment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductLifecycleChangeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductLifecycleChangeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Change Product Lifecycle",
+        "tags": [
+          "product"
+        ]
+      }
+    },
+    "/api/v2/products/{enrollment_id}/recommendation": {
+      "get": {
+        "operationId": "product_recommendation_api_v2_products__enrollment_id__recommendation_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrollment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrollment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductRecommendationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Product Recommendation",
+        "tags": [
+          "product"
+        ]
+      }
+    },
+    "/api/v2/products/{enrollment_id}/reviews": {
+      "post": {
+        "operationId": "record_product_review_api_v2_products__enrollment_id__reviews_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "enrollment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Enrollment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductReviewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Product Review",
+        "tags": [
+          "product"
+        ]
+      }
+    },
     "/api/v2/rankings/products": {
       "get": {
         "operationId": "product_ranking_api_v2_rankings_products_get",
@@ -5585,6 +9999,27 @@
         ]
       }
     },
+    "/api/v2/release-gates": {
+      "get": {
+        "operationId": "release_gates_api_v2_release_gates_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseGateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Release Gates",
+        "tags": [
+          "system"
+        ]
+      }
+    },
     "/api/v2/signals/overview": {
       "get": {
         "operationId": "signal_overview_api_v2_signals_overview_get",
@@ -5646,6 +10081,166 @@
           }
         },
         "summary": "Signal Overview",
+        "tags": [
+          "signal"
+        ]
+      }
+    },
+    "/api/v2/signals/research-export.zip": {
+      "post": {
+        "operationId": "signal_research_export_api_v2_signals_research_export_zip_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignalResearchExportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignalResearchExportJobResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Signal Research Export",
+        "tags": [
+          "signal"
+        ]
+      }
+    },
+    "/api/v2/signals/research-exports/{export_job_id}": {
+      "get": {
+        "operationId": "signal_research_export_status_api_v2_signals_research_exports__export_job_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "export_job_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Export Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignalResearchExportJobResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Signal Research Export Status",
+        "tags": [
+          "signal"
+        ]
+      }
+    },
+    "/api/v2/signals/research-exports/{export_job_id}/download": {
+      "get": {
+        "operationId": "signal_research_export_download_api_v2_signals_research_exports__export_job_id__download_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "export_job_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Export Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Signal Research Export Download",
+        "tags": [
+          "signal"
+        ]
+      }
+    },
+    "/api/v2/signals/versions/{version_key}/download.csv": {
+      "get": {
+        "operationId": "signal_download_api_v2_signals_versions__version_key__download_csv_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_key",
+            "required": true,
+            "schema": {
+              "title": "Version Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Signal Download",
         "tags": [
           "signal"
         ]
@@ -5762,6 +10357,456 @@
         "summary": "Strategy Target Path",
         "tags": [
           "strategy"
+        ]
+      }
+    },
+    "/api/v2/workspace/compile-preview": {
+      "post": {
+        "operationId": "workspace_compile_preview_api_v2_workspace_compile_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceCompileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceCompilePreviewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Workspace Compile Preview",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v2/workspace/drafts/{researcher_id}/{draft_key}": {
+      "get": {
+        "operationId": "workspace_draft_api_v2_workspace_drafts__researcher_id___draft_key__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "researcher_id",
+            "required": true,
+            "schema": {
+              "title": "Researcher Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "draft_key",
+            "required": true,
+            "schema": {
+              "title": "Draft Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceDraftResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Workspace Draft",
+        "tags": [
+          "workspace"
+        ]
+      },
+      "put": {
+        "operationId": "save_workspace_draft_api_v2_workspace_drafts__researcher_id___draft_key__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "researcher_id",
+            "required": true,
+            "schema": {
+              "title": "Researcher Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "draft_key",
+            "required": true,
+            "schema": {
+              "title": "Draft Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceDraftSaveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceDraftResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Workspace Draft",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v2/workspace/options": {
+      "get": {
+        "operationId": "workspace_options_api_v2_workspace_options_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "frequency",
+            "required": false,
+            "schema": {
+              "default": "weekly",
+              "enum": [
+                "weekly",
+                "monthly"
+              ],
+              "title": "Frequency",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "selected_factor_variant",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Selected Factor Variant"
+            }
+          },
+          {
+            "in": "query",
+            "name": "selected_signal",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Selected Signal"
+            }
+          },
+          {
+            "in": "query",
+            "name": "selected_model",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Selected Model"
+            }
+          },
+          {
+            "in": "query",
+            "name": "selected_strategy",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Selected Strategy"
+            }
+          },
+          {
+            "in": "query",
+            "name": "selected_asset",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "format": "uuid",
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Selected Asset"
+            }
+          },
+          {
+            "in": "query",
+            "name": "selected_asset_data_input",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Selected Asset Data Input"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceOptionsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Workspace Options",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v2/workspace/suites": {
+      "post": {
+        "operationId": "submit_workspace_suite_api_v2_workspace_suites_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceSuiteSubmitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceSuiteSubmitResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Submit Workspace Suite",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v2/workspace/suites/{research_suite_id}": {
+      "get": {
+        "operationId": "workspace_suite_status_api_v2_workspace_suites__research_suite_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "research_suite_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Research Suite Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceSuiteStatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Workspace Suite Status",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v2/workspace/suites/{research_suite_id}/cancel": {
+      "post": {
+        "operationId": "cancel_workspace_suite_api_v2_workspace_suites__research_suite_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "research_suite_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Research Suite Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommandIdempotencyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceSuiteCancelResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel Workspace Suite",
+        "tags": [
+          "workspace"
         ]
       }
     }

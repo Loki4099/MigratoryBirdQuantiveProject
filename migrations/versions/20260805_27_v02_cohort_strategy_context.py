@@ -58,12 +58,8 @@ def upgrade() -> None:
         "ALTER TABLE experiment.comparison_cohort_version "
         "ENABLE TRIGGER trg_comparison_cohort_draft"
     )
-    op.alter_column(
-        "comparison_cohort_version", "target_k", nullable=False, schema="experiment"
-    )
-    op.alter_column(
-        "comparison_cohort_version", "frequency", nullable=False, schema="experiment"
-    )
+    op.alter_column("comparison_cohort_version", "target_k", nullable=False, schema="experiment")
+    op.alter_column("comparison_cohort_version", "frequency", nullable=False, schema="experiment")
     op.create_check_constraint(
         "ck_comparison_cohort_target_k",
         "comparison_cohort_version",
@@ -169,9 +165,7 @@ def downgrade() -> None:
       DELETE FROM experiment.comparison_cohort_version;
       DELETE FROM lineage.artifact WHERE artifact_type = 'comparison_cohort_version';
     """)
-    op.execute(
-        "DROP FUNCTION IF EXISTS experiment.enforce_cohort_owner_draft() CASCADE"
-    )
+    op.execute("DROP FUNCTION IF EXISTS experiment.enforce_cohort_owner_draft() CASCADE")
     op.drop_constraint(
         "ck_comparison_cohort_frequency",
         "comparison_cohort_version",

@@ -101,10 +101,14 @@ class BackupService:
         self, backup_record_id: uuid.UUID, *, docker_service: str
     ) -> BackupPublication:
         with self._engine.connect() as connection:
-            row = connection.execute(
-                text("SELECT * FROM ops.backup_record WHERE backup_record_id = :id"),
-                {"id": backup_record_id},
-            ).mappings().one_or_none()
+            row = (
+                connection.execute(
+                    text("SELECT * FROM ops.backup_record WHERE backup_record_id = :id"),
+                    {"id": backup_record_id},
+                )
+                .mappings()
+                .one_or_none()
+            )
         if row is None:
             raise ValueError(f"Backup record not found: {backup_record_id}")
         dump_path = Path(row["storage_reference"])
@@ -114,12 +118,28 @@ class BackupService:
         password = self._url.password or ""
         compose = ["docker", "compose", "exec", "-T", docker_service]
         create = [
-            *compose, "psql", "-U", user, "-d", "postgres", "-v", "ON_ERROR_STOP=1",
-            "-c", f'CREATE DATABASE "{restore_database}"',
+            *compose,
+            "psql",
+            "-U",
+            user,
+            "-d",
+            "postgres",
+            "-v",
+            "ON_ERROR_STOP=1",
+            "-c",
+            f'CREATE DATABASE "{restore_database}"',
         ]
         drop = [
-            *compose, "psql", "-U", user, "-d", "postgres", "-v", "ON_ERROR_STOP=1",
-            "-c", f'DROP DATABASE IF EXISTS "{restore_database}" WITH (FORCE)',
+            *compose,
+            "psql",
+            "-U",
+            user,
+            "-d",
+            "postgres",
+            "-v",
+            "ON_ERROR_STOP=1",
+            "-c",
+            f'DROP DATABASE IF EXISTS "{restore_database}" WITH (FORCE)',
         ]
         environment = {**os.environ, "PGPASSWORD": password}
         try:
@@ -174,15 +194,31 @@ class BackupService:
                 raise ValueError("Docker service name contains unsupported characters")
             return (
                 [
-                    "docker", "compose", "exec", "-T", docker_service,
-                    "pg_dump", "-U", user, "--format=custom", "--no-owner",
-                    "--no-privileges", "-d", database,
+                    "docker",
+                    "compose",
+                    "exec",
+                    "-T",
+                    docker_service,
+                    "pg_dump",
+                    "-U",
+                    user,
+                    "--format=custom",
+                    "--no-owner",
+                    "--no-privileges",
+                    "-d",
+                    database,
                 ],
                 environment,
             )
         command = [
-            "pg_dump", "--format=custom", "--no-owner", "--no-privileges",
-            "--username", user, "--dbname", database,
+            "pg_dump",
+            "--format=custom",
+            "--no-owner",
+            "--no-privileges",
+            "--username",
+            user,
+            "--dbname",
+            database,
         ]
         if self._url.host is not None:
             command.extend(("--host", self._url.host))

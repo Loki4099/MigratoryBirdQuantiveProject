@@ -32,30 +32,44 @@ def _fk(table: str, column: str, target: str) -> sa.ForeignKeyConstraint:
 def upgrade() -> None:
     op.create_table(
         "warmup_policy_version",
-        _id("warmup_policy_version_id"), _id("artifact_id"),
+        _id("warmup_policy_version_id"),
+        _id("artifact_id"),
         sa.Column("policy_key", sa.String(120), nullable=False),
         sa.Column("version_number", sa.Integer(), nullable=False),
         sa.Column("resolution_method", sa.String(100), nullable=False),
         sa.Column("required_observations", sa.Integer(), nullable=False),
         sa.Column("description", sa.Text(), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+        ),
         _fk("warmup_policy", "artifact_id", "lineage.artifact.artifact_id"),
         sa.PrimaryKeyConstraint("warmup_policy_version_id", name="pk_warmup_policy_version"),
         sa.UniqueConstraint("artifact_id", name="uq_warmup_policy_artifact"),
         sa.UniqueConstraint("policy_key", "version_number", name="uq_warmup_policy_identity"),
-        sa.CheckConstraint("version_number >= 1 AND required_observations >= 0", name="ck_warmup_policy_values"),
-        sa.CheckConstraint("resolution_method = 'dependency_max_required_history'", name="ck_warmup_policy_method"),
+        sa.CheckConstraint(
+            "version_number >= 1 AND required_observations >= 0", name="ck_warmup_policy_values"
+        ),
+        sa.CheckConstraint(
+            "resolution_method = 'dependency_max_required_history'", name="ck_warmup_policy_method"
+        ),
         schema="experiment",
     )
     op.create_table(
         "comparison_cohort_version",
-        _id("comparison_cohort_version_id"), _id("artifact_id"),
-        _id("warmup_policy_version_id"), _id("universe_version_id"),
-        _id("data_bundle_version_id"), _id("eligibility_snapshot_id"),
-        _id("execution_policy_version_id"), _id("reserve_return_model_version_id"),
-        _id("benchmark_version_id"), _id("cost_scenario_id"),
-        _id("performance_metric_catalog_id"), _id("accounting_engine_version_id"),
-        _id("benchmark_engine_version_id"), _id("performance_engine_version_id"),
+        _id("comparison_cohort_version_id"),
+        _id("artifact_id"),
+        _id("warmup_policy_version_id"),
+        _id("universe_version_id"),
+        _id("data_bundle_version_id"),
+        _id("eligibility_snapshot_id"),
+        _id("execution_policy_version_id"),
+        _id("reserve_return_model_version_id"),
+        _id("benchmark_version_id"),
+        _id("cost_scenario_id"),
+        _id("performance_metric_catalog_id"),
+        _id("accounting_engine_version_id"),
+        _id("benchmark_engine_version_id"),
+        _id("performance_engine_version_id"),
         sa.Column("cohort_key", sa.String(140), nullable=False),
         sa.Column("version_number", sa.Integer(), nullable=False),
         sa.Column("name", sa.String(240), nullable=False),
@@ -70,43 +84,128 @@ def upgrade() -> None:
         sa.Column("common_metric_end", sa.Date(), nullable=False),
         sa.Column("currency", sa.String(3), nullable=False),
         sa.Column("member_count", sa.Integer(), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+        ),
         _fk("comparison_cohort", "artifact_id", "lineage.artifact.artifact_id"),
-        _fk("comparison_cohort", "warmup_policy_version_id", "experiment.warmup_policy_version.warmup_policy_version_id"),
-        _fk("comparison_cohort", "universe_version_id", "catalog.universe_version.universe_version_id"),
-        _fk("comparison_cohort", "data_bundle_version_id", "data.data_bundle_version.data_bundle_version_id"),
-        _fk("comparison_cohort", "eligibility_snapshot_id", "catalog.eligibility_snapshot.eligibility_snapshot_id"),
-        _fk("comparison_cohort", "execution_policy_version_id", "ops.execution_policy_version.execution_policy_version_id"),
-        _fk("comparison_cohort", "reserve_return_model_version_id", "experiment.reserve_return_model_version.reserve_return_model_version_id"),
-        _fk("comparison_cohort", "benchmark_version_id", "experiment.benchmark_version.benchmark_version_id"),
+        _fk(
+            "comparison_cohort",
+            "warmup_policy_version_id",
+            "experiment.warmup_policy_version.warmup_policy_version_id",
+        ),
+        _fk(
+            "comparison_cohort",
+            "universe_version_id",
+            "catalog.universe_version.universe_version_id",
+        ),
+        _fk(
+            "comparison_cohort",
+            "data_bundle_version_id",
+            "data.data_bundle_version.data_bundle_version_id",
+        ),
+        _fk(
+            "comparison_cohort",
+            "eligibility_snapshot_id",
+            "catalog.eligibility_snapshot.eligibility_snapshot_id",
+        ),
+        _fk(
+            "comparison_cohort",
+            "execution_policy_version_id",
+            "ops.execution_policy_version.execution_policy_version_id",
+        ),
+        _fk(
+            "comparison_cohort",
+            "reserve_return_model_version_id",
+            "experiment.reserve_return_model_version.reserve_return_model_version_id",
+        ),
+        _fk(
+            "comparison_cohort",
+            "benchmark_version_id",
+            "experiment.benchmark_version.benchmark_version_id",
+        ),
         _fk("comparison_cohort", "cost_scenario_id", "experiment.cost_scenario.cost_scenario_id"),
-        _fk("comparison_cohort", "performance_metric_catalog_id", "experiment.performance_metric_catalog.performance_metric_catalog_id"),
-        _fk("comparison_cohort", "accounting_engine_version_id", "ops.engine_version.engine_version_id"),
-        _fk("comparison_cohort", "benchmark_engine_version_id", "ops.engine_version.engine_version_id"),
-        _fk("comparison_cohort", "performance_engine_version_id", "ops.engine_version.engine_version_id"),
-        sa.PrimaryKeyConstraint("comparison_cohort_version_id", name="pk_comparison_cohort_version"),
+        _fk(
+            "comparison_cohort",
+            "performance_metric_catalog_id",
+            "experiment.performance_metric_catalog.performance_metric_catalog_id",
+        ),
+        _fk(
+            "comparison_cohort",
+            "accounting_engine_version_id",
+            "ops.engine_version.engine_version_id",
+        ),
+        _fk(
+            "comparison_cohort",
+            "benchmark_engine_version_id",
+            "ops.engine_version.engine_version_id",
+        ),
+        _fk(
+            "comparison_cohort",
+            "performance_engine_version_id",
+            "ops.engine_version.engine_version_id",
+        ),
+        sa.PrimaryKeyConstraint(
+            "comparison_cohort_version_id", name="pk_comparison_cohort_version"
+        ),
         sa.UniqueConstraint("artifact_id", name="uq_comparison_cohort_artifact"),
         sa.UniqueConstraint("cohort_key", "version_number", name="uq_comparison_cohort_identity"),
-        sa.UniqueConstraint("context_fingerprint", "version_number", name="uq_comparison_context_version"),
-        sa.CheckConstraint("context_fingerprint ~ '^[0-9a-f]{64}$'", name="ck_comparison_context_hash"),
-        sa.CheckConstraint("version_number >= 1 AND member_count >= 1", name="ck_comparison_cohort_counts"),
-        sa.CheckConstraint("initialization_policy = 'carry_in'", name="ck_comparison_cohort_initialization"),
+        sa.UniqueConstraint(
+            "context_fingerprint", "version_number", name="uq_comparison_context_version"
+        ),
+        sa.CheckConstraint(
+            "context_fingerprint ~ '^[0-9a-f]{64}$'", name="ck_comparison_context_hash"
+        ),
+        sa.CheckConstraint(
+            "version_number >= 1 AND member_count >= 1", name="ck_comparison_cohort_counts"
+        ),
+        sa.CheckConstraint(
+            "initialization_policy = 'carry_in'", name="ck_comparison_cohort_initialization"
+        ),
         sa.CheckConstraint("currency = 'USD'", name="ck_comparison_cohort_currency"),
-        sa.CheckConstraint("common_data_ready_date <= common_simulation_start AND common_simulation_start <= common_metric_start AND common_metric_start <= common_metric_end AND common_metric_end <= as_of_date", name="ck_comparison_cohort_dates"),
+        sa.CheckConstraint(
+            "common_data_ready_date <= common_simulation_start AND common_simulation_start <= common_metric_start AND common_metric_start <= common_metric_end AND common_metric_end <= as_of_date",
+            name="ck_comparison_cohort_dates",
+        ),
         schema="experiment",
     )
     op.create_table(
         "comparison_cohort_member",
-        _id("comparison_cohort_version_id"), _id("result_publication_id"),
+        _id("comparison_cohort_version_id"),
+        _id("result_publication_id"),
         sa.Column("ordinal", sa.Integer(), nullable=False),
-        _fk("comparison_member", "comparison_cohort_version_id", "experiment.comparison_cohort_version.comparison_cohort_version_id"),
-        _fk("comparison_member", "result_publication_id", "experiment.result_publication.result_publication_id"),
-        sa.PrimaryKeyConstraint("comparison_cohort_version_id", "result_publication_id", name="pk_comparison_cohort_member"),
-        sa.UniqueConstraint("comparison_cohort_version_id", "ordinal", name="uq_comparison_cohort_member_ordinal"),
+        _fk(
+            "comparison_member",
+            "comparison_cohort_version_id",
+            "experiment.comparison_cohort_version.comparison_cohort_version_id",
+        ),
+        _fk(
+            "comparison_member",
+            "result_publication_id",
+            "experiment.result_publication.result_publication_id",
+        ),
+        sa.PrimaryKeyConstraint(
+            "comparison_cohort_version_id",
+            "result_publication_id",
+            name="pk_comparison_cohort_member",
+        ),
+        sa.UniqueConstraint(
+            "comparison_cohort_version_id", "ordinal", name="uq_comparison_cohort_member_ordinal"
+        ),
         sa.CheckConstraint("ordinal >= 0", name="ck_comparison_cohort_member_ordinal"),
         schema="experiment",
     )
-    op.create_index("ix_comparison_cohort_context", "comparison_cohort_version", ["template_key", "as_of_date", "common_metric_start", "common_metric_end", "cost_scenario_id"], schema="experiment")
+    op.create_index(
+        "ix_comparison_cohort_context",
+        "comparison_cohort_version",
+        [
+            "template_key",
+            "as_of_date",
+            "common_metric_start",
+            "common_metric_end",
+            "cost_scenario_id",
+        ],
+        schema="experiment",
+    )
     op.execute("""
     CREATE FUNCTION experiment.enforce_cohort_owner_draft() RETURNS trigger LANGUAGE plpgsql AS $$
     DECLARE owner_artifact uuid; cohort_row record; member_row record;
@@ -185,7 +284,9 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.execute("DROP FUNCTION IF EXISTS experiment.enforce_cohort_owner_draft() CASCADE")
-    op.drop_index("ix_comparison_cohort_context", table_name="comparison_cohort_version", schema="experiment")
+    op.drop_index(
+        "ix_comparison_cohort_context", table_name="comparison_cohort_version", schema="experiment"
+    )
     op.drop_table("comparison_cohort_member", schema="experiment")
     op.drop_table("comparison_cohort_version", schema="experiment")
     op.drop_table("warmup_policy_version", schema="experiment")

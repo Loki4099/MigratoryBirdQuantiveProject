@@ -18,6 +18,12 @@ class FactorBar:
     close_adj: Decimal
     close_raw: Decimal
     volume_raw: int
+    open_raw: Decimal | None = None
+    high_raw: Decimal | None = None
+    low_raw: Decimal | None = None
+    open_adj: Decimal | None = None
+    high_adj: Decimal | None = None
+    low_adj: Decimal | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -105,6 +111,23 @@ def _total_return(bars: tuple[FactorBar, ...], parameters: dict[str, Any]) -> li
         None if index < window else float(closes[index] / closes[index - window] - 1)
         for index in range(len(bars))
     ]
+
+
+def _passthrough(
+    field: str,
+) -> Callable[[tuple[FactorBar, ...], dict[str, Any]], list[float | None]]:
+    def calculate(bars: tuple[FactorBar, ...], parameters: dict[str, Any]) -> list[float | None]:
+        requested = str(parameters.get("field", field))
+        if requested != field:
+            raise FactorCalculationError(
+                f"Raw Factor implementation {field} cannot read field {requested}"
+            )
+        return [
+            None if (value := getattr(bar, field)) is None else float(value)
+            for bar in bars
+        ]
+
+    return calculate
 
 
 def _lagged_return(bars: tuple[FactorBar, ...], parameters: dict[str, Any]) -> list[float | None]:
@@ -338,6 +361,15 @@ def _positive_int(parameters: dict[str, Any], key: str) -> int:
 IMPLEMENTATIONS: dict[
     str, Callable[[tuple[FactorBar, ...], dict[str, Any]], list[float | None]]
 ] = {
+    "raw_open_passthrough_v1": _passthrough("open_raw"),
+    "raw_high_passthrough_v1": _passthrough("high_raw"),
+    "raw_low_passthrough_v1": _passthrough("low_raw"),
+    "raw_close_passthrough_v1": _passthrough("close_raw"),
+    "adjusted_open_passthrough_v1": _passthrough("open_adj"),
+    "adjusted_high_passthrough_v1": _passthrough("high_adj"),
+    "adjusted_low_passthrough_v1": _passthrough("low_adj"),
+    "adjusted_close_passthrough_v1": _passthrough("close_adj"),
+    "raw_volume_passthrough_v1": _passthrough("volume_raw"),
     "total_return_v1": _total_return,
     "lagged_return_v1": _lagged_return,
     "moving_average_ratio_v1": _moving_average_ratio,

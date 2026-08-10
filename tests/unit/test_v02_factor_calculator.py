@@ -59,6 +59,31 @@ def _last_value(implementation: str, parameters: dict[str, int]) -> float:
     return result.points[0].value
 
 
+def test_raw_market_factor_passthroughs_read_the_declared_ohlcv_field() -> None:
+    day = date(2026, 8, 3)
+    bar = FactorBar(
+        ASSET_ID, "iwf", day, Decimal("15"), Decimal("14"), 1234,
+        open_raw=Decimal("10"), high_raw=Decimal("16"), low_raw=Decimal("9"),
+        open_adj=Decimal("11"), high_adj=Decimal("17"), low_adj=Decimal("8"),
+    )
+    expected = {
+        "raw_open": ("open_raw", 10.0), "raw_high": ("high_raw", 16.0),
+        "raw_low": ("low_raw", 9.0), "raw_close": ("close_raw", 14.0),
+        "adjusted_open": ("open_adj", 11.0), "adjusted_high": ("high_adj", 17.0),
+        "adjusted_low": ("low_adj", 8.0), "adjusted_close": ("close_adj", 15.0),
+        "raw_volume": ("volume_raw", 1234.0),
+    }
+    for key, (field, value) in expected.items():
+        variant = FactorVariantInput(
+            uuid.uuid5(uuid.NAMESPACE_URL, key), uuid.uuid5(uuid.NAMESPACE_DNS, key),
+            f"{key}__raw", f"{key}_passthrough_v1", {"field": field}, 1,
+        )
+        calculated = calculate_variant(
+            {ASSET_ID: (bar,)}, variant, coverage_start=day, coverage_end=day
+        )
+        assert calculated.points[0].value == value
+
+
 def test_return_trend_risk_and_liquidity_formulas_match_golden_values() -> None:
     bars = _bars()
     closes = [item.close_adj for item in bars]

@@ -42,12 +42,11 @@ def classify_comparison(rows: Sequence[Mapping[str, Any]]) -> ComparisonClassifi
     if len(rows) < 2:
         raise ValueError("A comparison requires at least two results")
     changed = tuple(
-        name for name, fields in _DIMENSIONS.items()
+        name
+        for name, fields in _DIMENSIONS.items()
         if any(len({row[field] for row in rows}) > 1 for field in fields)
     )
-    blockers = tuple(
-        field for field in _PROTECTED_FIELDS if len({row[field] for row in rows}) > 1
-    )
+    blockers = tuple(field for field in _PROTECTED_FIELDS if len({row[field] for row in rows}) > 1)
     if not changed and not blockers:
         mode: ComparisonMode = "identical"
     elif len(changed) == 1 and not blockers:

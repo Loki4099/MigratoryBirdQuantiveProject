@@ -2,18 +2,22 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import sys
 import uuid
 from collections.abc import Sequence
+from contextlib import suppress
 from dataclasses import asdict, dataclass
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
+from decimal import Decimal
 from pathlib import Path
 from typing import NoReturn
 
-from sqlalchemy import text
+from sqlalchemy import Engine, text
 
 from style_rotation import __version__
 from style_rotation.architecture import DOMAIN_BOUNDARIES
+from style_rotation.catalog.asset_registry import publish_asset_identities, publish_asset_registry
 from style_rotation.catalog.bootstrap import publish_catalogs
 from style_rotation.catalog.eligibility import EligibilityPublicationService
 from style_rotation.catalog.scope import publish_research_scope
@@ -102,16 +106,27 @@ from style_rotation.model.engine import (
 from style_rotation.model.publication import ModelDatasetPublicationService
 from style_rotation.model.service import publish_model_catalog
 from style_rotation.ops.backup import BackupService
+from style_rotation.ops.idempotency import CommandIdempotencyService
+from style_rotation.ops.maintenance import prune_latest_non_product_suites
+from style_rotation.ops.v021_execution import build_v021_worker
+from style_rotation.ops.worker import WorkerOutcome, run_persistent_worker
 from style_rotation.persistence.database import database_status, reset_database, upgrade_database
 from style_rotation.persistence.session import create_postgres_engine
+from style_rotation.product.monitoring_service import MonitoringScheduler
+from style_rotation.product.v021_monitoring import build_v021_monitoring_worker
 from style_rotation.signal.diagnostic_engine import (
     build_signal_evaluation_engine_spec,
     publish_signal_evaluation_engine,
 )
 from style_rotation.signal.diagnostic_publication import SignalDiagnosticPublicationService
 from style_rotation.signal.engine import build_signal_engine_spec, publish_signal_engine
+from style_rotation.signal.export_jobs import SignalResearchExportWorker
 from style_rotation.signal.publication import SignalDatasetPublicationService
 from style_rotation.signal.service import publish_signal_catalog
+from style_rotation.storage.maintenance import (
+    CacheMaintenancePolicy,
+    StorageMaintenanceService,
+)
 from style_rotation.strategy.engine import (
     build_strategy_target_engine_spec,
     publish_strategy_target_engine,
@@ -120,6 +135,10 @@ from style_rotation.strategy.grid import publish_strategy_target_grid
 from style_rotation.strategy.product_service import publish_strategy_product
 from style_rotation.strategy.service import publish_strategy_catalog
 from style_rotation.strategy.target_publication import StrategyTargetPublicationService
+from style_rotation.workspace.catalog import publish_component_catalog
+from style_rotation.workspace.release_gates import ReleaseGateEvidenceService
+
+LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -208,8 +227,233 @@ def _backup_restore_test(backup_record_id: str, docker_service: str) -> int:
     return 0
 
 
+def _storage_retention_dry_run(
+    cache_ttl_days: int,
+    cache_quota_gib: int,
+    retain_suite_ids: tuple[str, ...],
+) -> int:
+    """Print a read-only retention inventory; never delete or archive data."""
+
+    if cache_ttl_days < 1:
+        raise ValueError("cache-ttl-days must be positive")
+    if cache_quota_gib < 0:
+        raise ValueError("cache-quota-gib cannot be negative")
+    service = StorageMaintenanceService(
+        create_postgres_engine(get_settings().database_url)
+    )
+    plan = service.dry_run(
+        policy=CacheMaintenancePolicy(
+            ttl=timedelta(days=cache_ttl_days),
+            quota_bytes=cache_quota_gib * 1024**3,
+        ),
+        retain_suite_ids=tuple(uuid.UUID(value) for value in retain_suite_ids),
+    )
+    print(json.dumps(plan.summary(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _idempotency_pending(limit: int) -> int:
+    service = CommandIdempotencyService(
+        create_postgres_engine(get_settings().database_url)
+    )
+    print(
+        json.dumps(
+            service.pending_audit(limit=limit),
+            indent=2,
+            ensure_ascii=False,
+            default=str,
+        )
+    )
+    return 0
+
+
+def _idempotency_repair_response(
+    command_name: str,
+    idempotency_key: str,
+    request_fingerprint: str,
+    response_file: str,
+    confirmation: str,
+) -> int:
+    if confirmation != "OUTCOME_AUDITED":
+        raise ValueError("Repair requires --confirm-outcome-audited OUTCOME_AUDITED")
+    payload = json.loads(Path(response_file).read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("Idempotency repair response must be a JSON object")
+    service = CommandIdempotencyService(
+        create_postgres_engine(get_settings().database_url)
+    )
+    result = service.repair_response(
+        command_name=command_name,
+        idempotency_key=uuid.UUID(idempotency_key),
+        expected_request_fingerprint=request_fingerprint,
+        response=payload,
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
+    return 0
+
+
 def _artifact_service() -> ArtifactService:
     return ArtifactService(create_postgres_engine(get_settings().database_url))
+
+
+def _print_worker_outcome(outcome: WorkerOutcome) -> None:
+    print(
+        json.dumps(
+            {
+                "work_item_id": str(outcome.work_item_id),
+                "status": outcome.status,
+                "result_artifact_id": (
+                    str(outcome.result_artifact_id) if outcome.result_artifact_id else None
+                ),
+            }
+        ),
+        flush=True,
+    )
+
+
+def _run_experiment_retention(engine: Engine) -> None:
+    try:
+        deleted = prune_latest_non_product_suites(engine)
+        if deleted:
+            LOGGER.info("Pruned %s superseded experiment Suite(s)", deleted)
+    except Exception:
+        LOGGER.exception("Deferred experiment retention pass failed")
+
+
+def _experiment_run_v021_worker(
+    worker_id: str, max_items: int, forever: bool = False, poll_seconds: float = 1.0
+) -> int:
+    if max_items < 1:
+        raise ValueError("max-items must be positive")
+    engine = create_postgres_engine(get_settings().database_url)
+    worker = build_v021_worker(engine, worker_id=worker_id)
+    if forever:
+        with suppress(KeyboardInterrupt):
+            run_persistent_worker(
+                worker.run_once,
+                poll_seconds=poll_seconds,
+                on_outcome=_print_worker_outcome,
+                on_idle_maintenance=lambda: _run_experiment_retention(engine),
+            )
+        return 0
+    outcomes = []
+    for _ in range(max_items):
+        outcome = worker.run_once()
+        outcomes.append(outcome)
+        if outcome.status == "idle":
+            break
+    _run_experiment_retention(engine)
+    print(
+        json.dumps(
+            [
+                {
+                    "work_item_id": str(item.work_item_id),
+                    "status": item.status,
+                    "result_artifact_id": (
+                        str(item.result_artifact_id) if item.result_artifact_id else None
+                    ),
+                }
+                for item in outcomes
+            ],
+            indent=2,
+        )
+    )
+    return 0
+
+
+def _product_run_v021_monitoring_worker(
+    worker_id: str, max_items: int, forever: bool = False, poll_seconds: float = 1.0
+) -> int:
+    if max_items < 1:
+        raise ValueError("max-items must be positive")
+    worker = build_v021_monitoring_worker(
+        create_postgres_engine(get_settings().database_url), worker_id=worker_id
+    )
+    if forever:
+        with suppress(KeyboardInterrupt):
+            run_persistent_worker(
+                worker.run_once,
+                poll_seconds=poll_seconds,
+                on_outcome=_print_worker_outcome,
+            )
+        return 0
+    completed = 0
+    for _ in range(max_items):
+        outcome = worker.run_once()
+        if outcome.status == "idle":
+            break
+        completed += int(outcome.status == "completed")
+    print(json.dumps({"processed": completed, "worker_id": worker_id}, indent=2))
+    return 0
+
+
+def _signal_run_research_export_worker(
+    worker_id: str, max_items: int, forever: bool = False, poll_seconds: float = 1.0
+) -> int:
+    if max_items < 1:
+        raise ValueError("max-items must be positive")
+    settings = get_settings()
+    worker = SignalResearchExportWorker(
+        create_postgres_engine(settings.database_url),
+        worker_id=worker_id,
+        directory=settings.signal_export_directory,
+    )
+    if forever:
+        with suppress(KeyboardInterrupt):
+            run_persistent_worker(
+                worker.run_once,
+                poll_seconds=poll_seconds,
+                on_outcome=_print_worker_outcome,
+            )
+        return 0
+    outcomes = []
+    for _ in range(max_items):
+        outcome = worker.run_once()
+        outcomes.append(outcome)
+        if outcome.status == "idle":
+            break
+    print(
+        json.dumps(
+            [
+                {"work_item_id": str(item.work_item_id), "status": item.status}
+                for item in outcomes
+            ],
+            indent=2,
+        )
+    )
+    return 0
+
+
+def _product_schedule_v021_monitoring(
+    data_bundle_artifact_id: str, as_of_session: date, known_at: datetime
+) -> int:
+    scheduler = MonitoringScheduler(create_postgres_engine(get_settings().database_url))
+    work_ids = scheduler.enqueue_for_data_bundle(
+        data_bundle_artifact_id=uuid.UUID(data_bundle_artifact_id),
+        as_of_session=as_of_session,
+        known_at=known_at,
+    )
+    print(json.dumps({"scheduled_work_item_ids": [str(value) for value in work_ids]}, indent=2))
+    return 0
+
+
+def _workspace_calibrate_v021_gates(
+    comparison_context_artifact_id: str,
+    version: int,
+    coefficient: Decimal,
+    maximum_bps: Decimal,
+    defensive_basket_version: str,
+) -> int:
+    service = ReleaseGateEvidenceService(create_postgres_engine(get_settings().database_url))
+    result = service.calibrate_comparison_context(
+        comparison_context_artifact_id=uuid.UUID(comparison_context_artifact_id),
+        version_number=version,
+        impact_coefficient=coefficient,
+        impact_maximum_bps=maximum_bps,
+        defensive_basket_version=defensive_basket_version,
+    )
+    print(json.dumps({key: str(value) for key, value in result.items()}, indent=2))
+    return 0
 
 
 def _bootstrap_catalogs(catalog_directory: str) -> int:
@@ -225,6 +469,32 @@ def _bootstrap_scope(catalog_file: str) -> int:
     return 0
 
 
+def _bootstrap_asset_registry(catalog_file: str) -> int:
+    engine = create_postgres_engine(get_settings().database_url)
+    result = publish_asset_registry(engine, Path(catalog_file))
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _bootstrap_asset_identities(catalog_file: str) -> int:
+    engine = create_postgres_engine(get_settings().database_url)
+    result = publish_asset_identities(engine, Path(catalog_file))
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _bootstrap_workspace_components(factor_file: str, signal_file: str, workspace_file: str) -> int:
+    engine = create_postgres_engine(get_settings().database_url)
+    result = publish_component_catalog(
+        engine,
+        factor_path=Path(factor_file),
+        signal_path=Path(signal_file),
+        workspace_path=Path(workspace_file),
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0
+
+
 def _bootstrap_data_contracts(catalog_file: str) -> int:
     engine = create_postgres_engine(get_settings().database_url)
     results = publish_data_contracts(engine, Path(catalog_file))
@@ -237,6 +507,16 @@ def _parse_date(value: str) -> date:
         return date.fromisoformat(value)
     except ValueError as error:
         raise argparse.ArgumentTypeError("expected an ISO date (YYYY-MM-DD)") from error
+
+
+def _parse_datetime(value: str) -> datetime:
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("expected an ISO datetime with timezone") from error
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise argparse.ArgumentTypeError("datetime must include a timezone offset")
+    return parsed
 
 
 def _data_fetch(
@@ -289,6 +569,50 @@ def _canonical_market(
     )
     payload = asdict(result)
     payload["artifact_id"] = str(result.artifact_id)
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _canonical_latest_market(
+    symbols: tuple[str, ...], calendar_artifact_id: str, version_number: int
+) -> int:
+    normalized = tuple(symbol.upper() for symbol in symbols)
+    if not normalized or len(normalized) != len(set(normalized)):
+        raise ValueError("Latest market symbols must be non-empty and unique")
+    engine = create_postgres_engine(get_settings().database_url)
+    with engine.connect() as connection:
+        rows = connection.execute(
+            text(
+                "SELECT DISTINCT ON (upper(snapshot.request_parameters ->> 'tickers')) "
+                "upper(snapshot.request_parameters ->> 'tickers') AS symbol, "
+                "snapshot.artifact_id "
+                "FROM data.source_snapshot snapshot "
+                "JOIN data.data_series_version version ON "
+                "version.data_series_version_id = snapshot.data_series_version_id "
+                "JOIN data.data_series_definition definition ON "
+                "definition.data_series_definition_id = version.data_series_definition_id "
+                "JOIN lineage.artifact artifact ON artifact.artifact_id = snapshot.artifact_id "
+                "WHERE definition.series_key = 'us_etf_daily_market' "
+                "AND artifact.status = 'published' "
+                "AND upper(snapshot.request_parameters ->> 'tickers') = ANY(:symbols) "
+                "ORDER BY upper(snapshot.request_parameters ->> 'tickers'), "
+                "snapshot.fetched_at DESC"
+            ),
+            {"symbols": list(normalized)},
+        ).mappings()
+        by_symbol = {str(row["symbol"]): row["artifact_id"] for row in rows}
+    missing = sorted(set(normalized).difference(by_symbol))
+    if missing:
+        raise ValueError(f"Published source snapshots missing for: {', '.join(missing)}")
+    service = CanonicalDataPublicationService(engine)
+    result = service.publish_market(
+        tuple(by_symbol[symbol] for symbol in normalized),
+        uuid.UUID(calendar_artifact_id),
+        version_number=version_number,
+    )
+    payload = asdict(result)
+    payload["artifact_id"] = str(result.artifact_id)
+    payload["symbol_count"] = len(normalized)
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -504,9 +828,7 @@ def _strategy_publish_grid(
         data_bundle_artifact_id=uuid.UUID(data_bundle_artifact_id),
         eligibility_artifact_id=uuid.UUID(eligibility_artifact_id),
         target_engine_artifact_id=uuid.UUID(target_engine_artifact_id),
-        auxiliary_signal_dataset_artifact_id=uuid.UUID(
-            auxiliary_signal_dataset_artifact_id
-        ),
+        auxiliary_signal_dataset_artifact_id=uuid.UUID(auxiliary_signal_dataset_artifact_id),
         model_specification_keys=model_specification_keys,
         k_values=k_values,
         frequencies=frequencies,
@@ -796,9 +1118,7 @@ def _experiment_run_release_suite(
     benchmark = next(
         item for item in benchmarks.benchmarks if item.benchmark_key == "spy_buy_and_hold"
     )
-    cost_artifacts = {
-        int(item.cost_bps_per_side): item.artifact_id for item in costs.scenarios
-    }
+    cost_artifacts = {int(item.cost_bps_per_side): item.artifact_id for item in costs.scenarios}
     intervals = tuple(template_keys or FORMAL_INTERVALS)
     selected_costs = tuple(costs_bps or FORMAL_COSTS_BPS)
     cells = build_release_cells(
@@ -1050,8 +1370,9 @@ def _publish_bundle(
     calendar_artifact_id: str,
     version_number: int,
 ) -> int:
+    engine = create_postgres_engine(get_settings().database_url)
     results = publish_data_bundle(
-        create_postgres_engine(get_settings().database_url),
+        engine,
         uuid.UUID(market_artifact_id),
         uuid.UUID(rate_artifact_id),
         uuid.UUID(reserve_artifact_id),
@@ -1063,6 +1384,20 @@ def _publish_bundle(
         item = asdict(result)
         item["artifact_id"] = str(result.artifact_id)
         payload.append(item)
+        with engine.connect() as connection:
+            coverage_end = connection.execute(
+                text(
+                    "SELECT coverage_end FROM data.data_bundle_version "
+                    "WHERE artifact_id = :artifact_id"
+                ),
+                {"artifact_id": result.artifact_id},
+            ).scalar_one()
+        scheduled = MonitoringScheduler(engine).enqueue_for_data_bundle(
+            data_bundle_artifact_id=result.artifact_id,
+            as_of_session=coverage_end,
+            known_at=datetime.now(UTC),
+        )
+        item["monitoring_work_item_ids"] = [str(value) for value in scheduled]
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1171,6 +1506,61 @@ def build_parser() -> argparse.ArgumentParser:
         handler=lambda args: _backup_restore_test(args.backup_record_id, args.docker_service)
     )
 
+    storage_parser = subparsers.add_parser(
+        "storage", help="Inspect Product-aware retention and cache lifecycle"
+    )
+    storage_subparsers = storage_parser.add_subparsers(
+        dest="storage_command", required=True
+    )
+    storage_dry_run_parser = storage_subparsers.add_parser(
+        "retention-dry-run",
+        help="Classify retained Product evidence and reclaimable storage without mutating data",
+    )
+    storage_dry_run_parser.add_argument("--cache-ttl-days", type=int, default=14)
+    storage_dry_run_parser.add_argument("--cache-quota-gib", type=int, default=10)
+    storage_dry_run_parser.add_argument("--retain-suite-id", action="append", default=[])
+    storage_dry_run_parser.set_defaults(
+        handler=lambda args: _storage_retention_dry_run(
+            args.cache_ttl_days,
+            args.cache_quota_gib,
+            tuple(args.retain_suite_id),
+        )
+    )
+
+    idempotency_parser = subparsers.add_parser(
+        "idempotency", help="Audit and explicitly repair interrupted command responses"
+    )
+    idempotency_subparsers = idempotency_parser.add_subparsers(
+        dest="idempotency_command", required=True
+    )
+    idempotency_pending_parser = idempotency_subparsers.add_parser(
+        "audit-pending", help="List commands whose outcome requires business-state audit"
+    )
+    idempotency_pending_parser.add_argument("--limit", type=int, default=100)
+    idempotency_pending_parser.set_defaults(
+        handler=lambda args: _idempotency_pending(args.limit)
+    )
+    idempotency_repair_parser = idempotency_subparsers.add_parser(
+        "repair-response",
+        help="Attach a reconstructed response without re-running the command",
+    )
+    idempotency_repair_parser.add_argument("--command-name", required=True)
+    idempotency_repair_parser.add_argument("--idempotency-key", required=True)
+    idempotency_repair_parser.add_argument(
+        "--confirm-request-fingerprint", required=True, dest="request_fingerprint"
+    )
+    idempotency_repair_parser.add_argument("--response-file", required=True)
+    idempotency_repair_parser.add_argument("--confirm-outcome-audited", required=True)
+    idempotency_repair_parser.set_defaults(
+        handler=lambda args: _idempotency_repair_response(
+            args.command_name,
+            args.idempotency_key,
+            args.request_fingerprint,
+            args.response_file,
+            args.confirm_outcome_audited,
+        )
+    )
+
     bootstrap_parser = subparsers.add_parser("bootstrap", help="Publish research catalogs")
     bootstrap_subparsers = bootstrap_parser.add_subparsers(dest="bootstrap_command", required=True)
     catalogs_parser = bootstrap_subparsers.add_parser(
@@ -1183,6 +1573,41 @@ def build_parser() -> argparse.ArgumentParser:
     )
     scope_parser.add_argument("--catalog-file", default="v0.2/catalogs/research_scope.v0.2.0.json")
     scope_parser.set_defaults(handler=lambda args: _bootstrap_scope(args.catalog_file))
+    asset_registry_parser = bootstrap_subparsers.add_parser(
+        "asset-registry", help="Publish the versioned v0.21 asset registry"
+    )
+    asset_registry_parser.add_argument(
+        "--catalog-file", default="v0.21/catalogs/assets.v0.21.1.json"
+    )
+    asset_registry_parser.set_defaults(
+        handler=lambda args: _bootstrap_asset_registry(args.catalog_file)
+    )
+    asset_identity_parser = bootstrap_subparsers.add_parser(
+        "asset-identities", help="Bridge tradable v0.21 Securities to canonical Assets"
+    )
+    asset_identity_parser.add_argument(
+        "--catalog-file", default="v0.21/catalogs/assets.v0.21.1.json"
+    )
+    asset_identity_parser.set_defaults(
+        handler=lambda args: _bootstrap_asset_identities(args.catalog_file)
+    )
+    workspace_components_parser = bootstrap_subparsers.add_parser(
+        "workspace-components", help="Publish v0.21 Factor, Signal, and Model options"
+    )
+    workspace_components_parser.add_argument(
+        "--factor-file", default="v0.2/catalogs/factors.v0.2.0.json"
+    )
+    workspace_components_parser.add_argument(
+        "--signal-file", default="v0.2/catalogs/signals.v0.2.0.json"
+    )
+    workspace_components_parser.add_argument(
+        "--workspace-file", default="v0.21/catalogs/workspace_contracts.v0.21.0.json"
+    )
+    workspace_components_parser.set_defaults(
+        handler=lambda args: _bootstrap_workspace_components(
+            args.factor_file, args.signal_file, args.workspace_file
+        )
+    )
     data_contracts_parser = bootstrap_subparsers.add_parser(
         "data-contracts", help="Publish M2B source, series, and cleaning contracts"
     )
@@ -1236,6 +1661,20 @@ def build_parser() -> argparse.ArgumentParser:
             tuple(args.snapshot_artifact_id),
             args.calendar_artifact_id,
             args.version_number,
+        )
+    )
+    latest_market_parser = data_subparsers.add_parser(
+        "publish-latest-market",
+        help="Publish canonical bars from the latest snapshot of every requested symbol",
+    )
+    latest_market_parser.add_argument("--symbols", nargs="+", required=True)
+    latest_market_parser.add_argument("--calendar-artifact-id", required=True)
+    latest_market_parser.add_argument(
+        "--version", type=int, required=True, dest="version_number"
+    )
+    latest_market_parser.set_defaults(
+        handler=lambda args: _canonical_latest_market(
+            tuple(args.symbols), args.calendar_artifact_id, args.version_number
         )
     )
     rate_parser = data_subparsers.add_parser(
@@ -1647,9 +2086,7 @@ def build_parser() -> argparse.ArgumentParser:
     strategy_grid_parser.add_argument("--data-bundle-artifact-id", required=True)
     strategy_grid_parser.add_argument("--eligibility-artifact-id", required=True)
     strategy_grid_parser.add_argument("--target-engine-artifact-id", required=True)
-    strategy_grid_parser.add_argument(
-        "--auxiliary-signal-dataset-artifact-id", required=True
-    )
+    strategy_grid_parser.add_argument("--auxiliary-signal-dataset-artifact-id", required=True)
     strategy_grid_parser.add_argument("--model-specification-key", action="append")
     strategy_grid_parser.add_argument(
         "--k", action="append", type=int, choices=(1, 2, 3), default=None
@@ -1681,6 +2118,88 @@ def build_parser() -> argparse.ArgumentParser:
     )
     experiment_subparsers = experiment_parser.add_subparsers(
         dest="experiment_command", required=True
+    )
+    v021_worker_parser = experiment_subparsers.add_parser(
+        "run-v021-worker",
+        help="Claim and execute v0.21 Predictive/Portfolio Cells from the persistent queue",
+    )
+    v021_worker_parser.add_argument("--worker-id", default="v021-local-worker")
+    v021_worker_parser.add_argument("--max-items", type=int, default=1)
+    v021_worker_parser.add_argument(
+        "--forever", action="store_true", help="Poll continuously and recover queued work"
+    )
+    v021_worker_parser.add_argument("--poll-seconds", type=float, default=1.0)
+    v021_worker_parser.set_defaults(
+        handler=lambda args: _experiment_run_v021_worker(
+            args.worker_id, args.max_items, args.forever, args.poll_seconds
+        )
+    )
+    v021_monitor_parser = experiment_subparsers.add_parser(
+        "run-v021-monitoring-worker",
+        help="Execute post-activation Product monitoring jobs over newer Data Bundles",
+    )
+    v021_monitor_parser.add_argument("--worker-id", default="v021-monitoring-worker")
+    v021_monitor_parser.add_argument("--max-items", type=int, default=1)
+    v021_monitor_parser.add_argument(
+        "--forever", action="store_true", help="Poll continuously and recover monitoring work"
+    )
+    v021_monitor_parser.add_argument("--poll-seconds", type=float, default=1.0)
+    v021_monitor_parser.set_defaults(
+        handler=lambda args: _product_run_v021_monitoring_worker(
+            args.worker_id, args.max_items, args.forever, args.poll_seconds
+        )
+    )
+    v021_export_parser = experiment_subparsers.add_parser(
+        "run-signal-export-worker",
+        help="Build queued Signal research exports outside the API process",
+    )
+    v021_export_parser.add_argument("--worker-id", default="signal-export-worker")
+    v021_export_parser.add_argument("--max-items", type=int, default=1)
+    v021_export_parser.add_argument(
+        "--forever", action="store_true", help="Poll continuously and recover export work"
+    )
+    v021_export_parser.add_argument("--poll-seconds", type=float, default=1.0)
+    v021_export_parser.set_defaults(
+        handler=lambda args: _signal_run_research_export_worker(
+            args.worker_id, args.max_items, args.forever, args.poll_seconds
+        )
+    )
+    v021_schedule_parser = experiment_subparsers.add_parser(
+        "schedule-v021-monitoring",
+        help="Schedule every active Product candidate for one newly published Data Bundle",
+    )
+    v021_schedule_parser.add_argument("--data-bundle-artifact-id", required=True)
+    v021_schedule_parser.add_argument("--as-of-session", required=True, type=_parse_date)
+    v021_schedule_parser.add_argument("--known-at", required=True, type=_parse_datetime)
+    v021_schedule_parser.set_defaults(
+        handler=lambda args: _product_schedule_v021_monitoring(
+            args.data_bundle_artifact_id, args.as_of_session, args.known_at
+        )
+    )
+    v021_gate_parser = experiment_subparsers.add_parser(
+        "calibrate-v021-release-gates",
+        help="Publish PIT, terminal-event and impact evidence for a Comparison Context",
+    )
+    v021_gate_parser.add_argument("--comparison-context-artifact-id", required=True)
+    v021_gate_parser.add_argument("--version", type=int, default=1)
+    v021_gate_parser.add_argument("--impact-coefficient", type=Decimal, default=Decimal("0.5"))
+    v021_gate_parser.add_argument("--impact-maximum-bps", type=Decimal, default=Decimal("50"))
+    v021_gate_parser.add_argument(
+        "--defensive-basket-version",
+        choices=(
+            "standard_defensive_basket_long_history_v1",
+            "standard_defensive_basket_tradable_v1",
+        ),
+        default="standard_defensive_basket_long_history_v1",
+    )
+    v021_gate_parser.set_defaults(
+        handler=lambda args: _workspace_calibrate_v021_gates(
+            args.comparison_context_artifact_id,
+            args.version,
+            args.impact_coefficient,
+            args.impact_maximum_bps,
+            args.defensive_basket_version,
+        )
     )
     accounting_engine_parser = experiment_subparsers.add_parser(
         "bootstrap-accounting-engine",
@@ -1795,21 +2314,15 @@ def build_parser() -> argparse.ArgumentParser:
     release_target_group.add_argument("--target-engine-artifact-id")
     release_suite_parser.add_argument("--expected-target-count", type=int)
     release_suite_parser.add_argument("--git-commit", required=True)
-    release_suite_parser.add_argument(
-        "--dependency-lock-file", default="requirements.lock"
-    )
+    release_suite_parser.add_argument("--dependency-lock-file", default="requirements.lock")
     release_suite_parser.add_argument("--as-of", required=True, type=_parse_date)
-    release_suite_parser.add_argument(
-        "--interval", action="append", choices=FORMAL_INTERVALS
-    )
+    release_suite_parser.add_argument("--interval", action="append", choices=FORMAL_INTERVALS)
     release_suite_parser.add_argument(
         "--cost-bps", action="append", choices=FORMAL_COSTS_BPS, type=int
     )
     release_suite_parser.add_argument("--suite-key", default="v02_formal_release")
     release_suite_parser.add_argument("--version", type=int, default=1)
-    release_suite_parser.add_argument(
-        "--required-warmup-observations", type=int, default=253
-    )
+    release_suite_parser.add_argument("--required-warmup-observations", type=int, default=253)
     release_suite_parser.add_argument(
         "--defer-cohorts",
         action="store_true",

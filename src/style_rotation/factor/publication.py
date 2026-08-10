@@ -204,7 +204,8 @@ class FactorDatasetPublicationService:
             bar_rows = (
                 connection.execute(
                     text(
-                        "SELECT asset_id, session_date, close_adj, close_raw, volume_raw "
+                        "SELECT asset_id, session_date, close_adj, close_raw, volume_raw, "
+                        "open_raw, high_raw, low_raw, open_adj, high_adj, low_adj "
                         "FROM data.daily_bar WHERE dataset_publication_id = :dataset_id "
                         "AND asset_id IN :asset_ids AND session_date <= :coverage_end "
                         "ORDER BY asset_id, session_date"
@@ -228,6 +229,12 @@ class FactorDatasetPublicationService:
                     row["close_adj"],
                     row["close_raw"],
                     row["volume_raw"],
+                    row["open_raw"],
+                    row["high_raw"],
+                    row["low_raw"],
+                    row["open_adj"],
+                    row["high_adj"],
+                    row["low_adj"],
                 )
             )
         return _PublicationContext(

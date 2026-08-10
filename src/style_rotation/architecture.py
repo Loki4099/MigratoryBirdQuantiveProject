@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True, slots=True)
 class DomainBoundary:
-    """A stable v0.2 business-module boundary, independent of database implementation."""
+    """A stable business-module boundary, independent of database implementation."""
 
     key: str
     purpose: str
@@ -33,7 +33,19 @@ DOMAIN_BOUNDARIES = (
         "experiment",
         "Execution, accounting, benchmarks, intervals, and results",
         ("catalog", "data", "factor", "signal", "model", "strategy"),
-        "M7",
+        "P3",
+    ),
+    DomainBoundary(
+        "workspace",
+        "Mutable research drafts, compatibility, compilation, and run submission",
+        ("catalog", "factor", "signal", "model", "strategy"),
+        "P2",
+    ),
+    DomainBoundary(
+        "product",
+        "Research Candidate enrollment, monitoring, alerts, reviews, and lifecycle",
+        ("experiment", "workspace"),
+        "P4",
     ),
     DomainBoundary("lineage", "Cross-domain artifact dependencies and manifests", (), "M1C"),
     DomainBoundary("ops", "Engines, run attempts, quality events, and errors", (), "M1B"),

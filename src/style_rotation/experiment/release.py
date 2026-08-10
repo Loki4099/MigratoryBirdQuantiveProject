@@ -160,6 +160,7 @@ def run_release_suite(
         version_number=version_number,
     )
     service = ExperimentExecutionService(engine)
+
     def execute(item: ExperimentSpecificationPublication) -> ExperimentExecutionPublication:
         return service.execute(item.artifact_id, orchestration_engine_artifact_id)
 
@@ -167,9 +168,7 @@ def run_release_suite(
         executions = tuple(execute(item) for item in suite.specifications)
     else:
         database_url = engine.url.render_as_string(hide_password=False)
-        scheduled_specifications = _interleave_specifications_by_target(
-            cells, suite.specifications
-        )
+        scheduled_specifications = _interleave_specifications_by_target(cells, suite.specifications)
         with ProcessPoolExecutor(
             max_workers=max_workers,
             initializer=_initialize_release_worker,

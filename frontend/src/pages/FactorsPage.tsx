@@ -1,115 +1,46 @@
 import { useQuery } from "@tanstack/react-query";
+import { useDeferredValue, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
 
 import { api } from "../api/client";
-import { EmptyState, ErrorState, LoadingState, QualityBadge } from "../components/QueryState";
-import { FormulaDisplay, ResearchKey } from "../components/ResearchText";
+import { ErrorState, LoadingState } from "../components/QueryState";
+import { FormulaDisplay } from "../components/ResearchText";
+import { useWorkspaceSelection } from "../workspace/WorkspaceSelectionContext";
 
-function number(value: number | null, digits = 4) {
-  if (value === null) return "—";
-  return new Intl.NumberFormat(undefined, { maximumSignificantDigits: digits }).format(value);
-}
-
-function distributionStyle(minimum: number, p05: number, p95: number, maximum: number) {
-  const span = maximum - minimum;
-  if (span <= 0) return { left: "0%", width: "100%" };
-  const left = ((p05 - minimum) / span) * 100;
-  const width = Math.max(1, ((p95 - p05) / span) * 100);
-  return { left: `${left}%`, width: `${width}%` };
-}
+type FactorOption = Awaited<ReturnType<typeof api.workspaceOptions>>["factor_families"][number];
 
 export function FactorsPage() {
-  const { t } = useTranslation();
-  const overview = useQuery({ queryKey: ["factors", "overview"], queryFn: api.factorOverview });
-
-  if (overview.isLoading) return <LoadingState />;
-  if (overview.error) return <ErrorState error={overview.error} retry={() => void overview.refetch()} />;
-  if (!overview.data) return <EmptyState />;
-
-  const data = overview.data;
-  const highCorrelations = data.correlations.filter((item) => item.high_correlation);
-  const parameterStability = data.correlations.filter((item) => item.same_definition);
-
-  return (
-    <div className="page">
-      <header className="page-heading">
-        <div>
-          <p className="eyebrow">FACTOR / MEASUREMENT DIAGNOSTICS</p>
-          <h1>{t("factor.title")}</h1>
-          <p>{t("factor.subtitle")}</p>
-        </div>
-        <QualityBadge state={data.quality.state} />
-      </header>
-
-      <section className="scope-strip factor-scope-strip">
-        <div><span>{t("factor.context")}</span><strong>{data.coverage_start} → {data.coverage_end}</strong></div>
-        <div><span>{t("factor.variants")}</span><strong>{data.dataset_count}</strong></div>
-        <div><span>{t("factor.assets")}</span><strong>{data.asset_count}</strong></div>
-        <div><span>{t("factor.highPairs")}</span><strong>{highCorrelations.length} / {data.pair_count}</strong></div>
-      </section>
-
-      <section className="catalog-section">
-        <div className="section-heading">
-          <div><p className="eyebrow">DISTRIBUTION / COVERAGE</p><h2>{t("factor.library")}</h2></div>
-          <Link className="arrow-link" to={`/artifacts/${data.diagnostic_artifact_id}`}>{t("factor.lineage")} →</Link>
-        </div>
-        <div className="factor-grid">
-          {data.datasets.map((dataset) => (
-            <article className="factor-card" key={dataset.factor_dataset_artifact_id}>
-              <div className="factor-card-title">
-                <div><ResearchKey value={dataset.measurement_family} /><strong>{dataset.variant_key}</strong></div>
-                <QualityBadge state={dataset.quality.state} />
-              </div>
-              <FormulaDisplay factorKey={dataset.factor_key} formula={dataset.formula} />
-              <div className="distribution-track" aria-label={`${dataset.variant_key} p05 p95`}>
-                <i style={distributionStyle(dataset.minimum, dataset.p05, dataset.p95, dataset.maximum)} />
-                <b style={{ left: `${dataset.maximum === dataset.minimum ? 50 : ((dataset.median - dataset.minimum) / (dataset.maximum - dataset.minimum)) * 100}%` }} />
-              </div>
-              <div className="factor-stat-grid">
-                <span>{t("factor.mean")}<strong>{number(dataset.mean)}</strong></span>
-                <span>{t("factor.median")}<strong>{number(dataset.median)}</strong></span>
-                <span>{t("factor.std")}<strong>{number(dataset.standard_deviation)}</strong></span>
-                <span>{t("factor.rows")}<strong>{dataset.observation_count.toLocaleString()}</strong></span>
-              </div>
-              <div className="factor-parameters">
-                {Object.entries(dataset.parameters).map(([key, value]) => <code key={key}>{key}={String(value)}</code>)}
-                <ResearchKey value={dataset.preset_type} />
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <div className="factor-diagnostic-grid">
-        <section className="catalog-section">
-          <div className="section-heading"><div><p className="eyebrow">SAME DEFINITION</p><h2>{t("factor.parameterStability")}</h2></div></div>
-          <p className="scope-note">{t("factor.stabilityNote")}</p>
-          <CorrelationList items={parameterStability} emptyLabel={t("factor.noPairs")} />
-        </section>
-        <section className="catalog-section">
-          <div className="section-heading"><div><p className="eyebrow">|ρ| ≥ {data.high_correlation_threshold}</p><h2>{t("factor.redundancy")}</h2></div></div>
-          <p className="scope-note">{t("factor.redundancyNote")}</p>
-          <CorrelationList items={highCorrelations} emptyLabel={t("factor.noHighPairs")} />
-        </section>
-      </div>
-
-      {data.issues.length > 0 && <section className="catalog-section">
-        <div className="section-heading"><div><p className="eyebrow">QUALITY</p><h2>{t("factor.issues")}</h2></div></div>
-        <div className="factor-issue-list">{data.issues.map((issue, index) => <p key={`${issue.variant_key}-${issue.issue_code}-${index}`}><strong>{issue.variant_key} · {issue.issue_code}</strong>{issue.message}</p>)}</div>
-      </section>}
-    </div>
-  );
+  const { i18n } = useTranslation();
+  const chinese = i18n.resolvedLanguage !== "en";
+  const workspace = useWorkspaceSelection();
+  const options = useQuery({
+    queryKey: ["workspace", "options", workspace.frequency, workspace.assetSecurityIds, workspace.assetDataInputs, workspace.factorVariantKeys, workspace.signalVersionKeys],
+    queryFn: () => api.workspaceOptions({ frequency: workspace.frequency, assetSecurityIds: workspace.assetSecurityIds, assetDataInputs: workspace.assetDataInputs, factorVariantKeys: workspace.factorVariantKeys, signalVersionKeys: workspace.signalVersionKeys }),
+    placeholderData: (previous) => previous,
+  });
+  if (options.isLoading) return <LoadingState />;
+  if (options.error) return <ErrorState error={options.error} retry={() => void options.refetch()} />;
+  return <div className="page">
+    <header className="page-heading"><div><p className="eyebrow">WORKSPACE / FACTOR CATALOG</p><h1>{chinese ? "因子库与参数选择" : "Factor catalog and parameter choices"}</h1><p>{chinese ? "每个因子家族只显示一张信息卡；公式、输入、时间语义与全部固定参数都在卡片内完成查看和选择。v0.2 的诊断实例清单已移除。" : "Each Factor family appears once with formula, inputs, time semantics, and every fixed parameter choice. The legacy diagnostic instance list has been removed."}</p></div></header>
+    {options.data && <FactorSelectionCatalog families={options.data.factor_families} selected={workspace.factorVariantKeys} toggle={workspace.toggleFactor} chinese={chinese} />}
+  </div>;
 }
 
-type Correlation = Awaited<ReturnType<typeof api.factorOverview>>["correlations"][number];
-
-function CorrelationList({ items, emptyLabel }: { items: Correlation[]; emptyLabel: string }) {
-  if (items.length === 0) return <p className="factor-empty-note">{emptyLabel}</p>;
-  return <div className="correlation-list">{items.slice(0, 24).map((item) => (
-    <article key={`${item.left_variant_key}-${item.right_variant_key}`}>
-      <div><strong>{item.left_variant_key}</strong><span>{item.right_variant_key}</span></div>
-      <code className={item.high_correlation ? "correlation-high" : ""}>ρ {number(item.spearman_correlation, 3)}</code>
-    </article>
-  ))}</div>;
+function FactorSelectionCatalog({ families, selected, toggle, chinese }: { families: FactorOption[]; selected: string[]; toggle: (key: string) => void; chinese: boolean }) {
+  const [search, setSearch] = useState("");
+  const term = useDeferredValue(search).trim().toLowerCase();
+  const visible = families.filter((family) => !term || [family.key, family.family, family.formula, ...family.inputs].join(" ").toLowerCase().includes(term));
+  return <section className="catalog-section workspace-option-section">
+    <div className="section-heading"><div><p className="eyebrow">FACTOR FAMILIES</p><h2>{chinese ? "因子家族与参数选择" : "Factor families and parameter choices"}</h2></div><label className="compact-search"><span>{chinese ? "搜索" : "Search"}</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={chinese ? "收益、收盘价、流动性……" : "return, close, liquidity…"} /></label></div>
+    <p className="scope-note">{chinese ? "同一家族的固定参数可以单选或多选，但不能手动输入。原始 OHLCV 也作为原始因子家族出现。" : "Fixed variants within one family may be selected singly or together, but never typed manually. Raw OHLCV fields also appear as Factor families."}</p>
+    <div className="workspace-family-grid">{visible.map((family) => <article className="workspace-family-card research-family-card" key={family.key}>
+      <header><div><span>{family.raw ? (chinese ? "原始因子" : "RAW FACTOR") : family.family}</span><h3>{family.key}</h3></div><code>{family.variants.length} {chinese ? "个参数版本" : "variants"}</code></header>
+      <FormulaDisplay factorKey={family.key} formula={family.formula} />
+      <dl className="research-card-facts"><div><dt>{chinese ? "输入字段" : "Inputs"}</dt><dd>{family.inputs.join(" · ") || "—"}</dd></div><div><dt>{chinese ? "输出单位" : "Output unit"}</dt><dd>{family.output_unit}</dd></div><div><dt>{chinese ? "时间语义" : "Time semantics"}</dt><dd>{family.time_semantics}</dd></div><div><dt>{chinese ? "计算实现" : "Implementation"}</dt><dd>{family.implementation_key}</dd></div></dl>
+      <div className="workspace-variant-choices">{family.variants.map((variant) => {
+        const isSelected = selected.includes(variant.key);
+        return <label className={variant.selectable === false ? "disabled" : ""} key={variant.key} title={(variant.reason_codes ?? []).join(", ")}><input type="checkbox" checked={isSelected} disabled={variant.selectable === false && !isSelected} onChange={() => toggle(variant.key)} /><span><strong>{Object.entries(variant.parameters).map(([key, value]) => `${key}=${String(value)}`).join(" · ") || (chinese ? "无额外参数" : "No extra parameters")}</strong><code>{variant.key}</code>{variant.selectable === false && <small>{(variant.reason_codes ?? []).join(" · ")}</small>}</span></label>;
+      })}</div>
+    </article>)}</div>
+  </section>;
 }

@@ -145,8 +145,10 @@ def publish_comparison_cohort(
             content_payload={**semantic, "name": name.strip(), "description": description.strip()},
             dependencies=(
                 DependencyInput(warmup_policy_artifact_id, "warmup_policy", 0),
-                *(DependencyInput(item, "accepted_result", ordinal + 1)
-                  for ordinal, item in enumerate(ordered_results)),
+                *(
+                    DependencyInput(item, "accepted_result", ordinal + 1)
+                    for ordinal, item in enumerate(ordered_results)
+                ),
             ),
             reason=f"publish comparison cohort {cohort_key} v{version_number}",
             draft_writer=partial(
@@ -162,18 +164,29 @@ def publish_comparison_cohort(
             ),
         )
     return ComparisonCohortPublication(
-        result.artifact_id, cohort_key, version_number, context_fingerprint,
-        len(ordered_results), result.reused,
+        result.artifact_id,
+        cohort_key,
+        version_number,
+        context_fingerprint,
+        len(ordered_results),
+        result.reused,
     )
 
 
 def _published_warmup(connection: Connection, artifact_id: uuid.UUID) -> RowMapping:
-    row = connection.execute(text("""
+    row = (
+        connection.execute(
+            text("""
         SELECT policy.* FROM experiment.warmup_policy_version policy
         JOIN lineage.artifact artifact ON artifact.artifact_id = policy.artifact_id
                                     AND artifact.status = 'published'
         WHERE policy.artifact_id = :artifact
-    """), {"artifact": artifact_id}).mappings().one_or_none()
+    """),
+            {"artifact": artifact_id},
+        )
+        .mappings()
+        .one_or_none()
+    )
     if row is None:
         raise ValueError("Published warm-up policy not found")
     return row
@@ -182,7 +195,9 @@ def _published_warmup(connection: Connection, artifact_id: uuid.UUID) -> RowMapp
 def _load_result_contexts(
     connection: Connection, artifact_ids: tuple[uuid.UUID, ...]
 ) -> list[RowMapping]:
-    return list(connection.execute(text("""
+    return list(
+        connection.execute(
+            text("""
         SELECT publication.result_publication_id,
                publication.artifact_id AS result_artifact_id,
                target.universe_version_id, universe.artifact_id AS universe_artifact_id,
@@ -273,7 +288,11 @@ def _load_result_contexts(
           AND interval.resolved_start IS NOT NULL AND interval.resolved_end IS NOT NULL
         ORDER BY publication.artifact_id
     """).bindparams(bindparam("artifacts", expanding=True)),
-        {"artifacts": artifact_ids}).mappings().all())
+            {"artifacts": artifact_ids},
+        )
+        .mappings()
+        .all()
+    )
 
 
 def _context_payload(row: RowMapping) -> dict[str, Any]:
@@ -306,47 +325,80 @@ def _context_payload(row: RowMapping) -> dict[str, Any]:
 def _resolve_version(
     connection: Connection, cohort_key: str, result_ids: tuple[uuid.UUID, ...]
 ) -> int:
-    latest = connection.execute(text("""
+    latest = (
+        connection.execute(
+            text("""
         SELECT comparison_cohort_version_id, version_number
         FROM experiment.comparison_cohort_version
         WHERE cohort_key = :key ORDER BY version_number DESC LIMIT 1
-    """), {"key": cohort_key}).mappings().one_or_none()
+    """),
+            {"key": cohort_key},
+        )
+        .mappings()
+        .one_or_none()
+    )
     if latest is None:
         return 1
-    members = tuple(connection.execute(text("""
+    members = tuple(
+        connection.execute(
+            text("""
         SELECT publication.artifact_id
         FROM experiment.comparison_cohort_member member
         JOIN experiment.result_publication publication ON publication.result_publication_id =
                                                           member.result_publication_id
         WHERE member.comparison_cohort_version_id = :cohort ORDER BY publication.artifact_id
-    """), {"cohort": latest["comparison_cohort_version_id"]}).scalars())
+    """),
+            {"cohort": latest["comparison_cohort_version_id"]},
+        ).scalars()
+    )
     if members == result_ids:
         return int(latest["version_number"])
     return int(latest["version_number"]) + 1
 
 
 def _write_warmup_policy(
-    connection: Connection, artifact_id: uuid.UUID, *, policy_key: str,
-    version_number: int, required_observations: int,
+    connection: Connection,
+    artifact_id: uuid.UUID,
+    *,
+    policy_key: str,
+    version_number: int,
+    required_observations: int,
 ) -> None:
-    connection.execute(text("""
+    connection.execute(
+        text("""
         INSERT INTO experiment.warmup_policy_version (
             warmup_policy_version_id, artifact_id, policy_key, version_number,
             resolution_method, required_observations, description
         ) VALUES (:id, :artifact, :key, :version, 'dependency_max_required_history',
                   :observations, :description)
-    """), {"id": uuid.uuid4(), "artifact": artifact_id, "key": policy_key,
-             "version": version_number, "observations": required_observations,
-             "description": "Use the longest declared upstream history requirement."})
+    """),
+        {
+            "id": uuid.uuid4(),
+            "artifact": artifact_id,
+            "key": policy_key,
+            "version": version_number,
+            "observations": required_observations,
+            "description": "Use the longest declared upstream history requirement.",
+        },
+    )
 
 
 def _write_cohort(
-    connection: Connection, artifact_id: uuid.UUID, *, warmup: RowMapping,
-    context: RowMapping, cohort_key: str, version_number: int, name: str,
-    description: str, context_fingerprint: str, result_ids: tuple[uuid.UUID, ...],
+    connection: Connection,
+    artifact_id: uuid.UUID,
+    *,
+    warmup: RowMapping,
+    context: RowMapping,
+    cohort_key: str,
+    version_number: int,
+    name: str,
+    description: str,
+    context_fingerprint: str,
+    result_ids: tuple[uuid.UUID, ...],
 ) -> None:
     cohort_id = uuid.uuid4()
-    connection.execute(text("""
+    connection.execute(
+        text("""
         INSERT INTO experiment.comparison_cohort_version (
             comparison_cohort_version_id, artifact_id, warmup_policy_version_id,
             universe_version_id, data_bundle_version_id, eligibility_snapshot_id,
@@ -365,33 +417,50 @@ def _write_cohort(
             :template, :initialization, :as_of, :target_k, :frequency,
             :data_ready, :simulation_start,
             :metric_start, :metric_end, 'USD', :member_count)
-    """), {
-        "id": cohort_id, "artifact": artifact_id,
-        "warmup": warmup["warmup_policy_version_id"],
-        "universe": context["universe_version_id"], "bundle": context["data_bundle_version_id"],
-        "eligibility": context["eligibility_snapshot_id"],
-        "execution": context["execution_policy_version_id"],
-        "reserve": context["reserve_return_model_version_id"],
-        "benchmark": context["benchmark_version_id"], "cost": context["cost_scenario_id"],
-        "metric": context["performance_metric_catalog_id"],
-        "accounting": context["accounting_engine_version_id"],
-        "benchmark_engine": context["benchmark_engine_version_id"],
-        "performance": context["performance_engine_version_id"], "key": cohort_key,
-        "version": version_number, "name": name, "description": description,
-        "fingerprint": context_fingerprint, "template": context["template_key"],
-        "initialization": context["initialization_policy"], "as_of": context["as_of_date"],
-        "target_k": context["target_k"], "frequency": context["frequency"],
-        "data_ready": context["common_data_ready_date"],
-        "simulation_start": context["common_simulation_start"],
-        "metric_start": context["common_metric_start"], "metric_end": context["common_metric_end"],
-        "member_count": len(result_ids),
-    })
-    connection.execute(text("""
+    """),
+        {
+            "id": cohort_id,
+            "artifact": artifact_id,
+            "warmup": warmup["warmup_policy_version_id"],
+            "universe": context["universe_version_id"],
+            "bundle": context["data_bundle_version_id"],
+            "eligibility": context["eligibility_snapshot_id"],
+            "execution": context["execution_policy_version_id"],
+            "reserve": context["reserve_return_model_version_id"],
+            "benchmark": context["benchmark_version_id"],
+            "cost": context["cost_scenario_id"],
+            "metric": context["performance_metric_catalog_id"],
+            "accounting": context["accounting_engine_version_id"],
+            "benchmark_engine": context["benchmark_engine_version_id"],
+            "performance": context["performance_engine_version_id"],
+            "key": cohort_key,
+            "version": version_number,
+            "name": name,
+            "description": description,
+            "fingerprint": context_fingerprint,
+            "template": context["template_key"],
+            "initialization": context["initialization_policy"],
+            "as_of": context["as_of_date"],
+            "target_k": context["target_k"],
+            "frequency": context["frequency"],
+            "data_ready": context["common_data_ready_date"],
+            "simulation_start": context["common_simulation_start"],
+            "metric_start": context["common_metric_start"],
+            "metric_end": context["common_metric_end"],
+            "member_count": len(result_ids),
+        },
+    )
+    connection.execute(
+        text("""
         INSERT INTO experiment.comparison_cohort_member (
             comparison_cohort_version_id, result_publication_id, ordinal
         ) VALUES (:cohort, :result, :ordinal)
-    """), [{"cohort": cohort_id, "result": result_id, "ordinal": ordinal}
-             for ordinal, result_id in enumerate(result_ids)])
+    """),
+        [
+            {"cohort": cohort_id, "result": result_id, "ordinal": ordinal}
+            for ordinal, result_id in enumerate(result_ids)
+        ],
+    )
 
 
 class _BoundConnection:

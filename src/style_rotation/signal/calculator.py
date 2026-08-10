@@ -119,19 +119,18 @@ def _aligned_by_date(
         previous = asset_keys.setdefault(point.asset_id, point.asset_key)
         if previous != point.asset_key:
             raise SignalCalculationError(f"Signal {signal_key} has unstable asset identity")
-    reference: tuple[date, ...] | None = None
-    for asset_id in sorted(dates_by_asset, key=str):
-        dates = tuple(sorted(dates_by_asset[asset_id]))
-        if reference is None:
-            reference = dates
-        elif dates != reference:
-            raise SignalCalculationError(f"Signal {signal_key} factor inputs are not aligned")
-    if reference is None or len(asset_keys) < 2:
-        raise SignalCalculationError(f"Signal {signal_key} requires at least two aligned assets")
-    return {
+    if len(asset_keys) < 2:
+        raise SignalCalculationError(f"Signal {signal_key} requires at least two assets")
+    aligned = {
         day: tuple(sorted(items, key=lambda item: (item.asset_key, str(item.asset_id))))
         for day, items in sorted(grouped.items())
+        if len(items) >= 2
     }
+    if not aligned:
+        raise SignalCalculationError(
+            f"Signal {signal_key} has no date with at least two valid assets"
+        )
+    return aligned
 
 
 def _continuous_points(
@@ -206,7 +205,12 @@ def _crossover_points(
         previous = {item.asset_id: item for item in by_date[dates[index - 1]]}
         current = by_date[dates[index]]
         for item in current:
-            prior = previous[item.asset_id]
+            prior = previous.get(item.asset_id)
+            if prior is None:
+                # A newly listed or temporarily missing asset has no immediately
+                # preceding valid observation. Preserve the gap instead of
+                # fabricating a crossover event or failing the full universe.
+                continue
             occurred = previous_condition(prior.value) and current_condition(item.value)
             score = event_score if occurred else Decimal(0).quantize(SCORE_QUANTUM)
             points.append(

@@ -89,6 +89,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/catalog/assets/{security_id}/download.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Asset Download */
+        get: operations["asset_download_api_v2_catalog_assets__security_id__download_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/catalog/assets/{security_id}/series": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Asset Series */
+        get: operations["asset_series_api_v2_catalog_assets__security_id__series_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/catalog/data-requirements": {
         parameters: {
             query?: never;
@@ -191,6 +225,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/experiments/results/{artifact_id}/promote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Promote Experiment Result */
+        post: operations["promote_experiment_result_api_v2_experiments_results__artifact_id__promote_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/experiments/results/{artifact_id}/qualification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Promotion Qualification */
+        get: operations["promotion_qualification_api_v2_experiments_results__artifact_id__qualification_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/factors/datasets/{artifact_id}/download.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Factor Download */
+        get: operations["factor_download_api_v2_factors_datasets__artifact_id__download_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/factors/overview": {
         parameters: {
             query?: never;
@@ -242,6 +327,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Products */
+        get: operations["products_api_v2_products_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/products/alerts/{alert_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change Product Alert */
+        post: operations["change_product_alert_api_v2_products_alerts__alert_id__status_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/products/{enrollment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Product Detail */
+        get: operations["product_detail_api_v2_products__enrollment_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/products/{enrollment_id}/lifecycle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change Product Lifecycle */
+        post: operations["change_product_lifecycle_api_v2_products__enrollment_id__lifecycle_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/products/{enrollment_id}/recommendation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Product Recommendation */
+        get: operations["product_recommendation_api_v2_products__enrollment_id__recommendation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/products/{enrollment_id}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record Product Review */
+        post: operations["record_product_review_api_v2_products__enrollment_id__reviews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/rankings/products": {
         parameters: {
             query?: never;
@@ -259,6 +446,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/release-gates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Release Gates */
+        get: operations["release_gates_api_v2_release_gates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/signals/overview": {
         parameters: {
             query?: never;
@@ -268,6 +472,74 @@ export interface paths {
         };
         /** Signal Overview */
         get: operations["signal_overview_api_v2_signals_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/signals/research-export.zip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Signal Research Export */
+        post: operations["signal_research_export_api_v2_signals_research_export_zip_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/signals/research-exports/{export_job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Signal Research Export Status */
+        get: operations["signal_research_export_status_api_v2_signals_research_exports__export_job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/signals/research-exports/{export_job_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Signal Research Export Download */
+        get: operations["signal_research_export_download_api_v2_signals_research_exports__export_job_id__download_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/signals/versions/{version_key}/download.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Signal Download */
+        get: operations["signal_download_api_v2_signals_versions__version_key__download_csv_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -310,6 +582,109 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/workspace/compile-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Workspace Compile Preview */
+        post: operations["workspace_compile_preview_api_v2_workspace_compile_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/drafts/{researcher_id}/{draft_key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Workspace Draft */
+        get: operations["workspace_draft_api_v2_workspace_drafts__researcher_id___draft_key__get"];
+        /** Save Workspace Draft */
+        put: operations["save_workspace_draft_api_v2_workspace_drafts__researcher_id___draft_key__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Workspace Options */
+        get: operations["workspace_options_api_v2_workspace_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/suites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit Workspace Suite */
+        post: operations["submit_workspace_suite_api_v2_workspace_suites_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/suites/{research_suite_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Workspace Suite Status */
+        get: operations["workspace_suite_status_api_v2_workspace_suites__research_suite_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/suites/{research_suite_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Workspace Suite */
+        post: operations["cancel_workspace_suite_api_v2_workspace_suites__research_suite_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -324,10 +699,9 @@ export interface components {
             api_version: "v2";
             /**
              * Read Only
-             * @default true
-             * @constant
+             * @default false
              */
-            read_only: true;
+            read_only: boolean;
             /** System Version */
             system_version: string;
         };
@@ -389,45 +763,69 @@ export interface components {
         };
         /** AssetCatalogItem */
         AssetCatalogItem: {
-            /**
-             * Asset Id
-             * Format: uuid
-             */
-            asset_id: string;
+            /** Aliases */
+            aliases: string[];
+            /** Asset Class */
+            asset_class: string;
+            /** Asset Id */
+            asset_id: string | null;
             /** Asset Key */
             asset_key: string;
-            /** Asset Type */
-            asset_type: string;
             /** Calendar Key */
-            calendar_key: string;
-            /** Classifications */
-            classifications: {
-                [key: string]: string;
-            };
+            calendar_key: string | null;
+            /** Canonical Data Available */
+            canonical_data_available: boolean;
+            /** Category Key */
+            category_key: string;
             /** Currency */
-            currency: string;
+            currency: string | null;
+            /** Data Inputs */
+            data_inputs?: components["schemas"]["AssetDataInputOption"][];
+            /** Instrument Type */
+            instrument_type: string;
+            /** Maturity */
+            maturity: string;
+            /** Missing Requirements */
+            missing_requirements: string[];
             /** Name */
             name: string;
+            /**
+             * Security Id
+             * Format: uuid
+             */
+            security_id: string;
+            /** Selectable */
+            selectable: boolean;
             /** Status */
             status: string;
             /** Symbol */
             symbol: string;
-            /** Timezone */
-            timezone: string;
-            /** Universe Ordinal */
-            universe_ordinal: number | null;
-            /** Universe Role */
-            universe_role: string | null;
+            /** Tags */
+            tags: string[];
+            /** Target Maturity */
+            target_maturity: string;
+            /** Tradability */
+            tradability: string;
             /** Venue Mic */
-            venue_mic: string;
+            venue_mic: string | null;
         };
         /** AssetCatalogResponse */
         AssetCatalogResponse: {
             /** As Of Date */
             as_of_date: string;
+            /** Asset Sets */
+            asset_sets: components["schemas"]["AssetSetItem"][];
+            /** Catalog Version */
+            catalog_version: string;
+            /** Categories */
+            categories: components["schemas"]["AssetCategoryItem"][];
             context: components["schemas"]["ApiContext"];
             /** Items */
             items: components["schemas"]["AssetCatalogItem"][];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
             quality: components["schemas"]["QualitySummary"];
             /**
              * Release Artifact Id
@@ -436,8 +834,108 @@ export interface components {
             release_artifact_id: string;
             /** Release Version Number */
             release_version_number: number;
-            /** Universe Key */
-            universe_key: string;
+            /** Total */
+            total: number;
+        };
+        /** AssetCategoryItem */
+        AssetCategoryItem: {
+            /** Asset Count */
+            asset_count: number;
+            /** Category Key */
+            category_key: string;
+            /** Description */
+            description: string;
+            /** Name */
+            name: string;
+        };
+        /** AssetDataInputOption */
+        AssetDataInputOption: {
+            /** Available */
+            available: boolean;
+            /** Downstream Factor Keys */
+            downstream_factor_keys: string[];
+            /** Input Key */
+            input_key: string;
+            /** Name */
+            name: string;
+            /** Point In Time */
+            point_in_time: boolean;
+            /** Selectable */
+            selectable: boolean;
+            /** Source Kind */
+            source_kind: string;
+            /** Status Note */
+            status_note: string;
+        };
+        /** AssetSeriesPoint */
+        AssetSeriesPoint: {
+            /** Adjusted Close */
+            adjusted_close: number;
+            /** Close */
+            close: number;
+            /** High */
+            high: number;
+            /** Low */
+            low: number;
+            /** Open */
+            open: number;
+            /**
+             * Session Date
+             * Format: date
+             */
+            session_date: string;
+            /** Volume */
+            volume: number;
+        };
+        /** AssetSeriesResponse */
+        AssetSeriesResponse: {
+            /** Asset Key */
+            asset_key: string;
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Coverage End
+             * Format: date
+             */
+            coverage_end: string;
+            /**
+             * Coverage Start
+             * Format: date
+             */
+            coverage_start: string;
+            /**
+             * Dataset Artifact Id
+             * Format: uuid
+             */
+            dataset_artifact_id: string;
+            /** Dataset Version Number */
+            dataset_version_number: number;
+            /** Points */
+            points: components["schemas"]["AssetSeriesPoint"][];
+            quality: components["schemas"]["QualitySummary"];
+            /**
+             * Security Id
+             * Format: uuid
+             */
+            security_id: string;
+            /** Symbol */
+            symbol: string;
+        };
+        /** AssetSetItem */
+        AssetSetItem: {
+            /** Formal Eligible */
+            formal_eligible: boolean;
+            /** Maturity */
+            maturity: string;
+            /** Member Security Ids */
+            member_security_ids: string[];
+            /** Name */
+            name: string;
+            /** Notes */
+            notes: string;
+            /** Set Key */
+            set_key: string;
+            /** Set Type */
+            set_type: string;
         };
         /** CapabilitiesResponse */
         CapabilitiesResponse: {
@@ -451,6 +949,14 @@ export interface components {
             /** Languages */
             languages: ("zh-CN" | "en")[];
             quality: components["schemas"]["QualitySummary"];
+        };
+        /** CommandIdempotencyRequest */
+        CommandIdempotencyRequest: {
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
         };
         /** ComparisonCohortItem */
         ComparisonCohortItem: {
@@ -704,6 +1210,8 @@ export interface components {
             data_bundle_artifact_id: string;
             /** Dimension Key */
             dimension_key: string;
+            /** Dimension Transform */
+            dimension_transform: string;
             /** Dimension Weight */
             dimension_weight: number;
             /**
@@ -714,7 +1222,7 @@ export interface components {
             /** Factor Key */
             factor_key: string;
             /** Factor Value */
-            factor_value: number;
+            factor_value: number | null;
             /** Factor Variant Key */
             factor_variant_key: string;
             /** Input Transform */
@@ -945,7 +1453,7 @@ export interface components {
              * Metric Scope
              * @enum {string}
              */
-            metric_scope: "absolute" | "relative";
+            metric_scope: "absolute" | "relative" | "predictive";
             /** Name */
             name: string;
             /** Observation Count */
@@ -956,7 +1464,7 @@ export interface components {
              * Series Role
              * @enum {string}
              */
-            series_role: "strategy" | "benchmark" | "relative";
+            series_role: "strategy" | "benchmark" | "relative" | "predictive";
             /** Unit */
             unit: string;
             /** Value */
@@ -964,14 +1472,46 @@ export interface components {
             /** Value Status */
             value_status: string;
         };
+        /** ExperimentNavPoint */
+        ExperimentNavPoint: {
+            /** Benchmark Wealth */
+            benchmark_wealth: number;
+            /** Drawdown */
+            drawdown: number;
+            /** Excess Wealth */
+            excess_wealth: number;
+            /**
+             * Nav Date
+             * Format: date
+             */
+            nav_date: string;
+            /** Strategy Wealth */
+            strategy_wealth: number;
+        };
         /** ExperimentOverviewResponse */
         ExperimentOverviewResponse: {
+            /** Accepted Count */
+            accepted_count: number;
             context: components["schemas"]["ApiContext"];
+            /** Failed Count */
+            failed_count: number;
+            /** Filtered Specification Count */
+            filtered_specification_count: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /** Pending Count */
+            pending_count: number;
             quality: components["schemas"]["QualitySummary"];
+            /** Running Count */
+            running_count: number;
             /** Specifications */
             specifications: components["schemas"]["ExperimentSpecificationItem"][];
             /** Suites */
             suites: components["schemas"]["ExperimentSuiteItem"][];
+            /** Total Specification Count */
+            total_specification_count: number;
         };
         /** ExperimentQualityCheckItem */
         ExperimentQualityCheckItem: {
@@ -1004,23 +1544,25 @@ export interface components {
             metric_value_count: number;
             /** Metrics */
             metrics: components["schemas"]["ExperimentMetricItem"][];
+            /** Nav Series */
+            nav_series: components["schemas"]["ExperimentNavPoint"][];
             /** Normalization Nav Date */
             normalization_nav_date: string | null;
             /** Observation Count */
             observation_count: number;
+            /** Promotion Eligible */
+            promotion_eligible: boolean;
+            /** Promotion Reason Codes */
+            promotion_reason_codes: string[];
+            /** Qualification Bundle Artifact Id */
+            qualification_bundle_artifact_id: string | null;
             quality: components["schemas"]["QualitySummary"];
             /** Quality Checks */
             quality_checks: components["schemas"]["ExperimentQualityCheckItem"][];
-            /**
-             * Requested End
-             * Format: date
-             */
-            requested_end: string;
-            /**
-             * Requested Start
-             * Format: date
-             */
-            requested_start: string;
+            /** Requested End */
+            requested_end: string | null;
+            /** Requested Start */
+            requested_start: string | null;
             /** Resolved End */
             resolved_end: string | null;
             /** Resolved Start */
@@ -1064,11 +1606,8 @@ export interface components {
              * Format: uuid
              */
             artifact_id: string;
-            /**
-             * As Of Date
-             * Format: date
-             */
-            as_of_date: string;
+            /** As Of Date */
+            as_of_date: string | null;
             /** Attempt Number */
             attempt_number: number | null;
             /** Availability Status */
@@ -1104,11 +1643,8 @@ export interface components {
             quality_status: string | null;
             /** Result Artifact Id */
             result_artifact_id: string | null;
-            /**
-             * Simulation End
-             * Format: date
-             */
-            simulation_end: string;
+            /** Simulation End */
+            simulation_end: string | null;
             /**
              * Status
              * @enum {string}
@@ -1119,6 +1655,12 @@ export interface components {
              * Format: uuid
              */
             suite_artifact_id: string;
+            /**
+             * Suite Mode
+             * @default legacy
+             * @enum {string}
+             */
+            suite_mode: "formal" | "exploratory" | "legacy";
             /** Template Key */
             template_key: string;
             /** Variant Key */
@@ -1135,6 +1677,8 @@ export interface components {
             description: string;
             /** Name */
             name: string;
+            /** Research Suite Id */
+            research_suite_id?: string | null;
             /** Specification Count */
             specification_count: number;
             /** Suite Key */
@@ -1574,6 +2118,182 @@ export interface components {
              */
             window_start: string;
         };
+        /** ProductAlertChangeRequest */
+        ProductAlertChangeRequest: {
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /** Note */
+            note?: string | null;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Researcher Id */
+            researcher_id: string;
+            /**
+             * Target
+             * @enum {string}
+             */
+            target: "acknowledged" | "resolved" | "superseded";
+        };
+        /** ProductAlertChangeResponse */
+        ProductAlertChangeResponse: {
+            /**
+             * Alert Id
+             * Format: uuid
+             */
+            alert_id: string;
+            context: components["schemas"]["ApiContext"];
+            /** From Status */
+            from_status: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            quality: components["schemas"]["QualitySummary"];
+            /** Sequence Number */
+            sequence_number: number;
+            /** To Status */
+            to_status: string;
+        };
+        /** ProductAlertItem */
+        ProductAlertItem: {
+            /**
+             * Alert Id
+             * Format: uuid
+             */
+            alert_id: string;
+            /** Alert Key */
+            alert_key: string;
+            /** Alert Type */
+            alert_type: string;
+            /** Evidence */
+            evidence: {
+                [key: string]: unknown;
+            };
+            /**
+             * Opened At
+             * Format: date-time
+             */
+            opened_at: string;
+            /** Severity */
+            severity: string;
+            /** Status */
+            status: string;
+        };
+        /** ProductBacktestMetricItem */
+        ProductBacktestMetricItem: {
+            /** Metric Key */
+            metric_key: string;
+            /** Metric Scope */
+            metric_scope: string;
+            /** Name */
+            name: string;
+            /** Observation Count */
+            observation_count: number;
+            /** Reason Code */
+            reason_code: string | null;
+            /** Series Role */
+            series_role: string;
+            /** Unit */
+            unit: string;
+            /** Value */
+            value: number | null;
+            /** Value Status */
+            value_status: string;
+        };
+        /** ProductBacktestNavPoint */
+        ProductBacktestNavPoint: {
+            /** Benchmark Wealth */
+            benchmark_wealth: number;
+            /** Drawdown */
+            drawdown: number;
+            /** Excess Wealth */
+            excess_wealth: number;
+            /**
+             * Nav Date
+             * Format: date
+             */
+            nav_date: string;
+            /** Strategy Wealth */
+            strategy_wealth: number;
+        };
+        /** ProductCandidateItem */
+        ProductCandidateItem: {
+            /**
+             * Activated At
+             * Format: date-time
+             */
+            activated_at: string;
+            /** Asset Context Key */
+            asset_context_key: string;
+            /**
+             * Enrollment Id
+             * Format: uuid
+             */
+            enrollment_id: string;
+            /** Health */
+            health: string;
+            /** Latest As Of Session */
+            latest_as_of_session: string | null;
+            /** Latest Metrics */
+            latest_metrics: {
+                [key: string]: unknown;
+            };
+            /** Lifecycle */
+            lifecycle: string;
+            /** Model Preset Key */
+            model_preset_key: string;
+            /** Monitoring Start At */
+            monitoring_start_at: string | null;
+            /** Name */
+            name: string;
+            /** Open Alert Count */
+            open_alert_count: number;
+            /** Primary Nav */
+            primary_nav: number | null;
+            /**
+             * Product Artifact Id
+             * Format: uuid
+             */
+            product_artifact_id: string;
+            /** Product Key */
+            product_key: string;
+            /**
+             * Qualification Artifact Id
+             * Format: uuid
+             */
+            qualification_artifact_id: string;
+            /** Revision */
+            revision: number;
+            /** Strategy Family Key */
+            strategy_family_key: string;
+            /** Strategy Preset Key */
+            strategy_preset_key: string;
+            /** Stress Nav */
+            stress_nav: number | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Version Number */
+            version_number: number;
+            /** Warning Codes */
+            warning_codes?: string[];
+        };
+        /** ProductCatalogResponse */
+        ProductCatalogResponse: {
+            context: components["schemas"]["ApiContext"];
+            /** Items */
+            items: components["schemas"]["ProductCandidateItem"][];
+            quality: components["schemas"]["QualitySummary"];
+        };
         /** ProductCompareEntry */
         ProductCompareEntry: {
             /** Availability Status */
@@ -1628,6 +2348,207 @@ export interface components {
              */
             mode: "controlled" | "side_by_side" | "identical";
             quality: components["schemas"]["QualitySummary"];
+        };
+        /** ProductDetailResponse */
+        ProductDetailResponse: {
+            /** Alerts */
+            alerts: components["schemas"]["ProductAlertItem"][];
+            candidate: components["schemas"]["ProductCandidateItem"];
+            context: components["schemas"]["ApiContext"];
+            /** Events */
+            events: components["schemas"]["ProductEventItem"][];
+            /** Note */
+            note: string | null;
+            oos_window: components["schemas"]["ProductOosWindow"];
+            qualification_backtest?: components["schemas"]["ProductQualificationBacktest"] | null;
+            /** Qualification Gate Results */
+            qualification_gate_results: {
+                [key: string]: unknown;
+            };
+            quality: components["schemas"]["QualitySummary"];
+            research_chain?: components["schemas"]["ProductResearchChain"] | null;
+            /** Reviews */
+            reviews: components["schemas"]["ProductReviewItem"][];
+            /** Selection Reason */
+            selection_reason: string;
+            /** Snapshots */
+            snapshots: components["schemas"]["ProductSnapshotItem"][];
+        };
+        /** ProductEventItem */
+        ProductEventItem: {
+            /**
+             * Effective At
+             * Format: date-time
+             */
+            effective_at: string;
+            /** From Lifecycle */
+            from_lifecycle: string | null;
+            /** Reason */
+            reason: string;
+            /** Reason Code */
+            reason_code: string;
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Researcher Id */
+            researcher_id: string;
+            /** Sequence Number */
+            sequence_number: number;
+            /** To Lifecycle */
+            to_lifecycle: string;
+        };
+        /** ProductLifecycleChangeRequest */
+        ProductLifecycleChangeRequest: {
+            /**
+             * Effective At
+             * Format: date-time
+             */
+            effective_at: string;
+            /** Expected Revision */
+            expected_revision: number;
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /** Reason */
+            reason: string;
+            /** Reason Code */
+            reason_code: string;
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Researcher Id */
+            researcher_id: string;
+            /**
+             * Target
+             * @enum {string}
+             */
+            target: "active" | "suspended" | "retired" | "invalidated";
+        };
+        /** ProductLifecycleChangeResponse */
+        ProductLifecycleChangeResponse: {
+            /** Applied */
+            applied: boolean;
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Effective At
+             * Format: date-time
+             */
+            effective_at: string;
+            /**
+             * Enrollment Id
+             * Format: uuid
+             */
+            enrollment_id: string;
+            /** Event Sequence */
+            event_sequence: number;
+            /** From Lifecycle */
+            from_lifecycle: string;
+            quality: components["schemas"]["QualitySummary"];
+            /** Revision */
+            revision: number;
+            /** To Lifecycle */
+            to_lifecycle: string;
+        };
+        /** ProductOosWindow */
+        ProductOosWindow: {
+            /**
+             * Activation Session
+             * Format: date
+             */
+            activation_session: string;
+            /** Frozen Anchor Session */
+            frozen_anchor_session: string | null;
+            /** Latest Published Data Known At */
+            latest_published_data_known_at: string | null;
+            /** Latest Published Data Session */
+            latest_published_data_session: string | null;
+            /** Latest Snapshot Session */
+            latest_snapshot_session: string | null;
+            /** Post Freeze Session Count */
+            post_freeze_session_count: number;
+            /** Prospective Oos Session Count */
+            prospective_oos_session_count: number;
+            /** Reason Codes */
+            reason_codes?: string[];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "awaiting_frozen_anchor" | "awaiting_post_freeze_data" | "awaiting_first_snapshot" | "observing";
+        };
+        /** ProductPromotionRequest */
+        ProductPromotionRequest: {
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /** Name */
+            name: string;
+            /** Note */
+            note?: string | null;
+            /** Researcher Id */
+            researcher_id: string;
+            /** Selection Reason */
+            selection_reason: string;
+        };
+        /** ProductPromotionResponse */
+        ProductPromotionResponse: {
+            context: components["schemas"]["ApiContext"];
+            /** Lifecycle */
+            lifecycle: string;
+            /**
+             * Product Enrollment Id
+             * Format: uuid
+             */
+            product_enrollment_id: string;
+            /**
+             * Product Version Artifact Id
+             * Format: uuid
+             */
+            product_version_artifact_id: string;
+            /**
+             * Qualification Bundle Artifact Id
+             * Format: uuid
+             */
+            qualification_bundle_artifact_id: string;
+            quality: components["schemas"]["QualitySummary"];
+            /** Revision */
+            revision: number;
+        };
+        /** ProductQualificationBacktest */
+        ProductQualificationBacktest: {
+            /** Metrics */
+            metrics: components["schemas"]["ProductBacktestMetricItem"][];
+            /** Nav Series */
+            nav_series: components["schemas"]["ProductBacktestNavPoint"][];
+            /** Observation Count */
+            observation_count: number;
+            /** Quality Checks */
+            quality_checks: {
+                [key: string]: unknown;
+            }[];
+            /** Resolved End */
+            resolved_end: string | null;
+            /** Resolved Start */
+            resolved_start: string | null;
+            /**
+             * Result Artifact Id
+             * Format: uuid
+             */
+            result_artifact_id: string;
+            /** Run Status */
+            run_status: string;
+            /** Specification */
+            specification: {
+                [key: string]: unknown;
+            };
         };
         /** ProductRankingEntry */
         ProductRankingEntry: {
@@ -1691,6 +2612,265 @@ export interface components {
             /** Selected Metric */
             selected_metric: string;
         };
+        /** ProductRecommendationPosition */
+        ProductRecommendationPosition: {
+            /**
+             * Allocation Role
+             * @enum {string}
+             */
+            allocation_role: "risk" | "defense" | "reserve";
+            /** Asset Key */
+            asset_key: string;
+            /** Model Score */
+            model_score: number | null;
+            /** Name */
+            name: string;
+            /** Rank */
+            rank: number | null;
+            /** Retained By Buffer */
+            retained_by_buffer: boolean;
+            /** Symbol */
+            symbol: string;
+            /** Target Weight */
+            target_weight: number;
+        };
+        /** ProductRecommendationResponse */
+        ProductRecommendationResponse: {
+            /** Available */
+            available: boolean;
+            context: components["schemas"]["ApiContext"];
+            /** Coverage Ratio */
+            coverage_ratio: number;
+            /**
+             * Data As Of Session
+             * Format: date
+             */
+            data_as_of_session: string;
+            /**
+             * Data Bundle Artifact Id
+             * Format: uuid
+             */
+            data_bundle_artifact_id: string;
+            /**
+             * Data Known At
+             * Format: date-time
+             */
+            data_known_at: string;
+            /**
+             * Decision Session
+             * Format: date
+             */
+            decision_session: string;
+            /** Eligible Count */
+            eligible_count: number;
+            /** Frequency */
+            frequency: string;
+            /** Next Expected Signal Session */
+            next_expected_signal_session: string | null;
+            /** Not Oos */
+            not_oos: boolean;
+            /** Positions */
+            positions: components["schemas"]["ProductRecommendationPosition"][];
+            quality: components["schemas"]["QualitySummary"];
+            /** Rankable Count */
+            rankable_count: number;
+            /** Reason Codes */
+            reason_codes: string[];
+            /** Recommended Execution Session */
+            recommended_execution_session: string | null;
+            /** Refresh Policy */
+            refresh_policy: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "accepted" | "failed";
+        };
+        /** ProductResearchAssetItem */
+        ProductResearchAssetItem: {
+            /** Asset Key */
+            asset_key: string;
+            /** Category Key */
+            category_key?: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Security Id
+             * Format: uuid
+             */
+            security_id: string;
+            /** Symbol */
+            symbol: string;
+        };
+        /** ProductResearchChain */
+        ProductResearchChain: {
+            /** Assets */
+            assets: components["schemas"]["ProductResearchAssetItem"][];
+            /** Factor Variant Keys */
+            factor_variant_keys: string[];
+            /** Frequency */
+            frequency: string;
+            /** Model Preset Keys */
+            model_preset_keys: string[];
+            /** Model Target Keys */
+            model_target_keys: string[];
+            /** Qualification Result Artifact Ids */
+            qualification_result_artifact_ids: string[];
+            /** Selected Branch Key */
+            selected_branch_key: string;
+            /**
+             * Selected Result Artifact Id
+             * Format: uuid
+             */
+            selected_result_artifact_id: string;
+            /** Signal Version Keys */
+            signal_version_keys: string[];
+            /**
+             * Source Suite Artifact Id
+             * Format: uuid
+             */
+            source_suite_artifact_id: string;
+            /** Strategy Preset Keys */
+            strategy_preset_keys: string[];
+        };
+        /** ProductReviewItem */
+        ProductReviewItem: {
+            /** Decision */
+            decision: string;
+            /** Evidence */
+            evidence: {
+                [key: string]: unknown;
+            };
+            /**
+             * Product Review Id
+             * Format: uuid
+             */
+            product_review_id: string;
+            /** Reason */
+            reason: string;
+            /** Researcher Id */
+            researcher_id: string;
+            /**
+             * Reviewed At
+             * Format: date-time
+             */
+            reviewed_at: string;
+        };
+        /** ProductReviewRequest */
+        ProductReviewRequest: {
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "continue" | "suspend" | "retire" | "replace";
+            /** Evidence */
+            evidence?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /** Reason */
+            reason: string;
+            /** Researcher Id */
+            researcher_id: string;
+            /**
+             * Reviewed At
+             * Format: date-time
+             */
+            reviewed_at: string;
+        };
+        /** ProductReviewResponse */
+        ProductReviewResponse: {
+            context: components["schemas"]["ApiContext"];
+            /** Decision */
+            decision: string;
+            /**
+             * Product Enrollment Id
+             * Format: uuid
+             */
+            product_enrollment_id: string;
+            /**
+             * Product Review Id
+             * Format: uuid
+             */
+            product_review_id: string;
+            quality: components["schemas"]["QualitySummary"];
+            /**
+             * Reviewed At
+             * Format: date-time
+             */
+            reviewed_at: string;
+        };
+        /** ProductSnapshotItem */
+        ProductSnapshotItem: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            /**
+             * As Of Session
+             * Format: date
+             */
+            as_of_session: string;
+            /** Decision Count */
+            decision_count: number;
+            /** Health */
+            health: string;
+            /** Health Components */
+            health_components: {
+                [key: string]: unknown;
+            };
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Metrics */
+            metrics: {
+                [key: string]: unknown;
+            };
+            /** Primary Nav */
+            primary_nav: number;
+            /** Session Count */
+            session_count: number;
+            /** Stress Nav */
+            stress_nav: number;
+        };
+        /** PromotionQualificationResponse */
+        PromotionQualificationResponse: {
+            /** Cell Artifact Ids */
+            cell_artifact_ids?: string[];
+            /** Comparison Context Id */
+            comparison_context_id: string | null;
+            /** Compiled Strategy Version Id */
+            compiled_strategy_version_id: string | null;
+            context: components["schemas"]["ApiContext"];
+            /** Eligible */
+            eligible: boolean;
+            /** Predictive Cell Artifact Ids */
+            predictive_cell_artifact_ids?: string[];
+            /** Predictive Result Artifact Ids */
+            predictive_result_artifact_ids?: string[];
+            /** Qualification Bundle Artifact Id */
+            qualification_bundle_artifact_id: string | null;
+            quality: components["schemas"]["QualitySummary"];
+            /** Reason Codes */
+            reason_codes: string[];
+            /** Result Artifact Ids */
+            result_artifact_ids?: string[];
+            /** Selection Context */
+            selection_context?: {
+                [key: string]: unknown;
+            };
+            /** Source Suite Artifact Id */
+            source_suite_artifact_id: string | null;
+            /** Warning Codes */
+            warning_codes?: string[];
+        };
         /** QualitySummary */
         QualitySummary: {
             /** Codes */
@@ -1700,6 +2880,17 @@ export interface components {
              * @enum {string}
              */
             state: "ok" | "partial" | "warning" | "error";
+        };
+        /** ReleaseGateResponse */
+        ReleaseGateResponse: {
+            context: components["schemas"]["ApiContext"];
+            /** Formal Enabled */
+            formal_enabled: boolean;
+            /** Product Enabled */
+            product_enabled: boolean;
+            quality: components["schemas"]["QualitySummary"];
+            /** Reason Codes */
+            reason_codes: string[];
         };
         /** SignalDiagnosticIssueItem */
         SignalDiagnosticIssueItem: {
@@ -1847,6 +3038,71 @@ export interface components {
             spread_correlation: number | null;
             /** Spread Period Count */
             spread_period_count: number;
+        };
+        /** SignalResearchExportJobResponse */
+        SignalResearchExportJobResponse: {
+            /** Attempt Count */
+            attempt_count: number;
+            /** Byte Size */
+            byte_size?: number | null;
+            /** Content Hash */
+            content_hash?: string | null;
+            context: components["schemas"]["ApiContext"];
+            /** Download Url */
+            download_url?: string | null;
+            /** Expires At */
+            expires_at?: string | null;
+            /**
+             * Export Job Id
+             * Format: uuid
+             */
+            export_job_id: string;
+            /** Failure Class */
+            failure_class?: string | null;
+            /** Failure Details */
+            failure_details?: {
+                [key: string]: unknown;
+            };
+            /** Max Attempts */
+            max_attempts: number;
+            quality: components["schemas"]["QualitySummary"];
+            /** Request Fingerprint */
+            request_fingerprint: string;
+            /** Stage */
+            stage: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "running" | "completed" | "failed" | "cancelled";
+            /** Status Url */
+            status_url: string;
+            /**
+             * Work Item Id
+             * Format: uuid
+             */
+            work_item_id: string;
+        };
+        /** SignalResearchExportRequest */
+        SignalResearchExportRequest: {
+            /** Asset Data Inputs */
+            asset_data_inputs?: {
+                [key: string]: string[];
+            };
+            /** Asset Security Ids */
+            asset_security_ids: string[];
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /**
+             * Include Targets
+             * @default true
+             */
+            include_targets: boolean;
+            /** Signal Version Keys */
+            signal_version_keys: string[];
         };
         /** SignalWindowMetricItem */
         SignalWindowMetricItem: {
@@ -2198,6 +3454,482 @@ export interface components {
             /** Error Type */
             type: string;
         };
+        /** WorkspaceAssetDataInputBlocker */
+        WorkspaceAssetDataInputBlocker: {
+            /** Input Key */
+            input_key: string;
+            /** Reason Codes */
+            reason_codes: string[];
+            /**
+             * Security Id
+             * Format: uuid
+             */
+            security_id: string;
+        };
+        /** WorkspaceCompileBlocker */
+        WorkspaceCompileBlocker: {
+            /** Layer */
+            layer: string;
+            /** Object Key */
+            object_key: string;
+            /** Reason Codes */
+            reason_codes: string[];
+        };
+        /** WorkspaceCompilePreviewResponse */
+        WorkspaceCompilePreviewResponse: {
+            /** Blockers */
+            blockers: components["schemas"]["WorkspaceCompileBlocker"][];
+            /**
+             * Catalog Artifact Id
+             * Format: uuid
+             */
+            catalog_artifact_id: string;
+            /** Catalog Version */
+            catalog_version: string;
+            /** Compiled */
+            compiled: {
+                [key: string]: unknown;
+            };
+            context: components["schemas"]["ApiContext"];
+            quality: components["schemas"]["QualitySummary"];
+            /** Selected Asset Count */
+            selected_asset_count: number;
+            /** Usable Asset Count */
+            usable_asset_count: number;
+        };
+        /** WorkspaceCompileRequest */
+        WorkspaceCompileRequest: {
+            /** Asset Data Inputs */
+            asset_data_inputs?: {
+                [key: string]: string[];
+            };
+            /** Asset Security Ids */
+            asset_security_ids: string[];
+            /** Factor Variant Keys */
+            factor_variant_keys: string[];
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /** Model Preset Keys */
+            model_preset_keys: string[];
+            /** Model Target Keys */
+            model_target_keys?: string[];
+            /** Signal Version Keys */
+            signal_version_keys: string[];
+            /** Strategy Preset Keys */
+            strategy_preset_keys: string[];
+        };
+        /** WorkspaceDraftResponse */
+        WorkspaceDraftResponse: {
+            context: components["schemas"]["ApiContext"];
+            /** Draft Key */
+            draft_key: string;
+            /** Last Compiled Artifact Id */
+            last_compiled_artifact_id: string | null;
+            /** Name */
+            name: string;
+            quality: components["schemas"]["QualitySummary"];
+            /**
+             * Research Draft Id
+             * Format: uuid
+             */
+            research_draft_id: string;
+            /** Researcher Id */
+            researcher_id: string;
+            /** Revision */
+            revision: number;
+            selection: components["schemas"]["WorkspaceDraftSelection"];
+        };
+        /** WorkspaceDraftSaveRequest */
+        WorkspaceDraftSaveRequest: {
+            /** Draft Key */
+            draft_key: string;
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /** Name */
+            name: string;
+            /** Researcher Id */
+            researcher_id: string;
+            selection: components["schemas"]["WorkspaceDraftSelection"];
+        };
+        /** WorkspaceDraftSelection */
+        WorkspaceDraftSelection: {
+            /** Asset Data Inputs */
+            asset_data_inputs?: {
+                [key: string]: string[];
+            };
+            /** Asset Security Ids */
+            asset_security_ids: string[];
+            /** Factor Variant Keys */
+            factor_variant_keys: string[];
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /** Model Preset Keys */
+            model_preset_keys: string[];
+            /** Model Target Keys */
+            model_target_keys?: string[];
+            /** Signal Version Keys */
+            signal_version_keys: string[];
+            /** Strategy Preset Keys */
+            strategy_preset_keys: string[];
+        };
+        /** WorkspaceFactorFamilyOption */
+        WorkspaceFactorFamilyOption: {
+            /**
+             * Definition Version
+             * @default 1
+             */
+            definition_version: number;
+            /** Family */
+            family: string;
+            /** Formula */
+            formula: string;
+            /** Implementation Key */
+            implementation_key: string;
+            /** Inputs */
+            inputs: string[];
+            /** Key */
+            key: string;
+            /** Output Unit */
+            output_unit: string;
+            /** Raw */
+            raw: boolean;
+            /** Required Asset Input Keys */
+            required_asset_input_keys: string[];
+            /** Time Semantics */
+            time_semantics: string;
+            /** Variants */
+            variants: components["schemas"]["WorkspaceFactorVariantOption"][];
+        };
+        /** WorkspaceFactorVariantOption */
+        WorkspaceFactorVariantOption: {
+            /** Key */
+            key: string;
+            /** Parameters */
+            parameters: {
+                [key: string]: unknown;
+            };
+            /** Preset Type */
+            preset_type: string;
+            /** Reason Codes */
+            reason_codes?: string[];
+            /** Required Price Observations */
+            required_price_observations: number;
+            /**
+             * Selectable
+             * @default true
+             */
+            selectable: boolean;
+            /** Selected */
+            selected: boolean;
+        };
+        /** WorkspaceModelFamilyOption */
+        WorkspaceModelFamilyOption: {
+            /** Description */
+            description: string;
+            /** Implementation Status */
+            implementation_status: string;
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Presets */
+            presets: components["schemas"]["WorkspaceModelPresetOption"][];
+        };
+        /** WorkspaceModelPresetOption */
+        WorkspaceModelPresetOption: {
+            /** Accepted Signal Keys */
+            accepted_signal_keys: string[];
+            /** Input Slots */
+            input_slots: components["schemas"]["WorkspaceModelSlotOption"][];
+            /** Output Comparability */
+            output_comparability: string;
+            /** Output Type */
+            output_type: string;
+            /** Parameters */
+            parameters: {
+                [key: string]: unknown;
+            };
+            /** Preset Key */
+            preset_key: string;
+            /** Reason Codes */
+            reason_codes: string[];
+            /** Selectable */
+            selectable: boolean;
+            /** Supported Frequencies */
+            supported_frequencies: string[];
+            /** Target Key */
+            target_key: string | null;
+        };
+        /** WorkspaceModelSlotOption */
+        WorkspaceModelSlotOption: {
+            /** Allowed Dimension Keys */
+            allowed_dimension_keys: string[];
+            /** Allowed Output Types */
+            allowed_output_types: string[];
+            /** Maximum Count */
+            maximum_count: number;
+            /** Minimum Count */
+            minimum_count: number;
+            /** Slot Key */
+            slot_key: string;
+        };
+        /** WorkspaceModelTargetOption */
+        WorkspaceModelTargetOption: {
+            /**
+             * Horizon Sessions
+             * @enum {integer}
+             */
+            horizon_sessions: 5 | 21 | 63;
+            /** Recommended */
+            recommended: boolean;
+            /** Target Key */
+            target_key: string;
+            /**
+             * Target Kind
+             * @enum {string}
+             */
+            target_kind: "future_return" | "cross_sectional_relative_return";
+        };
+        /** WorkspaceOptionsResponse */
+        WorkspaceOptionsResponse: {
+            /** Asset Data Input Blockers */
+            asset_data_input_blockers: components["schemas"]["WorkspaceAssetDataInputBlocker"][];
+            /**
+             * Catalog Artifact Id
+             * Format: uuid
+             */
+            catalog_artifact_id: string;
+            /** Catalog Version */
+            catalog_version: string;
+            context: components["schemas"]["ApiContext"];
+            /** Factor Families */
+            factor_families: components["schemas"]["WorkspaceFactorFamilyOption"][];
+            /** Frequency */
+            frequency: string;
+            /** Model Families */
+            model_families: components["schemas"]["WorkspaceModelFamilyOption"][];
+            /** Model Target Options */
+            model_target_options: components["schemas"]["WorkspaceModelTargetOption"][];
+            quality: components["schemas"]["QualitySummary"];
+            /** Selected Asset Count */
+            selected_asset_count: number;
+            /** Selected Asset Type Counts */
+            selected_asset_type_counts: {
+                [key: string]: number;
+            };
+            /** Signal Families */
+            signal_families: components["schemas"]["WorkspaceSignalFamilyOption"][];
+            /** Strategy Families */
+            strategy_families: components["schemas"]["WorkspaceStrategyFamilyOption"][];
+            /** Unknown Factor Variant Keys */
+            unknown_factor_variant_keys: string[];
+            /** Unknown Model Preset Keys */
+            unknown_model_preset_keys: string[];
+            /** Unknown Signal Version Keys */
+            unknown_signal_version_keys: string[];
+            /** Usable Asset Count */
+            usable_asset_count: number;
+        };
+        /** WorkspaceSignalFamilyOption */
+        WorkspaceSignalFamilyOption: {
+            /** Dimension Hint */
+            dimension_hint: string;
+            /** Direction */
+            direction: string;
+            /** Economic Family */
+            economic_family: string;
+            /** Factor Variants */
+            factor_variants: string[];
+            /** Form */
+            form: string;
+            /** Key */
+            key: string;
+            /** Output Type */
+            output_type: string;
+            /** Product Eligible */
+            product_eligible: boolean;
+            /** Rationale */
+            rationale: string;
+            /** Rationale Type */
+            rationale_type: string;
+            /** Research Tier */
+            research_tier: string;
+            /** Rule */
+            rule?: {
+                [key: string]: unknown;
+            } | null;
+            /** Versions */
+            versions: components["schemas"]["WorkspaceSignalVersionOption"][];
+        };
+        /** WorkspaceSignalVersionOption */
+        WorkspaceSignalVersionOption: {
+            /** Factor Variant Key */
+            factor_variant_key: string;
+            /** Reason Codes */
+            reason_codes: string[];
+            /** Selectable */
+            selectable: boolean;
+            /** Selected */
+            selected: boolean;
+            /** Version Key */
+            version_key: string;
+        };
+        /** WorkspaceStrategyFamilyOption */
+        WorkspaceStrategyFamilyOption: {
+            /** Compatible Model Output Types */
+            compatible_model_output_types: string[];
+            /** Coverage Ratio */
+            coverage_ratio: number;
+            /** Defaults */
+            defaults: {
+                [key: string]: unknown;
+            };
+            /** Description */
+            description: string;
+            /** Formal Minimum Eligible Assets */
+            formal_minimum_eligible_assets: number;
+            /** Implementation Status */
+            implementation_status: string;
+            /** Key */
+            key: string;
+            /** Minimum Eligible Assets */
+            minimum_eligible_assets: number;
+            /** Name */
+            name: string;
+            /** Parameter Options */
+            parameter_options: {
+                [key: string]: unknown[];
+            };
+            /** Presets */
+            presets: components["schemas"]["WorkspaceStrategyPresetOption"][];
+            /** Primary Benchmark */
+            primary_benchmark: string;
+            /** Required Instrument Type */
+            required_instrument_type: string;
+            /** Research Benchmark */
+            research_benchmark: string;
+            /** Supported Frequencies */
+            supported_frequencies: string[];
+        };
+        /** WorkspaceStrategyPresetOption */
+        WorkspaceStrategyPresetOption: {
+            /** Parameters */
+            parameters: {
+                [key: string]: unknown;
+            };
+            /** Preset Key */
+            preset_key: string;
+            /** Reason Codes */
+            reason_codes: string[];
+            /** Research Mode */
+            research_mode: string;
+            /** Selectable */
+            selectable: boolean;
+            /** Selected */
+            selected: boolean;
+        };
+        /** WorkspaceSuiteCancelResponse */
+        WorkspaceSuiteCancelResponse: {
+            /** Affected Work Items */
+            affected_work_items: number;
+            context: components["schemas"]["ApiContext"];
+            quality: components["schemas"]["QualitySummary"];
+            /**
+             * Research Suite Id
+             * Format: uuid
+             */
+            research_suite_id: string;
+        };
+        /** WorkspaceSuiteStatusResponse */
+        WorkspaceSuiteStatusResponse: {
+            /** Complete */
+            complete: boolean;
+            context: components["schemas"]["ApiContext"];
+            quality: components["schemas"]["QualitySummary"];
+            /**
+             * Research Suite Id
+             * Format: uuid
+             */
+            research_suite_id: string;
+            /** Status Counts */
+            status_counts: {
+                [key: string]: number;
+            };
+            /**
+             * Suite Mode
+             * @default formal
+             * @enum {string}
+             */
+            suite_mode: "formal" | "exploratory";
+            /** Terminal */
+            terminal: number;
+            /** Total */
+            total: number;
+        };
+        /** WorkspaceSuiteSubmitRequest */
+        WorkspaceSuiteSubmitRequest: {
+            /** Draft Key */
+            draft_key: string;
+            /** Expected Revision */
+            expected_revision: number;
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /** Researcher Id */
+            researcher_id: string;
+            /**
+             * Suite Mode
+             * @default exploratory
+             * @enum {string}
+             */
+            suite_mode: "formal" | "exploratory";
+        };
+        /** WorkspaceSuiteSubmitResponse */
+        WorkspaceSuiteSubmitResponse: {
+            context: components["schemas"]["ApiContext"];
+            /** Portfolio Cell Count */
+            portfolio_cell_count: number;
+            /** Predictive Cell Count */
+            predictive_cell_count: number;
+            quality: components["schemas"]["QualitySummary"];
+            /** Queued Work Item Count */
+            queued_work_item_count: number;
+            /**
+             * Research Suite Id
+             * Format: uuid
+             */
+            research_suite_id: string;
+            /** Reused */
+            reused: boolean;
+            /**
+             * Suite Artifact Id
+             * Format: uuid
+             */
+            suite_artifact_id: string;
+            /** Suite Fingerprint */
+            suite_fingerprint: string;
+            /** Suite Key */
+            suite_key: string;
+            /**
+             * Suite Mode
+             * @default formal
+             * @enum {string}
+             */
+            suite_mode: "formal" | "exploratory";
+        };
     };
     responses: never;
     parameters: never;
@@ -2352,7 +4084,14 @@ export interface operations {
     };
     asset_catalog_api_v2_catalog_assets_get: {
         parameters: {
-            query?: never;
+            query?: {
+                search?: string | null;
+                category?: string | null;
+                maturity?: ("cataloged" | "reference_data" | "canonical_ready" | "research_ready" | "strategy_ready" | "product_eligible_input") | null;
+                tradability?: ("tradable" | "reference_only" | "synthetic") | null;
+                limit?: number;
+                offset?: number;
+            };
             header?: {
                 "if-none-match"?: string | null;
             };
@@ -2376,6 +4115,74 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    asset_download_api_v2_catalog_assets__security_id__download_csv_get: {
+        parameters: {
+            query?: {
+                start?: string | null;
+                end?: string | null;
+            };
+            header?: never;
+            path: {
+                security_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    asset_series_api_v2_catalog_assets__security_id__series_get: {
+        parameters: {
+            query?: {
+                start?: string | null;
+                end?: string | null;
+            };
+            header?: never;
+            path: {
+                security_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetSeriesResponse"];
+                };
             };
             /** @description Validation Error */
             422: {
@@ -2506,7 +4313,16 @@ export interface operations {
     };
     experiment_overview_api_v2_experiments_overview_get: {
         parameters: {
-            query?: never;
+            query?: {
+                research_suite_id?: string | null;
+                status?: ("accepted" | "failed" | "running" | "pending") | null;
+                template_key?: string | null;
+                frequency?: ("weekly" | "monthly") | null;
+                cost_bps_per_side?: number | null;
+                ranking_metric?: "strategy.sharpe_ratio" | "strategy.cagr" | "strategy.maximum_drawdown" | "relative.annualized_relative_wealth_growth" | "predictive.mean_rank_ic";
+                limit?: number;
+                offset?: number;
+            };
             header?: {
                 "if-none-match"?: string | null;
             };
@@ -2624,6 +4440,103 @@ export interface operations {
             };
         };
     };
+    promote_experiment_result_api_v2_experiments_results__artifact_id__promote_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductPromotionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductPromotionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    promotion_qualification_api_v2_experiments_results__artifact_id__qualification_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotionQualificationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    factor_download_api_v2_factors_datasets__artifact_id__download_csv_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     factor_overview_api_v2_factors_overview_get: {
         parameters: {
             query?: never;
@@ -2722,6 +4635,193 @@ export interface operations {
             };
         };
     };
+    products_api_v2_products_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductCatalogResponse"];
+                };
+            };
+        };
+    };
+    change_product_alert_api_v2_products_alerts__alert_id__status_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                alert_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductAlertChangeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductAlertChangeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    product_detail_api_v2_products__enrollment_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enrollment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_product_lifecycle_api_v2_products__enrollment_id__lifecycle_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enrollment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductLifecycleChangeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductLifecycleChangeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    product_recommendation_api_v2_products__enrollment_id__recommendation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enrollment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductRecommendationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_product_review_api_v2_products__enrollment_id__reviews_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enrollment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductReviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     product_ranking_api_v2_rankings_products_get: {
         parameters: {
             query?: {
@@ -2763,6 +4863,26 @@ export interface operations {
             };
         };
     };
+    release_gates_api_v2_release_gates_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReleaseGateResponse"];
+                };
+            };
+        };
+    };
     signal_overview_api_v2_signals_overview_get: {
         parameters: {
             query?: {
@@ -2791,6 +4911,130 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    signal_research_export_api_v2_signals_research_export_zip_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignalResearchExportRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignalResearchExportJobResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    signal_research_export_status_api_v2_signals_research_exports__export_job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                export_job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignalResearchExportJobResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    signal_research_export_download_api_v2_signals_research_exports__export_job_id__download_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                export_job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    signal_download_api_v2_signals_versions__version_key__download_csv_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
             };
             /** @description Validation Error */
             422: {
@@ -2869,6 +5113,243 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    workspace_compile_preview_api_v2_workspace_compile_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkspaceCompileRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceCompilePreviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    workspace_draft_api_v2_workspace_drafts__researcher_id___draft_key__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                researcher_id: string;
+                draft_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceDraftResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_workspace_draft_api_v2_workspace_drafts__researcher_id___draft_key__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                researcher_id: string;
+                draft_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkspaceDraftSaveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceDraftResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    workspace_options_api_v2_workspace_options_get: {
+        parameters: {
+            query?: {
+                frequency?: "weekly" | "monthly";
+                selected_factor_variant?: string[] | null;
+                selected_signal?: string[] | null;
+                selected_model?: string[] | null;
+                selected_strategy?: string[] | null;
+                selected_asset?: string[] | null;
+                selected_asset_data_input?: string[] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceOptionsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_workspace_suite_api_v2_workspace_suites_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkspaceSuiteSubmitRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceSuiteSubmitResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    workspace_suite_status_api_v2_workspace_suites__research_suite_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                research_suite_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceSuiteStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_workspace_suite_api_v2_workspace_suites__research_suite_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                research_suite_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommandIdempotencyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceSuiteCancelResponse"];
+                };
             };
             /** @description Validation Error */
             422: {

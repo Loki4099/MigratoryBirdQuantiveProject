@@ -17,4 +17,5 @@ node_modules/
 .vscode/
 /data/
 artifacts/
+.codex_work/
 *.log

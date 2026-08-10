@@ -43,4 +43,3 @@ def downgrade() -> None:
         ["strategy_product_version_id", "model_dataset_id"],
         schema="strategy",
     )
-

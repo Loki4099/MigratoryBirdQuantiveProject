@@ -125,8 +125,10 @@ def parse_market_snapshots(
             issues.append(_issue("error", "invalid_market_csv", symbol, None, str(error)))
             continue
         for row_number, row in enumerate(rows, start=2):
+            row_date: date | None = None
             try:
                 session_date = date.fromisoformat(_required(row, "session_date"))
+                row_date = session_date
                 key = (symbol, session_date)
                 if key in seen_keys:
                     raise ValueError("duplicate symbol/session row")
@@ -173,13 +175,15 @@ def parse_market_snapshots(
                 if dividend > 0 or split > 0:
                     actions.append(CanonicalAction(symbol, session_date, dividend, split))
             except (InvalidOperation, ValueError, KeyError) as error:
+                message = str(error)
+                missing_value = message.startswith("missing ")
                 issues.append(
                     _issue(
-                        "error",
-                        "invalid_market_row",
+                        "warning" if missing_value else "error",
+                        "missing_market_observation" if missing_value else "invalid_market_row",
                         symbol,
-                        None,
-                        str(error),
+                        row_date,
+                        message,
                         {"row_number": row_number},
                     )
                 )
@@ -192,14 +196,23 @@ def parse_market_snapshots(
     for symbol, symbol_bars in sorted(grouped.items()):
         symbol_bars.sort(key=lambda item: item.session_date)
         dates = {item.session_date for item in symbol_bars}
-        invalid_dates = dates.difference(calendar_sessions)
+        calendar_start = min(calendar_sessions)
+        calendar_end = max(calendar_sessions)
+        outside_calendar = {
+            item for item in dates if item < calendar_start or item > calendar_end
+        }
+        invalid_dates = dates.difference(calendar_sessions).difference(outside_calendar)
         for invalid_date in sorted(invalid_dates):
             issues.append(_issue("error", "non_session_market_row", symbol, invalid_date))
+        for outside_date in sorted(outside_calendar):
+            issues.append(
+                _issue("warning", "outside_calendar_coverage", symbol, outside_date)
+            )
         first, last = symbol_bars[0].session_date, symbol_bars[-1].session_date
         expected = {item for item in calendar_sessions if first <= item <= last}
         missing = sorted(expected.difference(dates))
         for missing_date in missing:
-            issues.append(_issue("error", "missing_market_session", symbol, missing_date))
+            issues.append(_issue("warning", "missing_market_session", symbol, missing_date))
         coverage.append(Coverage(symbol, first, last, len(symbol_bars), len(missing)))
         prior_close: Decimal | None = None
         for bar in symbol_bars:

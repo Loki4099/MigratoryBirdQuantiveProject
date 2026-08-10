@@ -46,9 +46,7 @@ def upgrade() -> None:
         ),
         schema="ops",
     )
-    op.create_index(
-        "ix_backup_record_created_at", "backup_record", ["created_at"], schema="ops"
-    )
+    op.create_index("ix_backup_record_created_at", "backup_record", ["created_at"], schema="ops")
 
 
 def downgrade() -> None:

@@ -76,9 +76,10 @@ class YahooYFinanceSnapshotAdapter:
         if start >= end_exclusive:
             raise ValueError("Yahoo start must be before exclusive end")
         requested_at = self._clock()
+        provider_symbol = _yahoo_symbol(symbol)
         parameters = {
             **YAHOO_DOWNLOAD_PARAMETERS,
-            "tickers": symbol,
+            "tickers": provider_symbol,
             "start": start.isoformat(),
             "end": end_exclusive.isoformat(),
             "timeout": self._timeout_seconds,
@@ -87,11 +88,84 @@ class YahooYFinanceSnapshotAdapter:
         fetched_at = self._clock()
         if frame is None or frame.empty:
             raise RuntimeError(f"Yahoo returned no market data for {symbol}")
+        return self._snapshot_from_frame(
+            frame,
+            provider_symbol,
+            {**parameters, "tickers": symbol, "provider_ticker": provider_symbol},
+            requested_at=requested_at,
+            fetched_at=fetched_at,
+        )
+
+    def fetch_many(
+        self, symbols: tuple[str, ...], start: date, end_exclusive: date
+    ) -> tuple[tuple[str, RawFetch], ...]:
+        """Download symbols in bounded batches while preserving one immutable snapshot each."""
+        if not symbols or len(symbols) != len(set(symbols)):
+            raise ValueError("Yahoo batch symbols must be non-empty and unique")
+        results: list[tuple[str, RawFetch]] = []
+        failures: list[str] = []
+        for offset in range(0, len(symbols), 40):
+            batch = symbols[offset : offset + 40]
+            provider_batch = tuple(_yahoo_symbol(symbol) for symbol in batch)
+            requested_at = self._clock()
+            parameters = {
+                **YAHOO_DOWNLOAD_PARAMETERS,
+                "tickers": list(provider_batch),
+                "start": start.isoformat(),
+                "end": end_exclusive.isoformat(),
+                "timeout": self._timeout_seconds,
+                "threads": True,
+            }
+            frame = yf.download(**parameters)
+            fetched_at = self._clock()
+            if frame is None or frame.empty:
+                failures.extend(batch)
+                continue
+            for symbol, provider_symbol in zip(batch, provider_batch, strict=True):
+                try:
+                    per_symbol = {
+                        **parameters,
+                        "tickers": symbol,
+                        "provider_ticker": provider_symbol,
+                        "batch_tickers": list(batch),
+                    }
+                    results.append(
+                        (
+                            symbol,
+                            self._snapshot_from_frame(
+                                frame,
+                                provider_symbol,
+                                per_symbol,
+                                requested_at=requested_at,
+                                fetched_at=fetched_at,
+                            ),
+                        )
+                    )
+                except (KeyError, ValueError, RuntimeError):
+                    failures.append(symbol)
+        if failures:
+            raise RuntimeError(f"Yahoo returned no usable market data for: {', '.join(failures)}")
+        return tuple(results)
+
+    def _snapshot_from_frame(
+        self,
+        frame: pd.DataFrame,
+        symbol: str,
+        parameters: dict[str, Any],
+        *,
+        requested_at: datetime,
+        fetched_at: datetime,
+    ) -> RawFetch:
         symbol_frame = _symbol_frame(frame, symbol).copy()
         for field in self._fields:
             if field not in symbol_frame:
                 symbol_frame[field] = pd.NA
         symbol_frame = symbol_frame.loc[:, list(self._fields)].sort_index()
+        symbol_frame = symbol_frame.dropna(
+            how="all", subset=["Open", "High", "Low", "Close", "Adj Close", "Volume"]
+        )
+        if symbol_frame.empty:
+            raise RuntimeError(f"Yahoo returned no market data for {symbol}")
         symbol_frame.index = pd.to_datetime(symbol_frame.index).strftime("%Y-%m-%d")
         symbol_frame.index.name = "session_date"
         payload = symbol_frame.to_csv(
@@ -112,6 +186,11 @@ class YahooYFinanceSnapshotAdapter:
             },
             payload=payload,
         )
+
+
+def _yahoo_symbol(symbol: str) -> str:
+    """Translate exchange class-share notation to Yahoo's ticker convention."""
+    return symbol.replace(".", "-")
 
 
 class FredCsvSnapshotAdapter:

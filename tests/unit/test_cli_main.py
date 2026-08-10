@@ -15,8 +15,10 @@ class UnifiedCliTests(unittest.TestCase):
             result = main(["modules", "--json"])
         payload = json.loads(output.getvalue())
         self.assertEqual(result, 0)
-        self.assertEqual(len(payload), 9)
+        self.assertEqual(len(payload), 11)
         self.assertEqual(payload[0]["key"], "catalog")
+        self.assertIn("workspace", {item["key"] for item in payload})
+        self.assertIn("product", {item["key"] for item in payload})
 
     def test_backup_create_exposes_custom_dump_workflow(self) -> None:
         with patch("style_rotation.cli.main._backup_create", return_value=0) as command:
@@ -34,6 +36,62 @@ class UnifiedCliTests(unittest.TestCase):
             )
         self.assertEqual(result, 0)
         command.assert_called_once_with("artifacts/v02.dump", "abcdef0", "postgres-test")
+
+    def test_storage_retention_dry_run_is_explicitly_read_only(self) -> None:
+        suite_id = "00000000-0000-0000-0000-000000000001"
+        with patch(
+            "style_rotation.cli.main._storage_retention_dry_run", return_value=0
+        ) as command:
+            result = main(
+                [
+                    "storage",
+                    "retention-dry-run",
+                    "--cache-ttl-days",
+                    "21",
+                    "--cache-quota-gib",
+                    "8",
+                    "--retain-suite-id",
+                    suite_id,
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with(21, 8, (suite_id,))
+
+    def test_idempotency_pending_audit_is_available_without_running_commands(self) -> None:
+        with patch("style_rotation.cli.main._idempotency_pending", return_value=0) as command:
+            result = main(["idempotency", "audit-pending", "--limit", "25"])
+        self.assertEqual(result, 0)
+        command.assert_called_once_with(25)
+
+    def test_idempotency_response_repair_requires_explicit_audit_confirmation(self) -> None:
+        command_id = "00000000-0000-0000-0000-000000000001"
+        with patch(
+            "style_rotation.cli.main._idempotency_repair_response", return_value=0
+        ) as command:
+            result = main(
+                [
+                    "idempotency",
+                    "repair-response",
+                    "--command-name",
+                    "promote_experiment_result",
+                    "--idempotency-key",
+                    command_id,
+                    "--confirm-request-fingerprint",
+                    "a" * 64,
+                    "--response-file",
+                    "audited-response.json",
+                    "--confirm-outcome-audited",
+                    "OUTCOME_AUDITED",
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with(
+            "promote_experiment_result",
+            command_id,
+            "a" * 64,
+            "audited-response.json",
+            "OUTCOME_AUDITED",
+        )
 
     def test_experiment_publish_gross_requires_both_artifacts(self) -> None:
         ids = [f"00000000-0000-0000-0000-00000000000{index}" for index in range(1, 3)]
@@ -172,24 +230,90 @@ class UnifiedCliTests(unittest.TestCase):
         ) as command:
             result = main(
                 [
-                    "experiment", "run-release-suite",
-                    "--target-engine-artifact-id", engine_id,
-                    "--expected-target-count", "630",
-                    "--git-commit", "abcdef0",
-                    "--as-of", "2026-08-03",
+                    "experiment",
+                    "run-release-suite",
+                    "--target-engine-artifact-id",
+                    engine_id,
+                    "--expected-target-count",
+                    "630",
+                    "--git-commit",
+                    "abcdef0",
+                    "--as-of",
+                    "2026-08-03",
                 ]
             )
         self.assertEqual(result, 0)
         command.assert_called_once_with(
-            (), engine_id, 630, "abcdef0", "requirements.lock", date(2026, 8, 3),
-            None, None, "v02_formal_release", 1, 253, False, 1,
+            (),
+            engine_id,
+            630,
+            "abcdef0",
+            "requirements.lock",
+            date(2026, 8, 3),
+            None,
+            None,
+            "v02_formal_release",
+            1,
+            253,
+            False,
+            1,
         )
 
     def test_version_flag_uses_v02_package_version(self) -> None:
         output = StringIO()
         with self.assertRaisesRegex(SystemExit, "0"), redirect_stdout(output):
             main(["--version"])
-        self.assertEqual(output.getvalue().strip(), "style-rotation 0.2.0")
+        self.assertEqual(output.getvalue().strip(), "style-rotation 0.21.0")
+
+    def test_v021_experiment_worker_supports_persistent_recovery_mode(self) -> None:
+        with patch(
+            "style_rotation.cli.main._experiment_run_v021_worker", return_value=0
+        ) as command:
+            result = main(
+                [
+                    "experiment",
+                    "run-v021-worker",
+                    "--worker-id",
+                    "recovery-worker",
+                    "--forever",
+                    "--poll-seconds",
+                    "0.25",
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with("recovery-worker", 1, True, 0.25)
+
+    def test_v021_monitoring_worker_supports_persistent_recovery_mode(self) -> None:
+        with patch(
+            "style_rotation.cli.main._product_run_v021_monitoring_worker", return_value=0
+        ) as command:
+            result = main(
+                [
+                    "experiment",
+                    "run-v021-monitoring-worker",
+                    "--forever",
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with("v021-monitoring-worker", 1, True, 1.0)
+
+    def test_signal_export_worker_supports_persistent_recovery_mode(self) -> None:
+        with patch(
+            "style_rotation.cli.main._signal_run_research_export_worker", return_value=0
+        ) as command:
+            result = main(
+                [
+                    "experiment",
+                    "run-signal-export-worker",
+                    "--worker-id",
+                    "export-recovery-worker",
+                    "--forever",
+                    "--poll-seconds",
+                    "0.5",
+                ]
+            )
+        self.assertEqual(result, 0)
+        command.assert_called_once_with("export-recovery-worker", 1, True, 0.5)
 
     def test_console_entry_converts_validation_error_to_clean_exit(self) -> None:
         error = StringIO()

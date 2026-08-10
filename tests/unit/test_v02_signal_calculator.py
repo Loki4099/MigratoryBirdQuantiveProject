@@ -123,10 +123,27 @@ def test_crossover_excludes_first_date_and_distinguishes_event_from_neutral() ->
     assert [item.event for item in day_two] == [True, False, True, False]
 
 
-def test_formal_signal_rejects_missing_asset_dates_and_unsupported_policy() -> None:
+def test_formal_signal_omits_local_missing_asset_dates_and_rejects_unsupported_policy() -> None:
     inputs = _points(((1.0, 2.0, 3.0, 4.0), (2.0, 3.0, 4.0, 5.0)))[:-1]
-    with pytest.raises(SignalCalculationError, match="not aligned"):
-        calculate_signal(_version(), inputs)
+    calculation = calculate_signal(_version(), inputs)
+    assert len([point for point in calculation.points if point.observation_date == DAYS[1]]) == 3
     invalid = replace(_version(), missing_policy="neutral")
     with pytest.raises(SignalCalculationError, match="Unsupported missing policy"):
         calculate_signal(invalid, _points(((1.0, 2.0, 3.0, 4.0),)))
+
+
+def test_crossover_preserves_gap_when_asset_has_no_previous_valid_observation() -> None:
+    inputs = tuple(
+        point
+        for point in _points(((-1.0, -1.0, -1.0, -1.0), (1.0, 1.0, 1.0, 1.0)))
+        if not (point.asset_key == "asset_4" and point.observation_date == DAYS[0])
+    )
+    calculation = calculate_signal(
+        _version(
+            output_type="crossover_event",
+            rule={"previous": "<=0", "current": ">0", "event_score": 1, "otherwise": "neutral"},
+        ),
+        inputs,
+    )
+    assert "asset_4" not in _scores(calculation, DAYS[1])
+    assert len(_scores(calculation, DAYS[1])) == 3

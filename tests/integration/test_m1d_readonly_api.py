@@ -36,7 +36,7 @@ def test_real_catalogs_flow_through_readonly_api_and_built_frontend() -> None:
 
     health = client.get("/api/v2/health")
     assert health.status_code == 200
-    assert health.json()["database_revision"] == "20260805_28_v02_target_engine"
+    assert health.json()["database_revision"] == "20260809_47_signal_export_job"
 
     artifacts = client.get("/api/v2/artifacts?status=published&limit=100")
     assert artifacts.status_code == 200

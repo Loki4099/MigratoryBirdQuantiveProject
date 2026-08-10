@@ -100,62 +100,82 @@ def _publish_strategy_target_grid(
     if not frequencies or set(frequencies) - set(FORMAL_FREQUENCIES):
         raise ValueError("Strategy grid frequency must use weekly and/or monthly")
     with engine.connect() as connection:
-        model_rows = connection.execute(
-            text(
-                "SELECT specification.specification_key, "
-                "dataset.artifact_id AS dataset_artifact_id, dataset.coverage_start, "
-                "dataset.coverage_end "
-                "FROM lineage.artifact_dependency member "
-                "JOIN model.model_specification specification ON specification.artifact_id = "
-                "member.depends_on_artifact_id JOIN model.model_dataset dataset ON "
-                "dataset.model_specification_id = specification.model_specification_id "
-                "JOIN data.data_bundle_version bundle ON bundle.data_bundle_version_id = "
-                "dataset.data_bundle_version_id JOIN catalog.eligibility_snapshot eligibility ON "
-                "eligibility.eligibility_snapshot_id = dataset.eligibility_snapshot_id "
-                "JOIN lineage.artifact dataset_artifact ON dataset_artifact.artifact_id = "
-                "dataset.artifact_id AND dataset_artifact.status = 'published' "
-                "WHERE member.artifact_id = :catalog AND member.role = 'materialized_member' "
-                "AND specification.specification_type = ANY(:types) "
-                "AND bundle.artifact_id = :bundle AND eligibility.artifact_id = :eligibility "
-                "ORDER BY specification.specification_key"
-            ),
-            {
-                "catalog": model_catalog_artifact_id,
-                "types": list(FORMAL_PRODUCT_MODEL_TYPES),
-                "bundle": data_bundle_artifact_id,
-                "eligibility": eligibility_artifact_id,
-            },
-        ).mappings().all()
-        variants = connection.execute(
-            text(
-                "SELECT variant.variant_key, variant.target_k, variant.trend_filter FROM "
-                "lineage.artifact_dependency member JOIN strategy.strategy_variant variant ON "
-                "variant.artifact_id = member.depends_on_artifact_id WHERE member.artifact_id = "
-                ":catalog AND member.role = 'materialized_member' AND variant.target_k = ANY(:ks) "
-                "ORDER BY variant.variant_key"
-            ),
-            {"catalog": strategy_catalog_artifact_id, "ks": list(k_values)},
-        ).mappings().all()
-        schedules = connection.execute(
-            text(
-                "SELECT definition.schedule_key, version.frequency FROM "
-                "lineage.artifact_dependency member JOIN ops.rebalance_schedule_version version "
-                "ON version.artifact_id = member.depends_on_artifact_id JOIN "
-                "ops.rebalance_schedule_definition definition ON "
-                "definition.rebalance_schedule_definition_id = "
-                "version.rebalance_schedule_definition_id WHERE member.artifact_id = :catalog "
-                "AND member.role = 'materialized_member' AND version.frequency = ANY(:frequencies) "
-                "ORDER BY definition.schedule_key"
-            ),
-            {"catalog": strategy_catalog_artifact_id, "frequencies": list(frequencies)},
-        ).mappings().all()
-        eligibility_window = connection.execute(
-            text(
-                "SELECT requested_start, requested_end FROM catalog.eligibility_snapshot "
-                "WHERE artifact_id = :eligibility"
-            ),
-            {"eligibility": eligibility_artifact_id},
-        ).mappings().one_or_none()
+        model_rows = (
+            connection.execute(
+                text(
+                    "SELECT specification.specification_key, "
+                    "dataset.artifact_id AS dataset_artifact_id, dataset.coverage_start, "
+                    "dataset.coverage_end "
+                    "FROM lineage.artifact_dependency member "
+                    "JOIN model.model_specification specification ON specification.artifact_id = "
+                    "member.depends_on_artifact_id JOIN model.model_dataset dataset ON "
+                    "dataset.model_specification_id = specification.model_specification_id "
+                    "JOIN data.data_bundle_version bundle ON bundle.data_bundle_version_id = "
+                    "dataset.data_bundle_version_id JOIN catalog.eligibility_snapshot "
+                    "eligibility ON "
+                    "eligibility.eligibility_snapshot_id = dataset.eligibility_snapshot_id "
+                    "JOIN lineage.artifact dataset_artifact ON dataset_artifact.artifact_id = "
+                    "dataset.artifact_id AND dataset_artifact.status = 'published' "
+                    "WHERE member.artifact_id = :catalog AND member.role = 'materialized_member' "
+                    "AND specification.specification_type = ANY(:types) "
+                    "AND bundle.artifact_id = :bundle AND eligibility.artifact_id = :eligibility "
+                    "ORDER BY specification.specification_key"
+                ),
+                {
+                    "catalog": model_catalog_artifact_id,
+                    "types": list(FORMAL_PRODUCT_MODEL_TYPES),
+                    "bundle": data_bundle_artifact_id,
+                    "eligibility": eligibility_artifact_id,
+                },
+            )
+            .mappings()
+            .all()
+        )
+        variants = (
+            connection.execute(
+                text(
+                    "SELECT variant.variant_key, variant.target_k, variant.trend_filter FROM "
+                    "lineage.artifact_dependency member JOIN strategy.strategy_variant variant ON "
+                    "variant.artifact_id = member.depends_on_artifact_id WHERE "
+                    "member.artifact_id = :catalog AND member.role = 'materialized_member' "
+                    "AND variant.target_k = ANY(:ks) "
+                    "ORDER BY variant.variant_key"
+                ),
+                {"catalog": strategy_catalog_artifact_id, "ks": list(k_values)},
+            )
+            .mappings()
+            .all()
+        )
+        schedules = (
+            connection.execute(
+                text(
+                    "SELECT definition.schedule_key, version.frequency FROM "
+                    "lineage.artifact_dependency member JOIN "
+                    "ops.rebalance_schedule_version version "
+                    "ON version.artifact_id = member.depends_on_artifact_id JOIN "
+                    "ops.rebalance_schedule_definition definition ON "
+                    "definition.rebalance_schedule_definition_id = "
+                    "version.rebalance_schedule_definition_id WHERE member.artifact_id = :catalog "
+                    "AND member.role = 'materialized_member' "
+                    "AND version.frequency = ANY(:frequencies) "
+                    "ORDER BY definition.schedule_key"
+                ),
+                {"catalog": strategy_catalog_artifact_id, "frequencies": list(frequencies)},
+            )
+            .mappings()
+            .all()
+        )
+        eligibility_window = (
+            connection.execute(
+                text(
+                    "SELECT requested_start, requested_end FROM catalog.eligibility_snapshot "
+                    "WHERE artifact_id = :eligibility"
+                ),
+                {"eligibility": eligibility_artifact_id},
+            )
+            .mappings()
+            .one_or_none()
+        )
     if eligibility_window is None:
         raise ValueError("Strategy grid Eligibility Snapshot not found")
     if required_history_start is not None:

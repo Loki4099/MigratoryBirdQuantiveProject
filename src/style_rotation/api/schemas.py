@@ -4,7 +4,7 @@ from datetime import date, datetime
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 ArtifactStatus = Literal["draft", "published", "retired", "superseded", "invalidated", "tainted"]
 QualityState = Literal["ok", "partial", "warning", "error"]
@@ -22,7 +22,7 @@ class QualitySummary(ApiModel):
 class ApiContext(ApiModel):
     api_version: Literal["v2"] = "v2"
     system_version: str
-    read_only: Literal[True] = True
+    read_only: bool = False
 
 
 class HealthResponse(ApiModel):
@@ -100,22 +100,59 @@ class ArtifactDetailResponse(ApiModel):
 class ApiError(ApiModel):
     code: str
     message: str
+    details: dict[str, Any] = Field(default_factory=dict)
+
+
+class AssetCategoryItem(ApiModel):
+    category_key: str
+    name: str
+    description: str
+    asset_count: int
+
+
+class AssetSetItem(ApiModel):
+    set_key: str
+    name: str
+    set_type: str
+    maturity: str
+    formal_eligible: bool
+    notes: str
+    member_security_ids: list[UUID]
+
+
+class AssetDataInputOption(ApiModel):
+    input_key: str
+    name: str
+    source_kind: str
+    available: bool
+    selectable: bool
+    point_in_time: bool
+    downstream_factor_keys: list[str]
+    status_note: str
 
 
 class AssetCatalogItem(ApiModel):
-    asset_id: UUID
+    security_id: UUID
+    asset_id: UUID | None
     asset_key: str
     name: str
-    asset_type: str
+    category_key: str
+    asset_class: str
+    instrument_type: str
     status: str
     symbol: str
-    venue_mic: str
-    currency: str
-    timezone: str
-    calendar_key: str
-    classifications: dict[str, str]
-    universe_role: str | None
-    universe_ordinal: int | None
+    aliases: list[str]
+    venue_mic: str | None
+    currency: str | None
+    calendar_key: str | None
+    tradability: str
+    tags: list[str]
+    maturity: str
+    target_maturity: str
+    missing_requirements: list[str]
+    canonical_data_available: bool
+    selectable: bool
+    data_inputs: list[AssetDataInputOption] = Field(default_factory=list)
 
 
 class AssetCatalogResponse(ApiModel):
@@ -123,9 +160,659 @@ class AssetCatalogResponse(ApiModel):
     quality: QualitySummary
     release_artifact_id: UUID
     release_version_number: int
+    catalog_version: str
     as_of_date: str
-    universe_key: str
+    total: int
+    limit: int
+    offset: int
+    categories: list[AssetCategoryItem]
+    asset_sets: list[AssetSetItem]
     items: list[AssetCatalogItem]
+
+
+class AssetSeriesPoint(ApiModel):
+    session_date: date
+    open: float
+    high: float
+    low: float
+    close: float
+    adjusted_close: float
+    volume: int
+
+
+class AssetSeriesResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    security_id: UUID
+    asset_key: str
+    symbol: str
+    dataset_artifact_id: UUID
+    dataset_version_number: int
+    coverage_start: date
+    coverage_end: date
+    points: list[AssetSeriesPoint]
+
+
+class WorkspaceFactorVariantOption(ApiModel):
+    key: str
+    parameters: dict[str, Any]
+    required_price_observations: int
+    preset_type: str
+    selected: bool
+    selectable: bool = True
+    reason_codes: list[str] = Field(default_factory=list)
+
+
+class WorkspaceFactorFamilyOption(ApiModel):
+    key: str
+    family: str
+    definition_version: int = 1
+    formula: str
+    inputs: list[str]
+    required_asset_input_keys: list[str]
+    implementation_key: str
+    output_unit: str
+    time_semantics: str
+    raw: bool
+    variants: list[WorkspaceFactorVariantOption]
+
+
+class WorkspaceSignalVersionOption(ApiModel):
+    version_key: str
+    factor_variant_key: str
+    selected: bool
+    selectable: bool
+    reason_codes: list[str]
+
+
+class WorkspaceSignalFamilyOption(ApiModel):
+    key: str
+    factor_variants: list[str]
+    form: str
+    output_type: str
+    direction: str
+    rule: dict[str, Any] | None = None
+    economic_family: str
+    dimension_hint: str
+    rationale_type: str
+    rationale: str
+    research_tier: str
+    product_eligible: bool
+    versions: list[WorkspaceSignalVersionOption]
+
+
+class WorkspaceModelSlotOption(ApiModel):
+    slot_key: str
+    allowed_dimension_keys: list[str]
+    allowed_output_types: list[str]
+    minimum_count: int
+    maximum_count: int
+
+
+class WorkspaceModelPresetOption(ApiModel):
+    preset_key: str
+    output_type: str
+    output_comparability: str
+    supported_frequencies: list[str]
+    parameters: dict[str, Any]
+    target_key: str | None
+    input_slots: list[WorkspaceModelSlotOption]
+    selectable: bool
+    reason_codes: list[str]
+    accepted_signal_keys: list[str]
+
+
+class WorkspaceModelFamilyOption(ApiModel):
+    key: str
+    name: str
+    description: str
+    implementation_status: str
+    presets: list[WorkspaceModelPresetOption]
+
+
+class WorkspaceStrategyPresetOption(ApiModel):
+    preset_key: str
+    parameters: dict[str, Any]
+    selected: bool
+    selectable: bool
+    reason_codes: list[str]
+    research_mode: str
+
+
+class WorkspaceStrategyFamilyOption(ApiModel):
+    key: str
+    name: str
+    description: str
+    implementation_status: str
+    required_instrument_type: str
+    minimum_eligible_assets: int
+    formal_minimum_eligible_assets: int
+    coverage_ratio: float
+    supported_frequencies: list[str]
+    compatible_model_output_types: list[str]
+    parameter_options: dict[str, list[Any]]
+    defaults: dict[str, Any]
+    primary_benchmark: str
+    research_benchmark: str
+    presets: list[WorkspaceStrategyPresetOption]
+
+
+class WorkspaceModelTargetOption(ApiModel):
+    target_key: str
+    target_kind: Literal["future_return", "cross_sectional_relative_return"]
+    horizon_sessions: Literal[5, 21, 63]
+    recommended: bool
+
+
+class WorkspaceAssetDataInputBlocker(ApiModel):
+    security_id: UUID
+    input_key: str
+    reason_codes: list[str]
+
+
+class WorkspaceOptionsResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    catalog_artifact_id: UUID
+    catalog_version: str
+    frequency: str
+    model_target_options: list[WorkspaceModelTargetOption]
+    unknown_factor_variant_keys: list[str]
+    unknown_signal_version_keys: list[str]
+    unknown_model_preset_keys: list[str]
+    asset_data_input_blockers: list[WorkspaceAssetDataInputBlocker]
+    selected_asset_count: int
+    usable_asset_count: int
+    selected_asset_type_counts: dict[str, int]
+    factor_families: list[WorkspaceFactorFamilyOption]
+    signal_families: list[WorkspaceSignalFamilyOption]
+    model_families: list[WorkspaceModelFamilyOption]
+    strategy_families: list[WorkspaceStrategyFamilyOption]
+
+
+class WorkspaceCompileRequest(ApiModel):
+    frequency: Literal["weekly", "monthly"]
+    asset_security_ids: list[UUID]
+    asset_data_inputs: dict[UUID, list[str]] = Field(default_factory=dict)
+    factor_variant_keys: list[str]
+    signal_version_keys: list[str]
+    model_preset_keys: list[str]
+    model_target_keys: list[str] = Field(
+        default_factory=lambda: ["cross_sectional_relative_return__h5"]
+    )
+    strategy_preset_keys: list[str]
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_legacy_asset_inputs(cls, value: Any) -> Any:
+        return _with_legacy_asset_input_defaults(value)
+
+    @model_validator(mode="after")
+    def validate_asset_inputs(self) -> WorkspaceCompileRequest:
+        _validate_asset_input_mapping(self.asset_security_ids, self.asset_data_inputs)
+        return self
+
+
+class WorkspaceCompileBlocker(ApiModel):
+    layer: str
+    object_key: str
+    reason_codes: list[str]
+
+
+class WorkspaceCompilePreviewResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    catalog_artifact_id: UUID
+    catalog_version: str
+    selected_asset_count: int
+    usable_asset_count: int
+    compiled: dict[str, Any]
+    blockers: list[WorkspaceCompileBlocker]
+
+
+class WorkspaceDraftSelection(ApiModel):
+    frequency: Literal["weekly", "monthly"]
+    asset_security_ids: list[UUID]
+    asset_data_inputs: dict[UUID, list[str]] = Field(default_factory=dict)
+    factor_variant_keys: list[str]
+    signal_version_keys: list[str]
+    model_preset_keys: list[str]
+    model_target_keys: list[str] = Field(
+        default_factory=lambda: ["cross_sectional_relative_return__h5"]
+    )
+    strategy_preset_keys: list[str]
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_legacy_asset_inputs(cls, value: Any) -> Any:
+        return _with_legacy_asset_input_defaults(value)
+
+    @model_validator(mode="after")
+    def validate_asset_inputs(self) -> WorkspaceDraftSelection:
+        _validate_asset_input_mapping(self.asset_security_ids, self.asset_data_inputs)
+        return self
+
+
+class WorkspaceDraftSaveRequest(ApiModel):
+    idempotency_key: UUID
+    researcher_id: str = Field(min_length=1, max_length=120)
+    draft_key: str = Field(min_length=1, max_length=180)
+    name: str = Field(min_length=1, max_length=240)
+    expected_revision: int | None = Field(default=None, ge=0)
+    selection: WorkspaceDraftSelection
+
+
+class WorkspaceDraftResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    research_draft_id: UUID
+    researcher_id: str
+    draft_key: str
+    name: str
+    revision: int
+    selection: WorkspaceDraftSelection
+    last_compiled_artifact_id: UUID | None
+
+
+class ReleaseGateResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    formal_enabled: bool
+    product_enabled: bool
+    reason_codes: list[str]
+
+
+class WorkspaceSuiteSubmitRequest(ApiModel):
+    idempotency_key: UUID
+    researcher_id: str
+    draft_key: str
+    expected_revision: int = Field(ge=1)
+    suite_mode: Literal["formal", "exploratory"] = "exploratory"
+
+
+class WorkspaceSuiteSubmitResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    research_suite_id: UUID
+    suite_artifact_id: UUID
+    suite_key: str
+    suite_fingerprint: str
+    predictive_cell_count: int
+    portfolio_cell_count: int
+    queued_work_item_count: int
+    reused: bool
+    suite_mode: Literal["formal", "exploratory"] = "formal"
+
+
+class WorkspaceSuiteStatusResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    research_suite_id: UUID
+    total: int
+    terminal: int
+    complete: bool
+    status_counts: dict[str, int]
+    suite_mode: Literal["formal", "exploratory"] = "formal"
+
+
+class WorkspaceSuiteCancelResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    research_suite_id: UUID
+    affected_work_items: int
+
+
+class SignalResearchExportRequest(ApiModel):
+    frequency: Literal["weekly", "monthly"]
+    asset_security_ids: list[UUID] = Field(min_length=1)
+    asset_data_inputs: dict[UUID, list[str]] = Field(default_factory=dict)
+    signal_version_keys: list[str] = Field(min_length=1)
+    include_targets: bool = True
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_legacy_asset_inputs(cls, value: Any) -> Any:
+        return _with_legacy_asset_input_defaults(value)
+
+    @model_validator(mode="after")
+    def validate_asset_inputs(self) -> SignalResearchExportRequest:
+        _validate_asset_input_mapping(self.asset_security_ids, self.asset_data_inputs)
+        return self
+
+
+class SignalResearchExportJobResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    export_job_id: UUID
+    work_item_id: UUID
+    request_fingerprint: str
+    status: Literal["queued", "running", "completed", "failed", "cancelled"]
+    stage: str
+    attempt_count: int
+    max_attempts: int
+    status_url: str
+    download_url: str | None = None
+    failure_class: str | None = None
+    failure_details: dict[str, Any] = Field(default_factory=dict)
+    content_hash: str | None = None
+    byte_size: int | None = None
+    expires_at: datetime | None = None
+
+
+def _with_legacy_asset_input_defaults(value: Any) -> Any:
+    """Migrate pre-input-selection API payloads without overriding an explicit empty choice."""
+    if not isinstance(value, dict) or "asset_data_inputs" in value:
+        return value
+    migrated = dict(value)
+    migrated["asset_data_inputs"] = {
+        str(security_id): ["canonical_market_bars"]
+        for security_id in migrated.get("asset_security_ids", [])
+    }
+    return migrated
+
+
+def _validate_asset_input_mapping(
+    asset_security_ids: list[UUID], asset_data_inputs: dict[UUID, list[str]]
+) -> None:
+    selected = set(asset_security_ids)
+    if set(asset_data_inputs) != selected:
+        raise ValueError("Asset data-input selections must exactly match selected assets")
+    for security_id, input_keys in asset_data_inputs.items():
+        if len(input_keys) != len(set(input_keys)):
+            raise ValueError(f"Asset {security_id} contains duplicate data-input selections")
+        if any(not key.strip() for key in input_keys):
+            raise ValueError(f"Asset {security_id} contains an empty data-input key")
+
+
+class CommandIdempotencyRequest(ApiModel):
+    idempotency_key: UUID
+
+
+class PromotionQualificationResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    eligible: bool
+    reason_codes: list[str]
+    warning_codes: list[str] = Field(default_factory=list)
+    compiled_strategy_version_id: UUID | None
+    source_suite_artifact_id: UUID | None
+    comparison_context_id: UUID | None
+    qualification_bundle_artifact_id: UUID | None
+    result_artifact_ids: list[UUID] = Field(default_factory=list)
+    cell_artifact_ids: list[UUID] = Field(default_factory=list)
+    predictive_result_artifact_ids: list[UUID] = Field(default_factory=list)
+    predictive_cell_artifact_ids: list[UUID] = Field(default_factory=list)
+    selection_context: dict[str, Any] = Field(default_factory=dict)
+
+
+class ProductPromotionRequest(ApiModel):
+    idempotency_key: UUID
+    name: str = Field(min_length=1, max_length=240)
+    researcher_id: str = Field(min_length=1, max_length=120)
+    selection_reason: str = Field(min_length=1)
+    note: str | None = None
+
+
+class ProductPromotionResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    product_enrollment_id: UUID
+    product_version_artifact_id: UUID
+    qualification_bundle_artifact_id: UUID
+    lifecycle: str
+    revision: int
+
+
+class ProductLifecycleChangeRequest(ApiModel):
+    idempotency_key: UUID
+    target: Literal["active", "suspended", "retired", "invalidated"]
+    expected_revision: int = Field(ge=1)
+    reason_code: str = Field(min_length=1, max_length=100)
+    reason: str = Field(min_length=1)
+    researcher_id: str = Field(min_length=1, max_length=120)
+    requested_at: datetime
+    effective_at: datetime
+
+
+class ProductLifecycleChangeResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    enrollment_id: UUID
+    from_lifecycle: str
+    to_lifecycle: str
+    revision: int
+    event_sequence: int
+    effective_at: datetime
+    applied: bool
+
+
+class ProductAlertChangeRequest(ApiModel):
+    idempotency_key: UUID
+    target: Literal["acknowledged", "resolved", "superseded"]
+    researcher_id: str = Field(min_length=1, max_length=120)
+    note: str | None = None
+    occurred_at: datetime
+
+
+class ProductAlertChangeResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    alert_id: UUID
+    from_status: str
+    to_status: str
+    sequence_number: int
+    occurred_at: datetime
+
+
+class ProductReviewRequest(ApiModel):
+    idempotency_key: UUID
+    decision: Literal["continue", "suspend", "retire", "replace"]
+    researcher_id: str = Field(min_length=1, max_length=120)
+    reason: str = Field(min_length=1)
+    evidence: dict[str, Any] = Field(default_factory=dict)
+    reviewed_at: datetime
+
+
+class ProductReviewResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    product_review_id: UUID
+    product_enrollment_id: UUID
+    decision: str
+    reviewed_at: datetime
+
+
+class ProductCandidateItem(ApiModel):
+    enrollment_id: UUID
+    product_artifact_id: UUID
+    qualification_artifact_id: UUID
+    product_key: str
+    version_number: int
+    name: str
+    model_preset_key: str
+    strategy_family_key: str
+    strategy_preset_key: str
+    asset_context_key: str
+    lifecycle: str
+    health: str
+    revision: int
+    activated_at: datetime
+    monitoring_start_at: datetime | None
+    updated_at: datetime
+    latest_as_of_session: date | None
+    primary_nav: float | None
+    stress_nav: float | None
+    latest_metrics: dict[str, Any]
+    open_alert_count: int
+    warning_codes: list[str] = Field(default_factory=list)
+
+
+class ProductCatalogResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    items: list[ProductCandidateItem]
+
+
+class ProductEventItem(ApiModel):
+    sequence_number: int
+    from_lifecycle: str | None
+    to_lifecycle: str
+    reason_code: str
+    reason: str
+    researcher_id: str
+    requested_at: datetime
+    effective_at: datetime
+
+
+class ProductAlertItem(ApiModel):
+    alert_id: UUID
+    alert_key: str
+    alert_type: str
+    severity: str
+    opened_at: datetime
+    status: str
+    evidence: dict[str, Any]
+
+
+class ProductSnapshotItem(ApiModel):
+    artifact_id: UUID
+    as_of_session: date
+    known_at: datetime
+    health: str
+    session_count: int
+    decision_count: int
+    primary_nav: float
+    stress_nav: float
+    metrics: dict[str, Any]
+    health_components: dict[str, Any]
+
+
+class ProductOosWindow(ApiModel):
+    frozen_anchor_session: date | None
+    activation_session: date
+    latest_published_data_session: date | None
+    latest_published_data_known_at: datetime | None
+    latest_snapshot_session: date | None
+    post_freeze_session_count: int
+    prospective_oos_session_count: int
+    status: Literal[
+        "awaiting_frozen_anchor",
+        "awaiting_post_freeze_data",
+        "awaiting_first_snapshot",
+        "observing",
+    ]
+    reason_codes: list[str] = Field(default_factory=list)
+
+
+class ProductReviewItem(ApiModel):
+    product_review_id: UUID
+    reviewed_at: datetime
+    researcher_id: str
+    decision: str
+    reason: str
+    evidence: dict[str, Any]
+
+
+class ProductResearchAssetItem(ApiModel):
+    security_id: UUID
+    asset_key: str
+    symbol: str
+    name: str
+    category_key: str | None = None
+
+
+class ProductResearchChain(ApiModel):
+    source_suite_artifact_id: UUID
+    selected_result_artifact_id: UUID
+    selected_branch_key: str
+    frequency: str
+    assets: list[ProductResearchAssetItem]
+    factor_variant_keys: list[str]
+    signal_version_keys: list[str]
+    model_preset_keys: list[str]
+    model_target_keys: list[str]
+    strategy_preset_keys: list[str]
+    qualification_result_artifact_ids: list[UUID]
+
+
+class ProductBacktestMetricItem(ApiModel):
+    series_role: str
+    metric_scope: str
+    metric_key: str
+    name: str
+    unit: str
+    value: float | None
+    value_status: str
+    reason_code: str | None
+    observation_count: int
+
+
+class ProductBacktestNavPoint(ApiModel):
+    nav_date: date
+    strategy_wealth: float
+    benchmark_wealth: float
+    excess_wealth: float
+    drawdown: float
+
+
+class ProductQualificationBacktest(ApiModel):
+    result_artifact_id: UUID
+    specification: dict[str, Any]
+    resolved_start: date | None
+    resolved_end: date | None
+    observation_count: int
+    run_status: str
+    metrics: list[ProductBacktestMetricItem]
+    nav_series: list[ProductBacktestNavPoint]
+    quality_checks: list[dict[str, Any]]
+
+
+class ProductRecommendationPosition(ApiModel):
+    asset_key: str
+    symbol: str
+    name: str
+    allocation_role: Literal["risk", "defense", "reserve"]
+    model_score: float | None
+    rank: int | None
+    target_weight: float
+    retained_by_buffer: bool
+
+
+class ProductRecommendationResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    available: bool
+    status: Literal["accepted", "failed"]
+    reason_codes: list[str]
+    frequency: str
+    data_bundle_artifact_id: UUID
+    data_as_of_session: date
+    data_known_at: datetime
+    decision_session: date
+    recommended_execution_session: date | None
+    next_expected_signal_session: date | None
+    eligible_count: int
+    rankable_count: int
+    coverage_ratio: float
+    positions: list[ProductRecommendationPosition]
+    not_oos: bool
+    refresh_policy: str
+
+
+class ProductDetailResponse(ApiModel):
+    context: ApiContext
+    quality: QualitySummary
+    candidate: ProductCandidateItem
+    qualification_gate_results: dict[str, Any]
+    selection_reason: str
+    note: str | None
+    events: list[ProductEventItem]
+    alerts: list[ProductAlertItem]
+    snapshots: list[ProductSnapshotItem]
+    oos_window: ProductOosWindow
+    reviews: list[ProductReviewItem]
+    research_chain: ProductResearchChain | None = None
+    qualification_backtest: ProductQualificationBacktest | None = None
 
 
 class DataRequirementItem(ApiModel):
@@ -634,6 +1321,7 @@ class StrategyTargetPathResponse(ApiModel):
 
 class ExperimentSuiteItem(ApiModel):
     artifact_id: UUID
+    research_suite_id: UUID | None = None
     suite_key: str
     version_number: int
     name: str
@@ -645,6 +1333,7 @@ class ExperimentSpecificationItem(ApiModel):
     artifact_id: UUID
     result_artifact_id: UUID | None
     suite_artifact_id: UUID
+    suite_mode: Literal["formal", "exploratory", "legacy"] = "legacy"
     cell_key: str
     ordinal: int
     product_key: str
@@ -656,8 +1345,8 @@ class ExperimentSpecificationItem(ApiModel):
     cost_bps_per_side: float
     template_key: str
     initialization_policy: str
-    as_of_date: date
-    simulation_end: date
+    as_of_date: date | None
+    simulation_end: date | None
     status: Literal["accepted", "failed", "running", "pending"]
     availability_status: str | None
     quality_status: str | None
@@ -671,11 +1360,19 @@ class ExperimentOverviewResponse(ApiModel):
     quality: QualitySummary
     suites: list[ExperimentSuiteItem]
     specifications: list[ExperimentSpecificationItem]
+    total_specification_count: int
+    filtered_specification_count: int
+    accepted_count: int
+    failed_count: int
+    running_count: int
+    pending_count: int
+    limit: int
+    offset: int
 
 
 class ExperimentMetricItem(ApiModel):
-    series_role: Literal["strategy", "benchmark", "relative"]
-    metric_scope: Literal["absolute", "relative"]
+    series_role: Literal["strategy", "benchmark", "relative", "predictive"]
+    metric_scope: Literal["absolute", "relative", "predictive"]
     metric_key: str
     name: str
     unit: str
@@ -708,14 +1405,22 @@ class ExperimentArtifactLinkItem(ApiModel):
     artifact_key: str
 
 
+class ExperimentNavPoint(ApiModel):
+    nav_date: date
+    strategy_wealth: float
+    benchmark_wealth: float
+    excess_wealth: float
+    drawdown: float
+
+
 class ExperimentResultResponse(ApiModel):
     context: ApiContext
     quality: QualitySummary
     result_artifact_id: UUID
     specification: ExperimentSpecificationItem
     interval_result_artifact_id: UUID
-    requested_start: date
-    requested_end: date
+    requested_start: date | None
+    requested_end: date | None
     resolved_start: date | None
     resolved_end: date | None
     normalization_nav_date: date | None
@@ -729,6 +1434,10 @@ class ExperimentResultResponse(ApiModel):
     events: list[ExperimentRunEventItem]
     quality_checks: list[ExperimentQualityCheckItem]
     artifacts: list[ExperimentArtifactLinkItem]
+    nav_series: list[ExperimentNavPoint]
+    promotion_eligible: bool
+    promotion_reason_codes: list[str]
+    qualification_bundle_artifact_id: UUID | None
 
 
 class ComparisonCohortItem(ApiModel):
@@ -812,6 +1521,7 @@ class ProductCompareResponse(ApiModel):
 class DecisionComponentTraceItem(ApiModel):
     dimension_key: str
     dimension_weight: float
+    dimension_transform: str
     signal_key: str
     signal_version_artifact_id: UUID
     signal_dataset_artifact_id: UUID
@@ -825,7 +1535,7 @@ class DecisionComponentTraceItem(ApiModel):
     factor_key: str
     factor_variant_key: str
     factor_dataset_artifact_id: UUID
-    factor_value: float
+    factor_value: float | None
     data_bundle_artifact_id: UUID
 
 

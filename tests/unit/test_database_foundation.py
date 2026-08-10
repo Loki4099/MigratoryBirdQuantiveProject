@@ -9,8 +9,8 @@ LOCAL_TEST_URL = (
 
 
 class DatabaseFoundationUnitTests(unittest.TestCase):
-    def test_schema_boundary_contains_exactly_nine_domains(self) -> None:
-        self.assertEqual(len(SCHEMA_NAMES), 9)
+    def test_schema_boundary_contains_exactly_eleven_domains(self) -> None:
+        self.assertEqual(len(SCHEMA_NAMES), 11)
         self.assertEqual(
             set(SCHEMA_NAMES),
             {
@@ -21,15 +21,15 @@ class DatabaseFoundationUnitTests(unittest.TestCase):
                 "model",
                 "strategy",
                 "experiment",
+                "workspace",
+                "product",
                 "lineage",
                 "ops",
             },
         )
 
     def test_clean_v02_migration_has_one_head(self) -> None:
-        self.assertEqual(
-            head_revisions(LOCAL_TEST_URL), ("20260805_28_v02_target_engine",)
-        )
+        self.assertEqual(head_revisions(LOCAL_TEST_URL), ("20260809_47_signal_export_job",))
 
     def test_reset_requires_exact_local_project_database_confirmation(self) -> None:
         self.assertEqual(

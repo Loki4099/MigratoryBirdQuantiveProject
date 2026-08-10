@@ -24,7 +24,7 @@ def test_factor_engine_spec_fingerprints_code_configuration_and_lock(tmp_path: P
     assert len(first.dependency_lock_hash) == 64
     assert len(first.configuration_hash) == 64
     assert set(first.numerical_environment["packages"]) == {"numpy", "pandas", "scipy"}
-    assert len(IMPLEMENTATIONS) == 12
+    assert len(IMPLEMENTATIONS) == 21
     diagnostics = build_factor_diagnostic_engine_spec("a" * 40, lock, "revision-1")
     assert diagnostics.configuration_hash != first.configuration_hash
 

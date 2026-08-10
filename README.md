@@ -1,12 +1,14 @@
-# Style Rotation Research Platform v0.2
+# MigratoryBirdQuantiveProject v0.21
 
-Versioned research platform for explainable US style rotation across IWF, IWD, IWO, and IWN, with SPY as the product benchmark and a DGS3MO-based synthetic reserve sleeve.
+Migratory Bird's versioned targeted-research platform for cross-sectional ETF rotation and US large-cap selection. The original IWF/IWD/IWO/IWN research remains the default sample and regression fixture, with SPY as benchmark and a DGS3MO-based defensive sleeve.
 
 ## Status
 
-The M0–M9 v0.2.0 scope is implemented and the formal display database is fully populated. Its single published release suite contains 630 Strategy Targets and 9,450 accepted/eligible cells: 35 product models, three Strategy variants, K=1/2/3, weekly/monthly schedules, 2/5/10 bps costs, and full/trailing 10/5/3/1-year carry-in intervals. The results are grouped into 90 strict comparison cohorts with 105 comparable products each. Further data-governance and UI refinement belongs to v0.2.1; additional factor deployment belongs to v0.2.2.
+The v0.21 component catalogs, Workspace compiler, multi-ETF/large-cap Top-K contracts, fixed six-cell experiment matrix, persistent work queue, Product qualification/monitoring contracts, database migrations, and redesigned frontend are implemented. The existing v0.2 release database remains readable and contains 9,450 accepted historical cells.
 
-The authoritative plan is [v0.2/正式开发方案.md](v0.2/正式开发方案.md). Detailed decisions and database rationale are stored in [v0.2/设计决策记录.md](v0.2/设计决策记录.md) and [v0.2/数据库设计.md](v0.2/数据库设计.md).
+Three external P0 release gates remain deliberately open: point-in-time stock-universe history, terminal/delisting events, and calibrated market-impact coefficients. Until real evidence closes them, v0.21 results may only be promoted as warning-bearing Research Candidates for sample-out observation; they are not Formal, PIT-clean, 100M-deployable Products and the application does not substitute synthetic facts.
+
+The authoritative frozen plan is [v0.21/候鸟v0.21开发方案_重整审核稿.md](v0.21/候鸟v0.21开发方案_重整审核稿.md), and current implementation evidence is tracked in [v0.21/开发实施记录.md](v0.21/开发实施记录.md). The v0.2 plan and database decisions remain historical context for the preserved release data.
 
 v0.1 is not migrated or reproduced by v0.2. Its implementation remains available through Git history and its documentation remains under `v0.1/`.
 
@@ -37,14 +39,22 @@ For isolated migration tests, use `docker compose up -d postgres-test`. It expos
 
 ## Unified CLI
 
-v0.2 exposes one command:
+v0.21 exposes one command:
 
 ```powershell
 style-rotation --version
 style-rotation modules
 style-rotation db status
 style-rotation db upgrade
+style-rotation experiment run-v021-worker --worker-id local-experiment --max-items 100
+style-rotation experiment run-v021-monitoring-worker --worker-id local-monitor --max-items 100
+style-rotation experiment run-signal-export-worker --worker-id local-export --max-items 100
 ```
+
+The v0.21 workers execute queued cells and post-activation monitoring from exact published
+Artifact identities. They enforce system-owned output quality checks and bounded retry rules;
+they do not bypass the versioned release gates. The current migration head is
+`20260809_47_signal_export_job`.
 
 Destructive local rebuilds require an exact database-name confirmation:
 
@@ -52,7 +62,7 @@ Destructive local rebuilds require an exact database-name confirmation:
 style-rotation db reset --confirm-database style_rotation_test
 ```
 
-The formal CLI domains are `db`, `bootstrap`, `data`, `factor`, `signal`, `model`, `strategy`, `experiment`, `lineage`, `artifact`, `backup`, and `api`. They never silently invoke v0.1 calculations.
+The formal CLI domains are `db`, `bootstrap`, `data`, `factor`, `signal`, `model`, `strategy`, `experiment`, `workspace`, `product`, `lineage`, `artifact`, `backup`, and `api`. They never silently invoke v0.1 calculations.
 
 ## Machine-readable research catalog
 
@@ -69,6 +79,8 @@ Publish the catalogs idempotently and inspect their immutable lineage:
 ```powershell
 style-rotation bootstrap catalogs
 style-rotation bootstrap scope
+style-rotation bootstrap asset-registry
+style-rotation bootstrap workspace-components
 style-rotation bootstrap data-contracts
 style-rotation data calendar --start 2006-08-07 --end 2026-08-03
 style-rotation data fetch --start 2006-08-07 --end 2026-08-03
@@ -134,11 +146,16 @@ pnpm run typecheck
 pnpm run test
 pnpm run build
 cd ..
-style-rotation api
+.\scripts\start-v021-api.ps1
 ```
 
-The application is then available at `http://127.0.0.1:8000/`, with OpenAPI docs at `/api/v2/docs`. The unauthenticated server refuses non-loopback bind addresses.
-The Data, Factors, Signals, Models, Strategies, Experiments, Compare, and Decision Explorer views read published v0.2 endpoints. The browser does not recompute financial results. Use `style-rotation api`; `style_rotation.web.app` is retained only as legacy v0.1 code and is not the v0.2 application entry point.
+The launcher creates hidden API, Experiment Worker, Monitoring Worker, and Signal Export Worker
+processes that remain alive after the launching terminal closes. It is idempotent, records the
+exact wrapper process identities in `.codex_work/v021-services/services.json`, waits for the API
+health endpoint, and writes separate stdout/stderr logs in the same runtime directory. The
+application is then available at `http://127.0.0.1:8000/`, with OpenAPI docs at `/api/v2/docs`.
+The unauthenticated server refuses non-loopback bind addresses.
+Workspace replaces Research desk, Products replaces Compare, and Data is removed from primary navigation. Assets, Factors, Signals, Models, Strategies, Experiments, Products, Artifacts, Runs, and API views read published backend objects. The browser does not recompute financial results. Use `style-rotation api`; `style_rotation.web.app` remains only as legacy v0.1 code.
 
 ## Development rules
 

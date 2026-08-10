@@ -24,7 +24,12 @@ class FactorDefinitionSeed(StrictModel):
     family: str = Field(min_length=1, max_length=80)
     definition_version: int = Field(default=1, ge=1)
     formula: str = Field(min_length=1)
-    inputs: list[Literal["close_adj", "close_raw", "volume_raw"]] = Field(min_length=1)
+    inputs: list[
+        Literal[
+            "open_raw", "high_raw", "low_raw", "close_raw", "volume_raw",
+            "open_adj", "high_adj", "low_adj", "close_adj",
+        ]
+    ] = Field(min_length=1)
     implementation_key: str = Field(min_length=1, max_length=160)
     output_unit: str = Field(default="dimensionless", min_length=1, max_length=80)
     time_semantics: str = Field(default="known_at_session_close", min_length=1, max_length=160)

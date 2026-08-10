@@ -9,6 +9,7 @@ from typing import Any
 from sqlalchemy import Engine, text
 from sqlalchemy.engine import Connection, RowMapping
 
+from style_rotation.core.canonical import sha256_hexdigest
 from style_rotation.data.canonical import (
     CanonicalQualityError,
     MarketCanonicalResult,
@@ -57,7 +58,14 @@ class CanonicalDataPublicationService:
             "calendar_artifact_id": str(calendar["artifact_id"]),
             "cleaning_artifact_id": str(cleaning["artifact_id"]),
         }
-        content = {**semantic, "result": asdict(result)}
+        content = {
+            **semantic,
+            "result_hash": sha256_hexdigest(asdict(result)),
+            "bar_count": len(result.bars),
+            "action_count": len(result.actions),
+            "coverage": [asdict(item) for item in result.coverage],
+            "issue_count": len(result.issues),
+        }
         return self._artifacts.publish(
             artifact_type="dataset_publication",
             artifact_key="us_etf_daily_market_canonical",
@@ -283,7 +291,16 @@ def _write_inputs(
 
 
 def _asset_ids(connection: Connection) -> dict[str, uuid.UUID]:
-    rows = connection.execute(text("SELECT upper(asset_key), asset_id FROM catalog.asset"))
+    rows = connection.execute(
+        text(
+            "SELECT upper(asset.asset_key), asset.asset_id FROM catalog.asset asset "
+            "UNION SELECT upper(symbol.symbol), listing.asset_id "
+            "FROM catalog.listing_symbol symbol "
+            "JOIN catalog.asset_listing listing ON "
+            "listing.asset_listing_id = symbol.asset_listing_id "
+            "WHERE symbol.symbol_type = 'ticker'"
+        )
+    )
     return {str(key): asset_id for key, asset_id in rows}
 
 
@@ -316,8 +333,7 @@ def _write_market(
     )
     _write_inputs(connection, publication_id, snapshots)
     assets = _asset_ids(connection)
-    connection.execute(
-        text(
+    insert_bars = text(
             """
             INSERT INTO data.daily_bar (
                 dataset_publication_id, asset_id, session_date, open_raw, high_raw, low_raw,
@@ -329,8 +345,9 @@ def _write_market(
                 :factor, :volume
             )
             """
-        ),
-        [
+        )
+    for offset in range(0, len(result.bars), 10_000):
+        bar_values = [
             {
                 "publication_id": publication_id,
                 "asset_id": assets[item.symbol],
@@ -347,9 +364,9 @@ def _write_market(
                 "factor": item.adjustment_factor,
                 "volume": item.volume_raw,
             }
-            for item in result.bars
-        ],
-    )
+            for item in result.bars[offset : offset + 10_000]
+        ]
+        connection.execute(insert_bars, bar_values)
     if result.actions:
         connection.execute(
             text(

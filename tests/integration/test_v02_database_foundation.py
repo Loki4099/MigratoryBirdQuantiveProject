@@ -58,12 +58,12 @@ def _insert_published(
 
 @pytest.mark.integration
 @pytest.mark.skipif(not DATABASE_URL, reason="STYLE_ROTATION_TEST_DATABASE_URL is not set")
-def test_empty_database_migrates_to_one_clean_v02_head() -> None:
+def test_empty_database_migrates_to_one_clean_v021_head() -> None:
     psycopg_url = _reset()
     assert DATABASE_URL is not None
     status = database_status(DATABASE_URL)
-    assert status.current_revision == "20260805_28_v02_target_engine"
-    assert status.head_revisions == ("20260805_28_v02_target_engine",)
+    assert status.current_revision == "20260809_47_signal_export_job"
+    assert status.head_revisions == ("20260809_47_signal_export_job",)
     assert status.present_schemas == SCHEMA_NAMES
     assert status.missing_schemas == ()
 
@@ -266,5 +266,5 @@ def test_migration_can_downgrade_to_base_and_upgrade_again() -> None:
 
     upgrade_database(DATABASE_URL)
     upgraded = database_status(DATABASE_URL)
-    assert upgraded.current_revision == "20260805_28_v02_target_engine"
+    assert upgraded.current_revision == "20260809_47_signal_export_job"
     assert upgraded.missing_schemas == ()
