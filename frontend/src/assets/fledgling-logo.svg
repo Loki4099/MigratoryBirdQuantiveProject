@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img">
+  <title>Migratory Bird Lab fledgling, facing left</title>
+  <path fill="#d99a3b" d="M18 22 5 28l14 4c2-3 2-7-1-10Z"/>
+  <path fill="#f4edda" d="M16 28c0-11 8-19 19-19 8 0 14 4 17 11 7 4 10 11 8 19-2 11-12 18-25 17-14-1-22-10-19-28Z"/>
+  <path fill="#d7cba5" d="M47 18c9 6 12 16 8 25-4 8-12 13-22 13 12 3 25-3 28-15 3-11-3-21-14-23Z"/>
+  <circle cx="24" cy="22" r="3" fill="#173f35"/>
+  <path fill="#e6dcc0" stroke="#173f35" stroke-linejoin="round" stroke-width="2.4" d="M32 34c7-5 15-4 20 1-5 8-12 12-21 11 4-4 5-8 1-12Z"/>
+  <path fill="none" stroke="#173f35" stroke-linecap="round" stroke-width="2.4" d="M21 37c2 4 5 6 9 6"/>
+  <path fill="none" stroke="#d99a3b" stroke-linecap="round" stroke-width="2.4" d="M31 55v4m10-4v4"/>
+</svg>

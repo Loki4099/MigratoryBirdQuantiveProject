@@ -1,0 +1,94 @@
+{
+  "catalog_type": "research_scope",
+  "catalog_version": "0.2.0",
+  "as_of_date": "2026-08-02",
+  "calendar_definitions": [
+    {
+      "key": "XNYS",
+      "name": "New York Stock Exchange trading calendar",
+      "timezone": "America/New_York",
+      "venue_mic": "XNYS"
+    }
+  ],
+  "classification_schemes": [
+    {
+      "key": "asset_class",
+      "name": "Asset class",
+      "values": [{"key": "equity_etf", "label_key": "classification.asset_class.equity_etf"}]
+    },
+    {
+      "key": "style_exposure",
+      "name": "Style exposure",
+      "values": [
+        {"key": "large_growth", "label_key": "classification.style.large_growth"},
+        {"key": "large_value", "label_key": "classification.style.large_value"},
+        {"key": "small_growth", "label_key": "classification.style.small_growth"},
+        {"key": "small_value", "label_key": "classification.style.small_value"},
+        {"key": "broad_market", "label_key": "classification.style.broad_market"}
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "key": "iwf",
+      "name": "iShares Russell 1000 Growth ETF",
+      "asset_type": "etf",
+      "listing": {"key": "iwf_arcx", "venue_mic": "ARCX", "currency": "USD", "timezone": "America/New_York", "calendar": "XNYS", "symbol": "IWF"},
+      "classifications": {"asset_class": "equity_etf", "style_exposure": "large_growth"}
+    },
+    {
+      "key": "iwd",
+      "name": "iShares Russell 1000 Value ETF",
+      "asset_type": "etf",
+      "listing": {"key": "iwd_arcx", "venue_mic": "ARCX", "currency": "USD", "timezone": "America/New_York", "calendar": "XNYS", "symbol": "IWD"},
+      "classifications": {"asset_class": "equity_etf", "style_exposure": "large_value"}
+    },
+    {
+      "key": "iwo",
+      "name": "iShares Russell 2000 Growth ETF",
+      "asset_type": "etf",
+      "listing": {"key": "iwo_arcx", "venue_mic": "ARCX", "currency": "USD", "timezone": "America/New_York", "calendar": "XNYS", "symbol": "IWO"},
+      "classifications": {"asset_class": "equity_etf", "style_exposure": "small_growth"}
+    },
+    {
+      "key": "iwn",
+      "name": "iShares Russell 2000 Value ETF",
+      "asset_type": "etf",
+      "listing": {"key": "iwn_arcx", "venue_mic": "ARCX", "currency": "USD", "timezone": "America/New_York", "calendar": "XNYS", "symbol": "IWN"},
+      "classifications": {"asset_class": "equity_etf", "style_exposure": "small_value"}
+    },
+    {
+      "key": "spy",
+      "name": "State Street SPDR S&P 500 ETF Trust",
+      "asset_type": "etf",
+      "listing": {"key": "spy_arcx", "venue_mic": "ARCX", "currency": "USD", "timezone": "America/New_York", "calendar": "XNYS", "symbol": "SPY"},
+      "classifications": {"asset_class": "equity_etf", "style_exposure": "broad_market"}
+    }
+  ],
+  "universe": {
+    "key": "us_style_rotation_core",
+    "name": "US Style Rotation Core",
+    "description": "Four style candidates and the SPY product benchmark.",
+    "version_number": 1,
+    "members": [
+      {"asset": "iwf", "role": "candidate", "ordinal": 0},
+      {"asset": "iwd", "role": "candidate", "ordinal": 1},
+      {"asset": "iwo", "role": "candidate", "ordinal": 2},
+      {"asset": "iwn", "role": "candidate", "ordinal": 3},
+      {"asset": "spy", "role": "benchmark", "ordinal": 4}
+    ]
+  },
+  "data_requirement_set": {
+    "key": "us_style_daily_research",
+    "name": "US Style Daily Research Requirements",
+    "description": "Minimum daily inputs for the v0.2 style-rotation research chain.",
+    "version_number": 1,
+    "requirements": [
+      {"key": "candidate_daily_bar", "subject": "universe_candidate", "series_key": "daily_bar", "fields": ["open_raw", "high_raw", "low_raw", "close_raw", "adj_close", "volume_raw"], "interval_unit": "day", "interval_count": 1, "calendar_type": "exchange", "session_type": "regular", "timestamp_semantics": "session_date"},
+      {"key": "candidate_corporate_action", "subject": "universe_candidate", "series_key": "corporate_action", "fields": ["cash_dividend", "split_ratio"], "interval_unit": "event", "interval_count": 1, "calendar_type": "exchange", "session_type": "regular", "timestamp_semantics": "effective_date"},
+      {"key": "benchmark_daily_bar", "subject": "universe_benchmark", "series_key": "daily_bar", "fields": ["open_raw", "high_raw", "low_raw", "close_raw", "adj_close", "volume_raw"], "interval_unit": "day", "interval_count": 1, "calendar_type": "exchange", "session_type": "regular", "timestamp_semantics": "session_date"},
+      {"key": "reference_rate", "subject": "reference_series", "series_key": "DGS3MO", "fields": ["observation_date", "available_date", "annual_rate_percent"], "interval_unit": "day", "interval_count": 1, "calendar_type": "calendar", "session_type": "not_applicable", "timestamp_semantics": "observation_and_availability"},
+      {"key": "trading_calendar", "subject": "calendar", "series_key": "XNYS", "fields": ["session_date", "open_at_utc", "close_at_utc", "is_early_close"], "interval_unit": "session", "interval_count": 1, "calendar_type": "exchange", "session_type": "regular", "timestamp_semantics": "utc_open_close"}
+    ]
+  }
+}

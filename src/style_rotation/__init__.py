@@ -1,3 +1,3 @@
-"""Deterministic US style ETF factor research engine."""
+"""Versioned US style rotation research platform."""
 
-__version__ = "0.1.0"
+__version__ = "0.21.0"

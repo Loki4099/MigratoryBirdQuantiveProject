@@ -47,16 +47,11 @@ class MetricComputationService:
     ) -> MetricBatchOutcome:
         self._repository.publish_contracts(PHASE6_CONTRACTS)
         source = self._repository.select_source_run_set(source_engine_version_id)
-        signal_content_hash, clean_content_hash = self._repository.diagnostic_source_hashes(
-            source
-        )
-        diagnostic_keys = {
-            (run.factor_variant_id, run.rebalance_frequency) for run in source.runs
-        }
+        signal_content_hash, clean_content_hash = self._repository.diagnostic_source_hashes(source)
+        diagnostic_keys = {(run.factor_variant_id, run.rebalance_frequency) for run in source.runs}
         if len(diagnostic_keys) != 48:
             raise ValueError(
-                f"Formal metric batch requires 48 diagnostic identities, got "
-                f"{len(diagnostic_keys)}"
+                f"Formal metric batch requires 48 diagnostic identities, got {len(diagnostic_keys)}"
             )
         diagnostic_fingerprints = {
             key: sha256_hexdigest(
@@ -94,8 +89,7 @@ class MetricComputationService:
             periods = calculate_factor_diagnostics(events, prices)
             summaries = summarize_factor_diagnostics(periods)
             summary_keys = {
-                (summary.factor_variant_id, summary.rebalance_frequency)
-                for summary in summaries
+                (summary.factor_variant_id, summary.rebalance_frequency) for summary in summaries
             }
             if summary_keys != diagnostic_keys:
                 raise ValueError(
@@ -126,9 +120,7 @@ class MetricComputationService:
         publications_completed = 0
         publications_reused = len(published_run_ids)
         pending_runs = tuple(
-            descriptor
-            for descriptor in source.runs
-            if descriptor.run_id not in published_run_ids
+            descriptor for descriptor in source.runs if descriptor.run_id not in published_run_ids
         )
         reserve_factors = self._repository.reserve_factors(source) if pending_runs else {}
         for descriptor in pending_runs:

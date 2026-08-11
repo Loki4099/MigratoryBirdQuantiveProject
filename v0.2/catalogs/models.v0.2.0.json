@@ -1,0 +1,102 @@
+{
+  "catalog_type": "model",
+  "catalog_version": "0.2.0",
+  "methods": [
+    {"key": "weighted_mean", "input_transforms": ["identity", "sign", "threshold_state"]},
+    {"key": "majority_vote", "input_transforms": ["sign", "threshold_state"]},
+    {"key": "weighted_vote", "input_transforms": ["sign", "threshold_state"]}
+  ],
+  "representative_dimensions": [
+    {
+      "key": "momentum_trend",
+      "method": "weighted_mean",
+      "components": [
+        "return_continuation__total_return__w120",
+        "lagged_return_continuation__lagged_return__l252_s20",
+        "ma_trend_strength__moving_average_ratio__s50_l200",
+        "ppo_trend_acceleration__ppo_histogram__f12_s26_g9"
+      ],
+      "weights": [0.25, 0.25, 0.25, 0.25]
+    },
+    {
+      "key": "reversal",
+      "method": "weighted_mean",
+      "components": [
+        "short_return_reversal__total_return__w5",
+        "rsi_mean_reversion__rsi__w14",
+        "deep_drawdown_reversal__maximum_drawdown__w60"
+      ],
+      "weights": [0.3333333333333333, 0.3333333333333333, 0.3333333333333334]
+    },
+    {
+      "key": "tail_distribution",
+      "method": "weighted_mean",
+      "components": [
+        "low_skew_premium__return_skewness__w60",
+        "low_kurtosis_quality__return_excess_kurtosis__w120"
+      ],
+      "weights": [0.5, 0.5]
+    },
+    {
+      "key": "volatility_risk",
+      "method": "weighted_mean",
+      "components": [
+        "low_volatility__realized_volatility__w60",
+        "low_downside_risk__downside_deviation__w60",
+        "drawdown_resilience__maximum_drawdown__w120"
+      ],
+      "weights": [0.3333333333333333, 0.3333333333333333, 0.3333333333333334]
+    },
+    {
+      "key": "volume_liquidity",
+      "method": "weighted_mean",
+      "components": [
+        "dollar_volume_attention__relative_dollar_volume__w20",
+        "low_illiquidity_quality__amihud_illiquidity__w20"
+      ],
+      "weights": [0.5, 0.5]
+    }
+  ],
+  "generation_rules": [
+    {
+      "key": "single_signal",
+      "description": "One immutable model specification for every generated signal.",
+      "expected_count": 51
+    },
+    {
+      "key": "dimension_subset_equal_weight",
+      "description": "One equal-weight specification for every non-empty subset of the five representative dimensions; singleton subsets are the five dimension models.",
+      "expected_count": 31
+    }
+  ],
+  "fixed_weight_specifications": [
+    {
+      "key": "trend_tilt_v1",
+      "method": "weighted_mean",
+      "dimension_weights": {"momentum_trend": 0.4, "reversal": 0.1, "tail_distribution": 0.1, "volatility_risk": 0.2, "volume_liquidity": 0.2}
+    },
+    {
+      "key": "defensive_tilt_v1",
+      "method": "weighted_mean",
+      "dimension_weights": {"momentum_trend": 0.15, "reversal": 0.1, "tail_distribution": 0.2, "volatility_risk": 0.4, "volume_liquidity": 0.15}
+    }
+  ],
+  "vote_specifications": [
+    {
+      "key": "five_dimension_majority_vote_v1",
+      "method": "majority_vote",
+      "dimension_weights": {"momentum_trend": 1, "reversal": 1, "tail_distribution": 1, "volatility_risk": 1, "volume_liquidity": 1},
+      "tie_output": "neutral"
+    },
+    {
+      "key": "five_dimension_weighted_vote_v1",
+      "method": "weighted_vote",
+      "dimension_weights": {"momentum_trend": 0.3, "reversal": 0.15, "tail_distribution": 0.15, "volatility_risk": 0.25, "volume_liquidity": 0.15},
+      "tie_output": "neutral"
+    }
+  ],
+  "expected_counts": {
+    "dimension_subset_patterns": 31,
+    "concrete_model_specifications": 86
+  }
+}

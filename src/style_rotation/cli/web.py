@@ -14,7 +14,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_parser().parse_args()
-    uvicorn.run("style_rotation.web.app:app", host=args.host, port=args.port)
+    uvicorn.run("style_rotation.api.app:app", host=args.host, port=args.port)
 
 
 if __name__ == "__main__":

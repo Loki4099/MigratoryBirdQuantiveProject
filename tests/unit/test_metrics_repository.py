@@ -54,9 +54,9 @@ def _formal_runs() -> tuple[SourceRunDescriptor, ...]:
                             first_execution_date=execution_date,
                             official_end_date=date(2026, 7, 30),
                             configuration=dict(FORMAL_RUN_CONFIGURATION),
-                            run_fingerprint=uuid.uuid5(
-                                uuid.NAMESPACE_X500, identity
-                            ).hex.ljust(64, "0"),
+                            run_fingerprint=uuid.uuid5(uuid.NAMESPACE_X500, identity).hex.ljust(
+                                64, "0"
+                            ),
                         )
                     )
     return tuple(runs)

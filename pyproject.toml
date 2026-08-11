@@ -4,15 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "style-rotation-engine"
-version = "0.1.0"
-description = "Deterministic US style ETF factor research and backtesting platform"
+version = "0.21.0"
+description = "Targeted cross-sectional research and candidate monitoring platform"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
   "alembic>=1.16,<2",
+  "exchange-calendars>=4.11,<5",
   "fastapi>=0.116,<1",
   "httpx>=0.28,<1",
   "pandas>=3.0.3,<4",
+  "pyarrow>=23,<24",
   "psycopg[binary]>=3.2,<4",
   "pydantic>=2.11,<3",
   "pydantic-settings>=2.10,<3",
@@ -30,18 +32,13 @@ dev = [
 ]
 
 [project.scripts]
-style-rotation-data-update = "style_rotation.cli.data_update:main"
-style-rotation-factor-update = "style_rotation.cli.factor_update:main"
-style-rotation-signal-update = "style_rotation.cli.signal_update:main"
-style-rotation-backtest-update = "style_rotation.cli.backtest_update:main"
-style-rotation-metrics-update = "style_rotation.cli.metrics_update:main"
-style-rotation-pipeline-update = "style_rotation.cli.pipeline_update:main"
-style-rotation-web = "style_rotation.cli.web:main"
+style-rotation = "style_rotation.cli.main:run"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
+"style_rotation" = ["py.typed"]
 "style_rotation.web" = ["static/*"]
 
 [tool.pytest.ini_options]
@@ -65,5 +62,5 @@ strict = true
 packages = ["style_rotation"]
 
 [[tool.mypy.overrides]]
-module = ["pandas", "yfinance"]
+module = ["exchange_calendars", "pandas", "yfinance"]
 ignore_missing_imports = true

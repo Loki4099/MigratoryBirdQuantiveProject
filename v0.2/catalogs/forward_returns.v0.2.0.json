@@ -1,0 +1,34 @@
+{
+  "catalog_type": "forward_return",
+  "catalog_version": "0.2.0",
+  "definitions": [
+    {
+      "key": "weekly_next_open_to_next_open",
+      "version_number": 1,
+      "frequency": "weekly",
+      "decision_rule": "last_common_session_of_iso_week",
+      "decision_time": "session_close",
+      "execution_policy": "next_common_session_adjusted_open_v1",
+      "start_price": "open_adj",
+      "end_price": "next_schedule_execution_open_adj",
+      "execution_lag_sessions": 1,
+      "overlap_policy": "non_overlapping_schedule_intervals",
+      "calendar_key": "xnys",
+      "included_member_roles": ["candidate", "benchmark"]
+    },
+    {
+      "key": "monthly_next_open_to_next_open",
+      "version_number": 1,
+      "frequency": "monthly",
+      "decision_rule": "last_common_session_of_calendar_month",
+      "decision_time": "session_close",
+      "execution_policy": "next_common_session_adjusted_open_v1",
+      "start_price": "open_adj",
+      "end_price": "next_schedule_execution_open_adj",
+      "execution_lag_sessions": 1,
+      "overlap_policy": "non_overlapping_schedule_intervals",
+      "calendar_key": "xnys",
+      "included_member_roles": ["candidate", "benchmark"]
+    }
+  ]
+}

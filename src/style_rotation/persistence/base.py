@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import MetaData, func
+from sqlalchemy import DateTime, MetaData, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 NAMING_CONVENTION = {
@@ -13,10 +13,26 @@ NAMING_CONVENTION = {
     "pk": "pk_%(table_name)s",
 }
 
+SCHEMA_NAMES = (
+    "catalog",
+    "data",
+    "factor",
+    "signal",
+    "model",
+    "strategy",
+    "experiment",
+    "workspace",
+    "product",
+    "lineage",
+    "ops",
+)
+
 
 class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
 
 class CreatedAtMixin:
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )

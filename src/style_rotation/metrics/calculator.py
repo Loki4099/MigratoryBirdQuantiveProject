@@ -55,9 +55,7 @@ def _sample_std(values: tuple[Decimal, ...]) -> Decimal | None:
     if len(values) < 2:
         return None
     mean_value = _mean(values)
-    variance = sum(((value - mean_value) ** 2 for value in values), ZERO) / Decimal(
-        len(values) - 1
-    )
+    variance = sum(((value - mean_value) ** 2 for value in values), ZERO) / Decimal(len(values) - 1)
     return variance.sqrt()
 
 
@@ -84,9 +82,7 @@ def _validate_series(points: tuple[SeriesPoint, ...]) -> None:
         raise MetricQualityError("Performance dates must be unique and sorted")
     if any(point.nav <= 0 for point in points):
         raise MetricQualityError("Performance NAV must stay positive")
-    if any(
-        not point.daily_return.is_finite() or not point.nav.is_finite() for point in points
-    ):
+    if any(not point.daily_return.is_finite() or not point.nav.is_finite() for point in points):
         raise MetricQualityError("Performance values must be finite")
 
 
@@ -135,9 +131,7 @@ def calculate_core_metrics(
     elif excess_std == 0:
         sharpe = _undefined("zero_excess_volatility", count)
     else:
-        sharpe = _defined(
-            _mean(excess_returns) / excess_std * ANNUALIZATION_DAYS.sqrt(), count
-        )
+        sharpe = _defined(_mean(excess_returns) / excess_std * ANNUALIZATION_DAYS.sqrt(), count)
 
     downside_deviation = (
         sum((min(value, ZERO) ** 2 for value in excess_returns), ZERO) / Decimal(count)
@@ -258,8 +252,7 @@ def calculate_run_metrics(run: RunMetricInput) -> tuple[PerformanceMetricResult,
             official_end_date=run.official_end_date,
         )
         results.extend(
-            _result(series_type, basis, key, value, _CORE_UNITS[key])
-            for key, value in core.items()
+            _result(series_type, basis, key, value, _CORE_UNITS[key]) for key, value in core.items()
         )
 
     for basis, strategy, benchmark in (
@@ -363,9 +356,10 @@ def _pearson(values_x: tuple[Decimal, ...], values_y: tuple[Decimal, ...]) -> De
     ).sqrt()
     if denominator == 0:
         return None
-    return sum(
-        (left * right for left, right in zip(centered_x, centered_y, strict=True)), ZERO
-    ) / denominator
+    return (
+        sum((left * right for left, right in zip(centered_x, centered_y, strict=True)), ZERO)
+        / denominator
+    )
 
 
 def calculate_factor_diagnostics(
@@ -459,9 +453,7 @@ def summarize_factor_diagnostics(
     summaries: list[FactorDiagnosticSummary] = []
     for group_periods in grouped.values():
         first = group_periods[0]
-        valid_ics = tuple(
-            period.rank_ic for period in group_periods if period.rank_ic is not None
-        )
+        valid_ics = tuple(period.rank_ic for period in group_periods if period.rank_ic is not None)
         if valid_ics:
             mean_rank_ic = _mean(valid_ics)
             positive_ic_ratio = Decimal(sum(value > 0 for value in valid_ics)) / Decimal(

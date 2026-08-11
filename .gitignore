@@ -9,9 +9,13 @@ __pycache__/
 htmlcov/
 dist/
 build/
+node_modules/
+*.tsbuildinfo
+.vite/
 *.egg-info/
 .idea/
 .vscode/
 /data/
 artifacts/
+.codex_work/
 *.log

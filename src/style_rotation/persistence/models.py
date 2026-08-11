@@ -797,9 +797,7 @@ class FactorDiagnosticSet(CreatedAtMixin, Base):
     undefined_ic_count: Mapped[int] = mapped_column(Integer, nullable=False)
     mean_rank_ic: Mapped[Decimal | None] = mapped_column(Numeric(30, 18))
     positive_ic_ratio: Mapped[Decimal | None] = mapped_column(Numeric(30, 18))
-    mean_top_bottom_return_spread: Mapped[Decimal] = mapped_column(
-        Numeric(30, 18), nullable=False
-    )
+    mean_top_bottom_return_spread: Mapped[Decimal] = mapped_column(Numeric(30, 18), nullable=False)
     ic_summary_reason_code: Mapped[str | None] = mapped_column(String(100))
     content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="publishing")
@@ -827,9 +825,7 @@ class FactorDiagnosticSet(CreatedAtMixin, Base):
             ["factor_version_id", "factor_variant_id"],
             ["factor_variants.factor_version_id", "factor_variants.factor_variant_id"],
         ),
-        UniqueConstraint(
-            "diagnostic_fingerprint", name="uq_factor_diagnostic_sets_fingerprint"
-        ),
+        UniqueConstraint("diagnostic_fingerprint", name="uq_factor_diagnostic_sets_fingerprint"),
         UniqueConstraint(
             "metric_version_id",
             "data_version_id",
@@ -864,9 +860,7 @@ class FactorDiagnosticSet(CreatedAtMixin, Base):
             "AND ic_summary_reason_code IS NULL)",
             name="valid_ic_summary_state",
         ),
-        CheckConstraint(
-            "status IN ('publishing','published')", name="valid_publication_status"
-        ),
+        CheckConstraint("status IN ('publishing','published')", name="valid_publication_status"),
         Index(
             "ix_factor_diagnostic_sets_lookup",
             "factor_variant_id",
@@ -917,9 +911,7 @@ class MetricPublication(CreatedAtMixin, Base):
     metric_version_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("metric_versions.metric_version_id"), nullable=False
     )
-    diagnostic_set_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False
-    )
+    diagnostic_set_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
     metric_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
     input_manifest_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
@@ -940,9 +932,7 @@ class MetricPublication(CreatedAtMixin, Base):
         UniqueConstraint("metric_fingerprint", name="uq_metric_publications_fingerprint"),
         UniqueConstraint("run_id", "metric_version_id", name="uq_metric_publication_run_version"),
         CheckConstraint("metric_count > 0", name="positive_metric_count"),
-        CheckConstraint(
-            "status IN ('publishing','published')", name="valid_publication_status"
-        ),
+        CheckConstraint("status IN ('publishing','published')", name="valid_publication_status"),
         Index("ix_metric_publications_run_status", "run_id", "status"),
     )
 

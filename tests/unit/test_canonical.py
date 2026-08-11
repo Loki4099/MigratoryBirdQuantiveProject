@@ -1,6 +1,6 @@
 import math
 import unittest
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta, timezone
 from decimal import Decimal
 
 from style_rotation.core.canonical import canonical_json, sha256_hexdigest
@@ -14,7 +14,21 @@ class CanonicalSerializationTests(unittest.TestCase):
 
     def test_timezone_aware_datetime_is_stable(self) -> None:
         value = datetime(2026, 7, 31, 12, 0, tzinfo=UTC)
-        self.assertIn("2026-07-31T12:00:00.000000+00:00", canonical_json(value))
+        equivalent = datetime(2026, 7, 31, 20, 0, tzinfo=timezone(timedelta(hours=8)))
+        self.assertIn("2026-07-31T12:00:00.000000Z", canonical_json(value))
+        self.assertEqual(sha256_hexdigest(value), sha256_hexdigest(equivalent))
+
+    def test_type_boundaries_do_not_collide(self) -> None:
+        values = [1, 1.0, Decimal("1.000"), "1"]
+        self.assertEqual(len({sha256_hexdigest(value) for value in values}), len(values))
+
+    def test_equivalent_decimals_and_unicode_have_the_same_hash(self) -> None:
+        self.assertEqual(sha256_hexdigest(Decimal("1.000")), sha256_hexdigest(Decimal("1")))
+        self.assertEqual(sha256_hexdigest("e\u0301"), sha256_hexdigest("é"))
+
+    def test_non_string_mapping_key_is_rejected(self) -> None:
+        with self.assertRaisesRegex(TypeError, "Mapping keys"):
+            canonical_json({1: "value"})
 
     def test_naive_datetime_is_rejected(self) -> None:
         with self.assertRaisesRegex(ValueError, "Naive datetimes"):

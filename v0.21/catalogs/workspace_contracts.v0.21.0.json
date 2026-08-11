@@ -1,0 +1,128 @@
+{
+  "catalog_type": "workspace_contracts_v021",
+  "catalog_version": "0.21.2",
+  "raw_factors": [
+    {"key":"raw_open","family":"raw_market_data","formula":"open_raw[t]","input_field":"open_raw","unit":"price"},
+    {"key":"raw_high","family":"raw_market_data","formula":"high_raw[t]","input_field":"high_raw","unit":"price"},
+    {"key":"raw_low","family":"raw_market_data","formula":"low_raw[t]","input_field":"low_raw","unit":"price"},
+    {"key":"raw_close","family":"raw_market_data","formula":"close_raw[t]","input_field":"close_raw","unit":"price"},
+    {"key":"adjusted_open","family":"raw_market_data","formula":"open_adj[t]","input_field":"open_adj","unit":"price"},
+    {"key":"adjusted_high","family":"raw_market_data","formula":"high_adj[t]","input_field":"high_adj","unit":"price"},
+    {"key":"adjusted_low","family":"raw_market_data","formula":"low_adj[t]","input_field":"low_adj","unit":"price"},
+    {"key":"adjusted_close","family":"raw_market_data","formula":"close_adj[t]","input_field":"close_adj","unit":"price"},
+    {"key":"raw_volume","family":"raw_market_data","formula":"volume_raw[t]","input_field":"volume_raw","unit":"shares"}
+  ],
+  "model_families": [
+    {
+      "key":"single_signal",
+      "name":"Single Signal passthrough",
+      "description":"A comparable score produced from exactly one selected continuous Signal.",
+      "implementation_status":"available",
+      "presets":[
+        {
+          "preset_key":"single_signal__identity_v1",
+          "output_type":"continuous_score",
+          "output_comparability":"cross_sectional",
+          "supported_frequencies":["weekly","monthly"],
+          "parameters":{"aggregation":"identity"},
+          "target_key":null,
+          "input_slots":[{"slot_key":"continuous_input","allowed_dimension_keys":["momentum_trend","reversal","tail_distribution","volatility_risk","volume_liquidity"],"allowed_output_types":["continuous"],"minimum_count":1,"maximum_count":1}]
+        }
+      ]
+    },
+    {
+      "key":"linear_weighted",
+      "name":"Deterministic linear aggregation",
+      "description":"All selected continuous Signals enter one cross-sectional model; presets control only the published weighting contract.",
+      "implementation_status":"available",
+      "presets":[
+        {
+          "preset_key":"linear_weighted__signal_equal_v1",
+          "output_type":"continuous_score",
+          "output_comparability":"cross_sectional",
+          "supported_frequencies":["weekly","monthly"],
+          "parameters":{"weighting":"equal_by_signal","missing_policy":"complete_compiled_input_set","normalization":"common_valid_asset_cross_section"},
+          "target_key":null,
+          "input_slots":[{"slot_key":"continuous_inputs","allowed_dimension_keys":["momentum_trend","reversal","tail_distribution","volatility_risk","volume_liquidity"],"allowed_output_types":["continuous"],"minimum_count":1,"maximum_count":16}]
+        },
+        {
+          "preset_key":"linear_weighted__dimension_equal_v1",
+          "output_type":"continuous_score",
+          "output_comparability":"cross_sectional",
+          "supported_frequencies":["weekly","monthly"],
+          "parameters":{"weighting":"equal_by_active_dimension_then_signal","missing_policy":"complete_compiled_input_set","normalization":"common_valid_asset_cross_section"},
+          "target_key":null,
+          "input_slots":[{"slot_key":"continuous_inputs","allowed_dimension_keys":["momentum_trend","reversal","tail_distribution","volatility_risk","volume_liquidity"],"allowed_output_types":["continuous"],"minimum_count":1,"maximum_count":16}]
+        }
+      ]
+    },
+    {
+      "key":"directional_vote",
+      "name":"Directional vote",
+      "description":"Diagnostic directional aggregation. Frozen for research display and prohibited from the first Top-K Strategy families.",
+      "implementation_status":"available",
+      "presets":[
+        {
+          "preset_key":"directional_vote__majority_v1",
+          "output_type":"directional_score",
+          "output_comparability":"diagnostic_only",
+          "supported_frequencies":["weekly","monthly"],
+          "parameters":{"vote":"majority","tie_output":"neutral"},
+          "target_key":null,
+          "input_slots":[{"slot_key":"vote_inputs","allowed_dimension_keys":["momentum_trend","reversal","tail_distribution","volatility_risk","volume_liquidity"],"allowed_output_types":["directional"],"minimum_count":1,"maximum_count":16}]
+        }
+      ]
+    },
+    {
+      "key":"lightgbm_ranker",
+      "name":"LightGBM cross-sectional ranker",
+      "description":"Training-family placeholder with an explicit target. It remains unavailable until PIT equity data, train/test policy, and engine artifacts are published.",
+      "implementation_status":"planned",
+      "presets":[
+        {
+          "preset_key":"lightgbm_ranker__conservative_v1",
+          "output_type":"continuous_score",
+          "output_comparability":"cross_sectional",
+          "supported_frequencies":["weekly","monthly"],
+          "parameters":{"complexity":"conservative","early_stopping":true},
+          "target_key":"next_period_cross_sectional_return",
+          "input_slots":[{"slot_key":"features","allowed_dimension_keys":["momentum_trend","reversal","tail_distribution","volatility_risk","volume_liquidity"],"allowed_output_types":["continuous","directional","event"],"minimum_count":2,"maximum_count":32}]
+        }
+      ]
+    }
+  ],
+  "strategy_families": [
+    {
+      "key":"multi_etf_top_k",
+      "name":"Multi-ETF Cross-sectional Top-K Rotation",
+      "description":"Ranks the selected Strategy Ready ETF set by one comparable model score per asset and holds a published Top-K not exceeding half of the rankable ETF set.",
+      "implementation_status":"available",
+      "required_instrument_type":"Equity ETF",
+      "minimum_eligible_assets":2,
+      "formal_minimum_eligible_assets":2,
+      "coverage_ratio":0.9,
+      "supported_frequencies":["weekly","monthly"],
+      "compatible_model_output_types":["continuous_score"],
+      "parameter_options":{"target_k":[1,2,3,5,10,20],"defense":["none","fixed_20","internal_timing_v1"],"selection_buffer":["none"],"sector_cap":["none"]},
+      "defaults":{"target_k":2,"defense":"none","selection_buffer":"none","sector_cap":"none"},
+      "primary_benchmark":"spy_buy_and_hold",
+      "research_benchmark":"selected_etf_equal_weight_same_schedule"
+    },
+    {
+      "key":"us_large_cap_top_k",
+      "name":"US Large-Cap Cross-sectional Top-K Selection",
+      "description":"Ranks a frozen PIT US liquid large-cap universe; 50-99 assets are exploratory and at least 100 are required for a formal result.",
+      "implementation_status":"available",
+      "required_instrument_type":"Common Stock",
+      "minimum_eligible_assets":50,
+      "formal_minimum_eligible_assets":100,
+      "coverage_ratio":0.9,
+      "supported_frequencies":["weekly","monthly"],
+      "compatible_model_output_types":["continuous_score"],
+      "parameter_options":{"target_k":[10,20,30],"defense":["none","fixed_20","internal_timing_v1"],"selection_buffer":["none","half_k"],"sector_cap":["none","pit_30_percent"]},
+      "defaults":{"target_k":20,"defense":"none","selection_buffer":"half_k","sector_cap":"pit_30_percent"},
+      "primary_benchmark":"spy_buy_and_hold",
+      "research_benchmark":"pit_eligible_universe_equal_weight_same_schedule"
+    }
+  ]
+}

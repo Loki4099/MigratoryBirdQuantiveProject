@@ -1,0 +1,12 @@
+{
+  "catalog_type": "reserve_return_model",
+  "catalog_version": "0.2.0",
+  "model_key": "dgs3mo_cash_accrual_proxy",
+  "name": "DGS3MO cash-accrual proxy",
+  "version_number": 1,
+  "accrual_method": "simple",
+  "day_count_basis": "ACT/365",
+  "warning_after_days": 5,
+  "error_after_days": 10,
+  "rate_selection": "latest_available_at_interval_start"
+}
