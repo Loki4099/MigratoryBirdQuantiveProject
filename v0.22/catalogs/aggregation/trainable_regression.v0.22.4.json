@@ -1,0 +1,146 @@
+{
+  "catalog_type": "v022_aggregation",
+  "catalog_version": "0.22.4",
+  "extends": ["aggregation/trainable_regression.v0.22.3.json"],
+  "families": [
+    {
+      "family_key": "lightgbm_cross_sectional_regression",
+      "name": "LightGBM cross-sectional regression",
+      "algorithm_identity": "deterministic single-threaded CPU LightGBM expanding-walk-forward regression over the exact ordered Stage-3 Feature Schema",
+      "objective_semantics": {
+        "type": "cross_sectional_regression",
+        "prediction_grid": "daily_completed_session",
+        "oof_required": true
+      },
+      "output_semantics": {
+        "direction": "higher_is_better",
+        "dtype": "decimal_1e_18",
+        "transform": "decision_date_cross_section_average_rank_centered"
+      },
+      "version_number": 1,
+      "execution_mode": "supervised",
+      "implementation_key": "style_rotation.v022.aggregation.lightgbm_cross_sectional_regression_v1",
+      "input_payload_contract_key": "final_signal_numeric",
+      "output_payload_contract_key": "final_signal_numeric",
+      "minimum_inputs": 1,
+      "maximum_inputs": 32,
+      "ordering_policy": "explicit_input_order",
+      "input_policy": {
+        "stage": 3,
+        "all_selected_inputs_consumed": true,
+        "feature_schema_artifact_required": true
+      },
+      "compatibility_policy": {
+        "numeric": true,
+        "pit_required": true,
+        "same_daily_panel": true
+      },
+      "missing_policy": {"mode": "complete_case_fail_closed"},
+      "tie_policy": {"mode": "average_rank"},
+      "parameter_presets": [],
+      "targets": [
+        {
+          "target_key": "forward_rank_h5",
+          "name": "Forward H5 rank",
+          "description": "Adjusted-open return over exactly five complete sessions, transformed to a daily centered cross-sectional rank.",
+          "version_number": 1,
+          "semantics": {
+            "horizon_sessions": 5,
+            "observation_grid": "xnys_completed_session_daily",
+            "entry_rule": "next_common_session_open_after_decision_close",
+            "exit_rule": "open_after_exact_complete_session_intervals",
+            "label_transform": "average_rank_centered_minus_one_to_one"
+          }
+        },
+        {
+          "target_key": "forward_rank_h10",
+          "name": "Forward H10 rank",
+          "description": "Adjusted-open return over exactly ten complete sessions, transformed to a daily centered cross-sectional rank.",
+          "version_number": 1,
+          "semantics": {
+            "horizon_sessions": 10,
+            "observation_grid": "xnys_completed_session_daily",
+            "entry_rule": "next_common_session_open_after_decision_close",
+            "exit_rule": "open_after_exact_complete_session_intervals",
+            "label_transform": "average_rank_centered_minus_one_to_one"
+          }
+        },
+        {
+          "target_key": "forward_rank_h21",
+          "name": "Forward H21 rank",
+          "description": "Adjusted-open return over exactly twenty-one complete sessions, transformed to a daily centered cross-sectional rank.",
+          "version_number": 1,
+          "semantics": {
+            "horizon_sessions": 21,
+            "observation_grid": "xnys_completed_session_daily",
+            "entry_rule": "next_common_session_open_after_decision_close",
+            "exit_rule": "open_after_exact_complete_session_intervals",
+            "label_transform": "average_rank_centered_minus_one_to_one"
+          }
+        }
+      ],
+      "training_presets": [
+        {
+          "preset_key": "expanding_daily_lightgbm_balanced_v1",
+          "name": "Expanding daily LightGBM balanced",
+          "description": "Conservative deterministic CPU LightGBM with full-feature candidates, bounded leaves, mature-label purge, and strict OOF prediction.",
+          "version_number": 1,
+          "semantics": {
+            "adapter_key": "lightgbm_cross_sectional_regression",
+            "adapter_version": "lightgbm_regressor_cpu_v1",
+            "observation_grid": "xnys_completed_session_daily",
+            "fold_mode": "expanding_walk_forward",
+            "random_split": false,
+            "fold_policy_key": "daily_expanding_126_21_21_v1",
+            "minimum_train_groups": 126,
+            "validation_groups": 21,
+            "prediction_groups": 21,
+            "embargo_groups": 0,
+            "hyperparameters": {
+              "n_estimators": 32,
+              "learning_rate": "0.05",
+              "num_leaves": 15,
+              "max_depth": 6,
+              "min_child_samples": 50,
+              "subsample": "0.8",
+              "colsample_bytree": "1.0",
+              "reg_alpha": "0",
+              "reg_lambda": "1"
+            },
+            "seed": 1729
+          }
+        },
+        {
+          "preset_key": "expanding_daily_lightgbm_feature_subsample_v1",
+          "name": "Expanding daily LightGBM feature subsample",
+          "description": "Conservative deterministic CPU LightGBM with feature subsampling, bounded leaves, mature-label purge, and strict OOF prediction.",
+          "version_number": 1,
+          "semantics": {
+            "adapter_key": "lightgbm_cross_sectional_regression",
+            "adapter_version": "lightgbm_regressor_cpu_v1",
+            "observation_grid": "xnys_completed_session_daily",
+            "fold_mode": "expanding_walk_forward",
+            "random_split": false,
+            "fold_policy_key": "daily_expanding_126_21_21_v1",
+            "minimum_train_groups": 126,
+            "validation_groups": 21,
+            "prediction_groups": 21,
+            "embargo_groups": 0,
+            "hyperparameters": {
+              "n_estimators": 48,
+              "learning_rate": "0.03",
+              "num_leaves": 31,
+              "max_depth": 8,
+              "min_child_samples": 25,
+              "subsample": "0.8",
+              "colsample_bytree": "0.7",
+              "reg_alpha": "0.1",
+              "reg_lambda": "2"
+            },
+            "seed": 1729
+          }
+        }
+      ]
+    }
+  ]
+}

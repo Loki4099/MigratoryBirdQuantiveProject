@@ -1,0 +1,4143 @@
+{
+  "catalog_type": "v022_migration_registry",
+  "contract_version": "v0.22.0",
+  "factor_catalog_fingerprint": "ec7fcf6e026a76e826196cc2a63468e7e09603a19fb4015f2e558ff1cd490632",
+  "oracle_baseline_id": "v021-oracle-v0.22.0-m0",
+  "oracle_manifest_fingerprint": "86ecfda326bdc98e61fde026fcd85edf83f7dab6f77b053d249dead33366760c",
+  "records": [
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "total_return",
+      "legacy_key": "total_return__w5",
+      "legacy_recipe": {
+        "formula": "close_adj[t] / close_adj[t-window] - 1",
+        "implementation_key": "total_return_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 5
+        },
+        "required_price_observations": 6
+      },
+      "mapping": {
+        "family_key": "total_return",
+        "origin_stage": 1,
+        "variant_key": "total_return__w5"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "c0d59958-ca93-4134-95ed-ea5aa1b6dda1",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "08cef196138a8d1c5093528ff33ae3f92175d9ca606ac6e0fd7e06978ac2995e",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "5a272fe4a546387c2375069feeec7707ebba246a636f702806880b5d7324b6e4",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "5b02e5f2-4175-499f-819a-d8a9a7f19044",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "99dab9a130c54e60d9326418503af12702c4b12153877118e87edef3b6eeeb6b",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "169507b7816f7fa45a5fcd588760f0457ac67bcb8b7bef5b4ebd9b7960f70a39",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "total_return",
+      "legacy_key": "total_return__w20",
+      "legacy_recipe": {
+        "formula": "close_adj[t] / close_adj[t-window] - 1",
+        "implementation_key": "total_return_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 20
+        },
+        "required_price_observations": 21
+      },
+      "mapping": {
+        "family_key": "total_return",
+        "origin_stage": 1,
+        "variant_key": "total_return__w20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "e16f6353-c9bb-4cf3-9c7d-deff65aa5ef8",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "06d9c2f14594f3770066ec84c3457d5880df1435d592b93f207487a07cb92e71",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "e269823186b667996de4c5418ccf852b916820adec4a8c492e0d9302a9a45251",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "e8b6ca1e-7bea-4cdb-8f6c-de0f18425613",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "db01aa617248c98904ff4876d7b477765529429ce2075c775b12c439eb1cfa92",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "9fa078e1eb6ba728c2c40fe3b65f661fadef01c52d7fcbd5f6b800223874e6b1",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "total_return",
+      "legacy_key": "total_return__w60",
+      "legacy_recipe": {
+        "formula": "close_adj[t] / close_adj[t-window] - 1",
+        "implementation_key": "total_return_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 60
+        },
+        "required_price_observations": 61
+      },
+      "mapping": {
+        "family_key": "total_return",
+        "origin_stage": 1,
+        "variant_key": "total_return__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "14a15e2b-078c-4a87-86bf-06fc04958a4a",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "7db9a0d2d16df90f2bf3691c42c0f56a9e2b92fca51611f52256f9fc95b7b669",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "5911327528984d934033f1fe853d104e5b6958cc7a76f6ab0d591072bc9e07c0",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "d98f63c3-efec-4784-91c4-c60de568b75f",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "c064485db23bad9dcab841d20fc06e8ec5cce794ce1430b438359bd15a119304",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "8d10049e4017cede0f57a84711ef5ea7382cac53287ffb6ce97b70873e9a0435",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "total_return",
+      "legacy_key": "total_return__w120",
+      "legacy_recipe": {
+        "formula": "close_adj[t] / close_adj[t-window] - 1",
+        "implementation_key": "total_return_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 120
+        },
+        "required_price_observations": 121
+      },
+      "mapping": {
+        "family_key": "total_return",
+        "origin_stage": 1,
+        "variant_key": "total_return__w120"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "0ba6b66a-cf7c-4d3c-8727-25ade7ca2054",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "f43232fd3579f1d434f8a2a34242cdac3430425d03a32d73744d7fc3f9a097b1",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "97706ef7d51d4f67f6841fe2240d5a8982f56068376995a924870ff9dc40b2d1",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "73344907-dfab-4a93-9a63-dd2b9f207661",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "6599f833adbc24611c33494221f11c9f1d37c69dc2dde77876aa0e4957baaae0",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "b9d15b511e24be94f3ed22bb4547aefbab4d5f650b4a37874476a742800c3072",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "executable"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "total_return",
+      "legacy_key": "total_return__w252",
+      "legacy_recipe": {
+        "formula": "close_adj[t] / close_adj[t-window] - 1",
+        "implementation_key": "total_return_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 252
+        },
+        "required_price_observations": 253
+      },
+      "mapping": {
+        "family_key": "total_return",
+        "origin_stage": 1,
+        "variant_key": "total_return__w252"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "75dc278e-162a-4ca4-9978-0d8c10aeb1d4",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "a154e2c397aec04f8013a17382ba45843a233ddde2136b1b144718f930b8dcb7",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "482ad58c6ea88095b1af02cab4984f6ccac6f7c5954b5bf480d057dd2231c5ea",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "2408cc7c-f9e7-4400-b93d-1ccb3f3b87f8",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "95c9170fa1a8d7d926d4d76ff813e8d82dee6725a9e7a09ff9936a12deb3fc05",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "a856615d71275d32193ae7fa09c53be97de8506eb1449fbfdfa591ec7696caea",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "lagged_return",
+      "legacy_key": "lagged_return__l120_s20",
+      "legacy_recipe": {
+        "formula": "close_adj[t-skip_window] / close_adj[t-long_window] - 1",
+        "implementation_key": "lagged_return_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "long_window": 120,
+          "skip_window": 20
+        },
+        "required_price_observations": 121
+      },
+      "mapping": {
+        "family_key": "lagged_return",
+        "origin_stage": 1,
+        "variant_key": "lagged_return__l120_s20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "e4b66a9f-6d57-4075-b427-3beb512c558a",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "23a2d8ae0b1a32a832ed0d8fe520788a78f449902d4da019549666d45964fd7d",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "950c9b500e6fda124348b608aa42631f09799b7d5721a2f99febb33b2c2c9067",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "e8081698-636a-4a14-ac3b-59b6d93fb890",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "60f9edca8f66f1cbc7c5c435f309d5a35478d9632165958c6964a0bee38e0a87",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "a3e4f241ffe2aff329d52655f2cb8457c2892942b82a88e9e93b857ac936ac81",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "lagged_return",
+      "legacy_key": "lagged_return__l252_s20",
+      "legacy_recipe": {
+        "formula": "close_adj[t-skip_window] / close_adj[t-long_window] - 1",
+        "implementation_key": "lagged_return_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "long_window": 252,
+          "skip_window": 20
+        },
+        "required_price_observations": 253
+      },
+      "mapping": {
+        "family_key": "lagged_return",
+        "origin_stage": 1,
+        "variant_key": "lagged_return__l252_s20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "077736d1-208e-4ea2-b92a-6a9828e7992e",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "c4519cdffc30db7306d370f5378680dc76f50ea6397d5b375f51477bf871cfcc",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "e7ba7cab41bab2181ec922652a695d7b2c72fec7938138a1b3e6824f3cd9fb8b",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "220fcabf-93c3-4441-a550-3faf1023b949",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "a2a49600ddc1d2d46d241dbaba3dc6f564dc524ab0bc5e6678af5c687f81bcbb",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "28857a4df744addd6a25cc8c346e0fa7426c24abf0e2600faf6ef8ce060b5077",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "moving_average_ratio",
+      "legacy_key": "moving_average_ratio__s20_l60",
+      "legacy_recipe": {
+        "formula": "SMA(close_adj, short_window) / SMA(close_adj, long_window) - 1; short_window=1 means current close",
+        "implementation_key": "moving_average_ratio_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "long_window": 60,
+          "short_window": 20
+        },
+        "required_price_observations": 60
+      },
+      "mapping": {
+        "family_key": "moving_average_ratio",
+        "origin_stage": 1,
+        "variant_key": "moving_average_ratio__s20_l60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "a2731e29-8429-4c52-b459-2c4d36392bfe",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "f0eeb48141108d9fdd8b57c01167eb92cde07b764a4647d72378b83a27a42e12",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "cd1f0892be05c5290602375761b5b134b4125bc64ea8db33dc28b1f7f7a52780",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "6db03391-d683-45d0-96e4-4edbb99a517e",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "7eb942382982a66f49338bf932579649130dbb0f8fabeb328b554b32baa75141",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "1a5bddd5baefa4bb6872b7673f07bd33d1fa21f5cde975e86d8c6fabadbc9e93",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "moving_average_ratio",
+      "legacy_key": "moving_average_ratio__s60_l120",
+      "legacy_recipe": {
+        "formula": "SMA(close_adj, short_window) / SMA(close_adj, long_window) - 1; short_window=1 means current close",
+        "implementation_key": "moving_average_ratio_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "long_window": 120,
+          "short_window": 60
+        },
+        "required_price_observations": 120
+      },
+      "mapping": {
+        "family_key": "moving_average_ratio",
+        "origin_stage": 1,
+        "variant_key": "moving_average_ratio__s60_l120"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "f9a6453f-0881-42a7-ae11-d01cad42e7c1",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "8fd9d9a0d421ecb3054c41fdf3ae3226cadecd15f1b576ef633be34845f841a4",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "1ec2b58a9e6937eea52df7edefcb7a2ef805b64b839aca7b90ca9b9b08a6c478",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "ec45a12b-2545-44c2-a2c1-52f4c8679ccf",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "0adbb12474506c94fb7089fc19248c684da5f2be997b6c781aa3c95b62f705b5",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "346b367122c510e941268098fcce9423aa7dfe314318ae645095849a91d3c7af",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "moving_average_ratio",
+      "legacy_key": "moving_average_ratio__s1_l50",
+      "legacy_recipe": {
+        "formula": "SMA(close_adj, short_window) / SMA(close_adj, long_window) - 1; short_window=1 means current close",
+        "implementation_key": "moving_average_ratio_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "long_window": 50,
+          "short_window": 1
+        },
+        "required_price_observations": 50
+      },
+      "mapping": {
+        "family_key": "moving_average_ratio",
+        "origin_stage": 1,
+        "variant_key": "moving_average_ratio__s1_l50"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "89c93cf2-7d70-4d6f-a3bf-6c391225b734",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "8fc57eaf76e754a8cadf938cc52068b78f23e5d2e641a85ac473fd4c67ad6357",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "b800c2a944a7326601a539bfc46503cc5422e404c73d522ae09749d3d300d2eb",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "5dde650f-7755-42fe-863f-5a1e36ffd0ba",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "e4adbd87db4aba16da33b175e39ec3c066571d490a7c22111f8d42be6968cbd9",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "f37e8ed0334e9c8fa380d3f21a7125b2474162781fc6ab2a202e1d1c6a392e2d",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "moving_average_ratio",
+      "legacy_key": "moving_average_ratio__s1_l200",
+      "legacy_recipe": {
+        "formula": "SMA(close_adj, short_window) / SMA(close_adj, long_window) - 1; short_window=1 means current close",
+        "implementation_key": "moving_average_ratio_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "long_window": 200,
+          "short_window": 1
+        },
+        "required_price_observations": 200
+      },
+      "mapping": {
+        "family_key": "moving_average_ratio",
+        "origin_stage": 1,
+        "variant_key": "moving_average_ratio__s1_l200"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "d05ff059-7bda-450d-ac2e-7db8b0e412bc",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "7f0afb4abf6bd648abb865b7973cbb12715e3bd43920aba64492b3a6cc3361bc",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "1ee2971c7a5c5d0a33a65ec12c38bec60dbb691d1fc01f6aa7861f06ff69dd60",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "08b12f48-7716-497f-a472-dffbdf3d1910",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "65f7bf59b38cb17669853f8c8f254f0b97b23efb6bc2b06999a74da3344b03e7",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "5dbaf7c6313d07595742287ce54f7c8ddd250c0026b25a76399bc4921560c44e",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "executable"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "moving_average_ratio",
+      "legacy_key": "moving_average_ratio__s50_l200",
+      "legacy_recipe": {
+        "formula": "SMA(close_adj, short_window) / SMA(close_adj, long_window) - 1; short_window=1 means current close",
+        "implementation_key": "moving_average_ratio_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "long_window": 200,
+          "short_window": 50
+        },
+        "required_price_observations": 200
+      },
+      "mapping": {
+        "family_key": "moving_average_ratio",
+        "origin_stage": 1,
+        "variant_key": "moving_average_ratio__s50_l200"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "ae4d2ac3-8780-458e-b45a-b12cc42732b4",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "3a2dba47cf27b9b7bfe0bfa8c467729c43176a6079021ee589eed1a34030e3bf",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "1fe71d517948e6b8a0591d75b380a2584ecb1642bcaab8f29f481853b65aa35f",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "0f04a4fa-edcb-43c2-8d47-9ee909703bf8",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "e42a87b3f3ebc7a7201cae8b8d884917a0b63331e742f75a51bd6e125888ef7d",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "c0d53d0063ad7179d0d746f41d1f3deabc176016a8ed1ff5d74e36f4c88e25c0",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "rsi",
+      "legacy_key": "rsi__w14",
+      "legacy_recipe": {
+        "formula": "Wilder RSI using window price changes, SMA seed, then Wilder smoothing",
+        "implementation_key": "rsi_wilder_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 14
+        },
+        "required_price_observations": 15
+      },
+      "mapping": {
+        "family_key": "rsi",
+        "origin_stage": 1,
+        "variant_key": "rsi__w14"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "166aa81b-3378-4f0c-8b0c-30644a7f531b",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "b35c5ba65c9224b6e488ec319990a865790b73bc3e29810bf6c0fe4ec98be495",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "a9539273979d9f160b956a252b6b9763c5535c191350a91aaaa72a06f2a18380",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "670e65db-9e53-44a0-92c9-4c523a9c0828",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "9d6326ea90ff00f0f0cc4ac7791a9ba4f585c888eadd1579c1c675b1457c238d",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "69acae2d8d3983be4974aed611fba0d28b252476dccb41b87923a8236cafe697",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "return_skewness",
+      "legacy_key": "return_skewness__w60",
+      "legacy_recipe": {
+        "formula": "bias-corrected Fisher-Pearson skewness of window adjusted-close log returns",
+        "implementation_key": "return_skewness_fisher_pearson_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 60
+        },
+        "required_price_observations": 61
+      },
+      "mapping": {
+        "family_key": "return_skewness",
+        "origin_stage": 1,
+        "variant_key": "return_skewness__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "9e96ec88-6a9b-4611-8f53-e0d99140d22c",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "a40c047433768009ed56acbb60214bd288f776d6370b28000a2d4003c0231d7a",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "a304e503155dc744fad6055da8cb616a3a6c8b9da3bdb5cf9f1e8eae1308b7e4",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "8f870790-8cc9-47a4-8772-7abcd8588322",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "2adcac934e3e6a60ecaaf4f55ad645309b0d2d02958da8be3cc741589a3b2d42",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "a186cfa5e78bdb99018c604cc765c324ec83feccb916a03a90ceaf5768de3811",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "return_skewness",
+      "legacy_key": "return_skewness__w120",
+      "legacy_recipe": {
+        "formula": "bias-corrected Fisher-Pearson skewness of window adjusted-close log returns",
+        "implementation_key": "return_skewness_fisher_pearson_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 120
+        },
+        "required_price_observations": 121
+      },
+      "mapping": {
+        "family_key": "return_skewness",
+        "origin_stage": 1,
+        "variant_key": "return_skewness__w120"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "ba72aad4-462b-4890-9831-1ab59a5b88ee",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "dec9455bf4df1a258de62a43a9ce90fa1da19eecb8e2344e7d9105b1f5411f2a",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "2081294aa1e63e0f2d751b6791f437fb1cfd9d84909db85ce3e42cb3f8be718d",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "491342df-1017-4135-bc50-dae47214c248",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "fa9792d59b0f32888f51fcc0974f0fdbb66dff751660ef0ef7db569af8ebbd67",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "55258312c9c51bf6ea07d3f00f16ed69f587c86346ffbfcc0bdbfd8b0e612498",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "return_excess_kurtosis",
+      "legacy_key": "return_excess_kurtosis__w120",
+      "legacy_recipe": {
+        "formula": "bias-corrected Fisher excess kurtosis of window adjusted-close log returns; normal=0",
+        "implementation_key": "return_excess_kurtosis_fisher_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 120
+        },
+        "required_price_observations": 121
+      },
+      "mapping": {
+        "family_key": "return_excess_kurtosis",
+        "origin_stage": 1,
+        "variant_key": "return_excess_kurtosis__w120"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "8ca943db-3a93-4d4d-9e07-ebf97a4440b5",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "93ba318ba20fb2ba149ffa005e62ab92f704390c31eb05f4cbe86b40a9043849",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "eb9ccbad0c0fc10acb585ce16aef4fc1ea117cece14f4f796b2333266c9e7547",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "84887a10-465f-4007-8427-5589141bd616",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "ba8458158113fd2459dbb23e6830cd97632aabd34815c86e7d76ed6a22024b28",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "029463fa23f7cc9698d059005857f722d008a37a47be9022b20eb0dacb7603ea",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "return_excess_kurtosis",
+      "legacy_key": "return_excess_kurtosis__w252",
+      "legacy_recipe": {
+        "formula": "bias-corrected Fisher excess kurtosis of window adjusted-close log returns; normal=0",
+        "implementation_key": "return_excess_kurtosis_fisher_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 252
+        },
+        "required_price_observations": 253
+      },
+      "mapping": {
+        "family_key": "return_excess_kurtosis",
+        "origin_stage": 1,
+        "variant_key": "return_excess_kurtosis__w252"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "dff59cbe-792f-4eff-84d7-643f5008b3c2",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "1cdfaaf546cb42320e443c14eba2fd59702e2b681be63a836c0c758bdb0ec99e",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "5affc6f7606f57a40da0d54b1a0a5776482b58c148dd50f45827f8348645ccda",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "6203cd54-fe3d-44dc-a7f7-8a3fba31f1fc",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "fabc00c720f4ba2d465dd19d2b7ad1a1bd3d5b23ecdb71a6d1f7cf658b7b2510",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "d2a21b5aedfe5a9ae4adae5aba03f55397023c00503c102a7efcbf976e0a040e",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "realized_volatility",
+      "legacy_key": "realized_volatility__w20",
+      "legacy_recipe": {
+        "formula": "sample_stdev(window adjusted-close log returns, ddof=1) * sqrt(252)",
+        "implementation_key": "realized_volatility_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 20
+        },
+        "required_price_observations": 21
+      },
+      "mapping": {
+        "family_key": "realized_volatility",
+        "origin_stage": 1,
+        "variant_key": "realized_volatility__w20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "bfb0633f-5295-40a0-b466-dba8d0bd24d4",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "c43620025e52196178347f81de6b85490eb7e535500c5dbe675062fa5657e5cc",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "4648594f4f31a34df563e13dbf7b8bbc82abb408192378ea5a6eadfa882f7ec6",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "a8fcbfaf-bd0e-413f-9b1e-f17e3d4833f0",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "2c6dffa577f552a472cad68d2507cb641acced7f07accf0e2ceede5a914eec66",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "5e916c426895f2b4624ebd9b3c082af74fb9f9154eaeb37a3bc72280e5c0e3ac",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "realized_volatility",
+      "legacy_key": "realized_volatility__w60",
+      "legacy_recipe": {
+        "formula": "sample_stdev(window adjusted-close log returns, ddof=1) * sqrt(252)",
+        "implementation_key": "realized_volatility_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 60
+        },
+        "required_price_observations": 61
+      },
+      "mapping": {
+        "family_key": "realized_volatility",
+        "origin_stage": 1,
+        "variant_key": "realized_volatility__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "3faf8934-59c4-45b6-bf26-1e91cc29efb5",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "9b446299fd97cfb52e11fd2e4008d3b622539affa3eef1ef24656f9a5b40f5a0",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "b55fddd8757d7cff05a84d48d31ec9d016a51d225e8b1866a2fd732f473886fc",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "dec01c5d-7342-4192-92f9-6666b1a9d077",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "b8299b4470e998ef443946d2c9dfeda035f2ede33099e8d316f66bd109e4cf66",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "c476b55f3fcdad99c39459b89dfe85faf98e97d027b2a3b4265cdb53c5bf22d8",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "downside_deviation",
+      "legacy_key": "downside_deviation__w20",
+      "legacy_recipe": {
+        "formula": "sqrt(252 * mean(min(log_return, 0)^2)) over window returns",
+        "implementation_key": "downside_deviation_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 20
+        },
+        "required_price_observations": 21
+      },
+      "mapping": {
+        "family_key": "downside_deviation",
+        "origin_stage": 1,
+        "variant_key": "downside_deviation__w20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "45ee2f61-966d-4e45-b2c1-3f00adb71d1d",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "61ff1847eab72fab892b8a88f2e7c70fc2b74c082984705e9633eeeadc610e43",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "cc8e69e8eac8bd712e836fbb4e2c1aa9b193d123eb1ad3c5ea7ced3e8fa19269",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "3af12f55-4740-4f8b-b956-f83b21dccfd9",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "ba3b507b19a22c1e29973b945eacc155145b6da591ee4301da9b722edd4d1f05",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "1787d4a3300e0cb1025bedeee101d6e78e13c11bbfe37301d99ea70a65a05ebb",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "downside_deviation",
+      "legacy_key": "downside_deviation__w60",
+      "legacy_recipe": {
+        "formula": "sqrt(252 * mean(min(log_return, 0)^2)) over window returns",
+        "implementation_key": "downside_deviation_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 60
+        },
+        "required_price_observations": 61
+      },
+      "mapping": {
+        "family_key": "downside_deviation",
+        "origin_stage": 1,
+        "variant_key": "downside_deviation__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "70835ba1-aaac-4456-93b1-e9f7ee1d5a5b",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "4ec7abc8476fe02fea9c83fe126817548e1bc860bce6137ce68d07a43ec03406",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "5472b32aab11700348a512234fbbc1dd3ff4fb26cd85f67a355129794a73e88f",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "009a2ff1-0457-4bc2-bb0c-438b8bd48c43",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "123f191ed1dab5f4ecf05eba14e0f27415ff47502d220f404cb126d348a945cf",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "80273c625c74fcb1bcfe4586ee09dbbde28ff546b758ec16f68335bafcfe20a0",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "maximum_drawdown",
+      "legacy_key": "maximum_drawdown__w60",
+      "legacy_recipe": {
+        "formula": "abs(min(close_adj / running_max(close_adj) - 1)) inside window prices",
+        "implementation_key": "maximum_drawdown_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 60
+        },
+        "required_price_observations": 60
+      },
+      "mapping": {
+        "family_key": "maximum_drawdown",
+        "origin_stage": 1,
+        "variant_key": "maximum_drawdown__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "72ec6e79-1db7-41ab-88fb-ef0d2fa88ddb",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "db8a6c5d98470e0ed8468785b3c31abdc2d4d9f2faa641129dffcaf88c0b6c09",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "6812c052362db568b7b87b1f66be326bc3062ff2b6dc6794b73c7d6aa67fef71",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "0bdc29b8-db25-4dd2-9e9d-524758c7fdee",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "670f364dce07d8b5f5343a72b3a0fdfc118085221659ca87488ec9e5e5c95aed",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "bd5aea792babba5e405001adc558d772ade4f16cf6ee8aac5bd405246e40e93b",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "maximum_drawdown",
+      "legacy_key": "maximum_drawdown__w120",
+      "legacy_recipe": {
+        "formula": "abs(min(close_adj / running_max(close_adj) - 1)) inside window prices",
+        "implementation_key": "maximum_drawdown_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "window": 120
+        },
+        "required_price_observations": 120
+      },
+      "mapping": {
+        "family_key": "maximum_drawdown",
+        "origin_stage": 1,
+        "variant_key": "maximum_drawdown__w120"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "e5599922-b110-40aa-9163-a02a4707ee32",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "fe59c09150ec864a2f2ff6526bcae5bb2a98cd67a30f63b015c285316809ad5a",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "c1a48fcc41cb6376c7f5faf028213b78cbeaa5f05a97a8cf5c4b3819fb0d4018",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "b0580656-949e-48f3-9f1a-2c7e49d2a480",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "ca1224ef537aa004fd87437855382b7a60c573caf51db2a06b4a28247a09754c",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "75a79bc079b03358822aef8630b281259cebf754b57a4c3b621759118ae655d0",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "relative_dollar_volume",
+      "legacy_key": "relative_dollar_volume__w20",
+      "legacy_recipe": {
+        "formula": "(close_raw[t] * volume_raw[t]) / mean(close_raw * volume_raw, window) - 1; current observation included",
+        "implementation_key": "relative_dollar_volume_v1",
+        "inputs": [
+          "close_raw",
+          "volume_raw"
+        ],
+        "parameters": {
+          "window": 20
+        },
+        "required_price_observations": 20
+      },
+      "mapping": {
+        "family_key": "relative_dollar_volume",
+        "origin_stage": 1,
+        "variant_key": "relative_dollar_volume__w20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "a0863079-ab7d-46ba-a34a-3aea41cb5f71",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "2b8673f3f015a6ebb8a71d59e628098d910540e0e4417965d6d46849c8e69916",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "673fdd08d4d7f1159ec44b9e2398305f52640d9d31921e85f30511be478ebacf",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "e8236614-3e8d-4496-aa4c-528c92c062ae",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "8dfa53759e1600b3d8d63f6e188088a4ce33caeea27ff36daca1da7be588ec64",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "4b7411d43ca3b44935296cc228108a8455a0d50c30091e712161ab13bb3b4d3e",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "relative_dollar_volume",
+      "legacy_key": "relative_dollar_volume__w60",
+      "legacy_recipe": {
+        "formula": "(close_raw[t] * volume_raw[t]) / mean(close_raw * volume_raw, window) - 1; current observation included",
+        "implementation_key": "relative_dollar_volume_v1",
+        "inputs": [
+          "close_raw",
+          "volume_raw"
+        ],
+        "parameters": {
+          "window": 60
+        },
+        "required_price_observations": 60
+      },
+      "mapping": {
+        "family_key": "relative_dollar_volume",
+        "origin_stage": 1,
+        "variant_key": "relative_dollar_volume__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "041092de-ac7c-48d6-bf80-dca00d3e443f",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "36855fc22acbedd2faf7bc24320c0de801a5dcdce1ffb23e4be91945da28345c",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "b1e9c0b9055ad3a35d6a5b59461d4667cebf252fc3a1450e56a584d27945d472",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "c9cd0b19-dd32-4204-8807-e53cc62ce2f1",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "3709d0e1c0ca2e1612e03e1666fa64a787489fcb04b5d0193fe0562da885f399",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "584b5793986a3c3acca06ca197f4355d7b7d43db17f816c31fae61de6fef80f0",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "amihud_illiquidity",
+      "legacy_key": "amihud_illiquidity__w20",
+      "legacy_recipe": {
+        "formula": "mean(abs(simple_return_adj) / (close_raw * volume_raw), window)",
+        "implementation_key": "amihud_illiquidity_v1",
+        "inputs": [
+          "close_adj",
+          "close_raw",
+          "volume_raw"
+        ],
+        "parameters": {
+          "window": 20
+        },
+        "required_price_observations": 21
+      },
+      "mapping": {
+        "family_key": "amihud_illiquidity",
+        "origin_stage": 2,
+        "variant_key": "amihud_illiquidity__w20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "5bd44a32-5bb6-4b56-9141-8acf01279232",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "5cb4dfdb630f1b2595066aac5720f8699e8fdd99ec740e56ed351613e7bc1086",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "11e1cc4db057b1e309b5bb06fa366fd5b01af1b039c704b120d98a798883f354",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "c7455488-40c5-41d2-b690-c56b66e9053e",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "1bd27bfa2e15b963abb0b613c5ea4e49f81120f57f58f2734fadd9e70d619ad8",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "84185fd4e6697fd88cb20392dcd7d7df9ed3440f80ad34aba42cb17843fa9c17",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "executable"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "amihud_illiquidity",
+      "legacy_key": "amihud_illiquidity__w60",
+      "legacy_recipe": {
+        "formula": "mean(abs(simple_return_adj) / (close_raw * volume_raw), window)",
+        "implementation_key": "amihud_illiquidity_v1",
+        "inputs": [
+          "close_adj",
+          "close_raw",
+          "volume_raw"
+        ],
+        "parameters": {
+          "window": 60
+        },
+        "required_price_observations": 61
+      },
+      "mapping": {
+        "family_key": "amihud_illiquidity",
+        "origin_stage": 2,
+        "variant_key": "amihud_illiquidity__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "553c667f-d06c-4338-91c9-84fa639c8d2b",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "91652661145bbada1fcff4eb739dc3b5057c3e16adc77a6d0b8502e989c33739",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "d7f69abf14796f311ba5bcf91bb8b5367cbd9f1686c70e6a76a9d094abca7cf5",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "aee5ef94-5e55-4556-8d03-bbdfc221fa87",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "f5837ca20e26ee1ae144b9c673a61a19339b8688229b5bc192d686a47a4afb38",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "f942323bfbaee752144006a45e6b14aee253a1551165b6962c678cc7025bbb09",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "factor_variant",
+      "legacy_family_key": "ppo_histogram",
+      "legacy_key": "ppo_histogram__f12_s26_g9",
+      "legacy_recipe": {
+        "formula": "PPO=100*(EMA_fast-EMA_slow)/EMA_slow; signal=EMA(PPO, signal_window); histogram=PPO-signal; each EMA seeded by SMA",
+        "implementation_key": "ppo_histogram_sma_seed_v1",
+        "inputs": [
+          "close_adj"
+        ],
+        "parameters": {
+          "fast_window": 12,
+          "signal_window": 9,
+          "slow_window": 26
+        },
+        "required_price_observations": 34
+      },
+      "mapping": {
+        "family_key": "ppo_histogram",
+        "origin_stage": 1,
+        "variant_key": "ppo_histogram__f12_s26_g9"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "4a00adb0-3238-49db-8986-505b263e7ad1",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "903cb4be6538ac713017aed9b972af56c4cd3d7f54587d72e97d6753cc7ffd6f",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 3220,
+          "semantic_fingerprint": "a8ac1070911c50b13c9ccf787bc9f9ef557072d8ee00423abb4ec752e0b61307",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "779c936e-a6e8-4a9e-9bbf-5372a8ace94d",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "d020bdd909149b2c2ef54d9155857ba5573a0d193dc0e5882ba6e80bb967ac6f",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "factor_engine",
+          "engine_version": 1,
+          "row_count": 23880,
+          "semantic_fingerprint": "54d7739adcdd1607873d51ca615cdfa15e4f55e7c25d2ef89b546c8e5363e08b",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "return_continuation",
+      "legacy_key": "return_continuation__total_return__w5",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "total_return__w5",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "return_continuation",
+        "origin_stage": 3,
+        "variant_key": "return_continuation__w5"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "3b8f7a01-001d-4326-89ab-e4d00a3cc7ce",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "5230f14dab864156c9bf30525ded782b768ce3cd07c69e2ac08d98c99789492d",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "56551004735578ee96e19fa321d048863196827cd445bd7ce32eecfac46128cd",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "462271e3-0cb6-4d42-a97e-6fcab885bf03",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "dfa972b4b9bfd8a6441d09bbce96da4bdafe7704a5833ae23989b1a81f965dca",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "eb009fe233080904922fee4f2ec25fa51c6a8ff852bac79371f96d45e906f254",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "return_continuation",
+      "legacy_key": "return_continuation__total_return__w20",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "total_return__w20",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "return_continuation",
+        "origin_stage": 3,
+        "variant_key": "return_continuation__w20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "ee7ede7a-8324-4648-b101-6909151099c0",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "fee7e934ee472ae1bae8840f5a405ee869043b76e7448a366cb9c57311a946f9",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "91fbe55d23b9a8afad07ba0a9c4a164173e9b1bef8f1ac1e600058d8f398edba",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "8c006b75-0b7d-4a51-9dec-c8da53add6f8",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "31b57ba48931e144210e3cfc53a7b05e9cb97ae785ca3006462be42851c71b8c",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "f74b16b1d6919a6d27cc7779b9c9fc524b4c381b88f8f32535dfff601f467c4c",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "return_continuation",
+      "legacy_key": "return_continuation__total_return__w60",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "total_return__w60",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "return_continuation",
+        "origin_stage": 3,
+        "variant_key": "return_continuation__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "0a8efcd1-6145-44ff-bf80-64276032b224",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "ad8468fa8b56b5c457bb3780b70a0acf5cb7c01c620a5bc4e933badce312456f",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "9e1de8f1bcd2f580089c88ab034af8666e5503d9ba6938eb958b8938a8bc9825",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "1ee75183-823b-4081-8dff-27681768be1c",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "f7382543788e83c25bef2a49ec16092d3749f5469009288354775b572d06a1fc",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "1abcbd462e53d3a065901f2a6e8458073265553181fcb7e3b85fc815ef8c4f49",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "return_continuation",
+      "legacy_key": "return_continuation__total_return__w120",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "total_return__w120",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "return_continuation",
+        "origin_stage": 3,
+        "variant_key": "return_continuation__w120"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "7f609e94-73f5-4712-9d06-dfd978d27cdf",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "c01c9eea0653eba5f3d3ae21e35953b2e0c9d43ccf736033c7e10122c357e9ef",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "3167b7c0914d59b55429a77be497b7be49954278b6c522189cb6f4f8f8384081",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "d2f356cd-1619-4afb-9264-588542e120fd",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "45ed8cc892ce0ad8a77bd859f6042e8859fd1d1df57548b10a54f4887d8ac8c9",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "166dad79f0678b6970241fa05360c79de9a3074520efb47fdd92238d8a941b4d",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "executable"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "return_continuation",
+      "legacy_key": "return_continuation__total_return__w252",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "total_return__w252",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "return_continuation",
+        "origin_stage": 3,
+        "variant_key": "return_continuation__w252"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "5ed7888b-6748-45bc-8c5f-dc6a902e75e2",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "4a25c02a722d7e6a3c3d1a3251e0ec3772059088b58cc2b864a7e6782544eeeb",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "c31b5b5cc9be638dd012af11b91cc6259824312c5e7cae5f98e75cc6af4a0895",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "2921382d-6fd4-49e4-971a-09edb86509eb",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "e9e99837e85eb1bb6771b2b36c04b151d0dfcd5b6578b09fc2f706a622fa5ec7",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "746f7edb06eb6deecbada6d4f985bdd458c4feb565964691996a675ce47c065e",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "short_return_reversal",
+      "legacy_key": "short_return_reversal__total_return__w5",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "total_return__w5",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "short_return_reversal",
+        "origin_stage": 2,
+        "variant_key": "short_return_reversal__w5"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "728a3a1d-e216-4e4d-93ef-32accab06ad2",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "bec1518eb670cd0be7ec1c3c875ef1276e78a45d0bfbf2f0eae98c9c8ad65425",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "7365e24b94a3d8d262fe758ae4d9f160dc4f032e21cf781897446ab9e11046e7",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "10d15ff8-6314-41ec-b9ae-27899475de76",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "49d3f699607e5e15a848c23a0a435d5eefd2df5b6d808ddeed22a68b1265508a",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "db3750cb587a425e18be41c7761cc737e69545e7561c19d1577e873b663f402d",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "short_return_reversal",
+      "legacy_key": "short_return_reversal__total_return__w20",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "total_return__w20",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "short_return_reversal",
+        "origin_stage": 2,
+        "variant_key": "short_return_reversal__w20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "c0c792f5-b432-4964-894b-f7d22496aae2",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "b9a6376e6d471ad3c3db0a8d13a11a82f065553ba0eac369c604c027dc66f3b0",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "ab3da45fedf6d0855cb6f97ffb9e52463b81bf40189124cd0a244c5d1de0bc49",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "e838e953-94a4-404d-bec4-8cfe5fefccfc",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "8ba00af84cb76b981ac609e9ebf579ecf51c2097db3466440840be7110ffddbc",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "0b547422a60fafbba3b2775f104ecd2718a0f7b2454e0faf81f53314a5fe0b7f",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "lagged_return_continuation",
+      "legacy_key": "lagged_return_continuation__lagged_return__l120_s20",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "lagged_return__l120_s20",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "lagged_return_continuation",
+        "origin_stage": 2,
+        "variant_key": "lagged_return_continuation__l120_s20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "b672441a-68e1-467b-924e-b0cc848778c1",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "864fcc4c2ee19b4b21a44a3b81e516cc5a819a0a8af4f62ea3d80acddf5060eb",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "922489c4311a733892a107dc738c1e01773ef6c7d50cc920510760973b10fbb4",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "bf5efad5-b68b-455f-8222-739f583a3240",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "1c3f97e04654b50634388b13dc48de6e27a5a244712653530034b613620fe494",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "1df0ebdeec9a6a05d4274499bbf293a088901fdf4887c3651ba2e7298d4a78d6",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "lagged_return_continuation",
+      "legacy_key": "lagged_return_continuation__lagged_return__l252_s20",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "lagged_return__l252_s20",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "lagged_return_continuation",
+        "origin_stage": 2,
+        "variant_key": "lagged_return_continuation__l252_s20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "9000ddf4-3f31-426b-a513-1854a31a1a1d",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "058f86789cab434bef4cca97a9dafebbc6cc252253ce42cbf823332f141858d3",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "48b060cd9f7aad3c121cb763744159cb8bd5193a1746840c9d2bd725c5fa0ecb",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "b111f8aa-437e-41c7-828b-874c41d4a7b6",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "8670b69e0219ec6931ab9bfeff67f10aec68b5dafd10c7a2c893fabf87a87c71",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "79dd7534b6d8bfa9ca24641e2e1402390b90a9f96b295c3f0157821406e5dabb",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "ma_trend_strength",
+      "legacy_key": "ma_trend_strength__moving_average_ratio__s20_l60",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "moving_average_ratio__s20_l60",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "ma_trend_strength",
+        "origin_stage": 2,
+        "variant_key": "ma_trend_strength__s20_l60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "aea2b7d1-dd4d-4709-aa27-31ddaf96c5ee",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "f2f80a49a95ccae1003ac0c033efcbe57ff9eeb8198f5a5c36f7dfba253402a2",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "fcac40533aeb29592d2ce405a2c14b73bb9c61a0cb70cf7a30056b10960e33e2",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "33669102-e7d0-4f04-be50-4ad944cbc58e",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "42f79d1c3e13b94c00075021e4bceeef36ba48a12a19e0517ac14f52d6fd7348",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "434762f08469e689bf505cb90b38345676621133e3db2bcf5c1d7a7f2c586715",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "ma_trend_strength",
+      "legacy_key": "ma_trend_strength__moving_average_ratio__s60_l120",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "moving_average_ratio__s60_l120",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "ma_trend_strength",
+        "origin_stage": 2,
+        "variant_key": "ma_trend_strength__s60_l120"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "11be87ad-d484-44c5-8419-b071e668853a",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "03de79133b2b674a74611a54fb3dbd318ad6af5f2fd712079f1a4d316fb21450",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "7896db2e4cdfb9091786a3de61b0bd7a10674d316e3051b813184207ca449ff1",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "766332b3-84cd-463b-8415-655486019b57",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "585a76f27aa61fe244f004f96308117414d19ecae4d8abd46fbafba8aa5c4327",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "bb106a3e52e954c855b8920372aff15acd4d80e9163101bdeade3c00f22e009b",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "ma_trend_strength",
+      "legacy_key": "ma_trend_strength__moving_average_ratio__s1_l50",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "moving_average_ratio__s1_l50",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "ma_trend_strength",
+        "origin_stage": 2,
+        "variant_key": "ma_trend_strength__s1_l50"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "8ca9e6b7-c59e-4adf-8ed2-dad632486dad",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "02c2b5d32232bcfdc384a2881d274726cf0e2f5566b96ec6128ce0190da67ba8",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "e9f4dfb16e54d938b4b667ba193d48cb8d1ee2fd007039b3daa544177871f01b",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "c68f0bdf-35c6-48b3-b90c-1990e7b298fe",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "bb2bd92d1b5dea39d0b68393b598f15b88e97a138c0d6d0b08915ddacd4091ee",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "0a4678966ea769e8f421a85045155adddea4ca6e86439ab1835e2df39a6a5821",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "ma_trend_strength",
+      "legacy_key": "ma_trend_strength__moving_average_ratio__s1_l200",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "moving_average_ratio__s1_l200",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "ma_trend_strength",
+        "origin_stage": 2,
+        "variant_key": "ma_trend_strength__s1_l200"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "1ff5a186-fd16-4163-b443-1fdda2da0b2c",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "73a6f5743c6e9acce2eb83dabfe6fa456977c83d8e411f16641e2156961e0a96",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "0f44ead2aa22cd5494e73efd33170f56b7acc276f7a7e8583905b6fbe8c91dc7",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "91508d68-b5ba-4dcc-901f-9fef7b4dfa59",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "072416bb18f9a05f15a99149c2df82cd034741b91f511e6f97bf5e40ebb022da",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "788870f09bc1f840002388dff81701bb9780c28218eb8fd3dcf374f9e1a1ca3b",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "ma_trend_strength",
+      "legacy_key": "ma_trend_strength__moving_average_ratio__s50_l200",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "moving_average_ratio__s50_l200",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "ma_trend_strength",
+        "origin_stage": 2,
+        "variant_key": "ma_trend_strength__s50_l200"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "2c876750-1eba-4bcb-a624-8f9ed0b6a8ce",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "c6b9c8fdd0ced194f5e2ec42aac8377d1175df8da4596f9309410e039f54a3ef",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "d2a9384a68e79a2c58ea9674d7eeed584caf82fcee4c6739a947ebe07aa94da0",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "f30433b4-fcca-4d56-8ffd-7b4f3c8d12df",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "8b088bd6c03718eb0f0ab49d9d632bf69ce226daf0e80777e6a4111ae7ee61d4",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "ea4993a627d20b9f72a9476d44e382152c8818c711c684847b482351abd6d629",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "price_above_ma_state",
+      "legacy_key": "price_above_ma_state__moving_average_ratio__s1_l50",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "moving_average_ratio__s1_l50",
+        "form": "threshold_state",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "none",
+        "rule": {
+          "false_score": -1,
+          "operator": ">",
+          "threshold": 0,
+          "true_score": 1
+        },
+        "tie_policy": "not_applicable"
+      },
+      "mapping": {
+        "family_key": "price_above_ma_state",
+        "origin_stage": 2,
+        "variant_key": "price_above_ma_state__s1_l50"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "7fddbc83-a08b-4c6b-a545-13bf6186da70",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "8eeb82374cd2b8ce163c4f74a437b14ef4a01bcf87ffde5e9417887f58491aa6",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "157ae1720f8274ee9ad0915908f841314be60c17cb85fbd9dfc67d7e1d74ccdf",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "dd6ced31-1ae2-49a0-ba2f-515441aa99fc",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "9137d101cf8396d64148db049aa4655c27fce15cf19a6d5b337cfc30dc308f90",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "34521d1ef30174d4e0efc16bac5c8a23234b510ca5a07c3328af2e001acbd99d",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "price_above_ma_state",
+      "legacy_key": "price_above_ma_state__moving_average_ratio__s1_l200",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "moving_average_ratio__s1_l200",
+        "form": "threshold_state",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "none",
+        "rule": {
+          "false_score": -1,
+          "operator": ">",
+          "threshold": 0,
+          "true_score": 1
+        },
+        "tie_policy": "not_applicable"
+      },
+      "mapping": {
+        "family_key": "price_above_ma_state",
+        "origin_stage": 2,
+        "variant_key": "price_above_ma_state__s1_l200"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "baf583f5-1ec6-4f69-87f6-afc84bd9a890",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "d9d2eec9954c1add52b7ccdbb648aa3a0cac61a1dc5a2c87f1a21a7ded5be60c",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "6937258b46c52b1f8c7db944d99d9e39e49bbb8874462751e1b194bb33a0896c",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "ab4f044d-68c2-4786-b829-d98b38f66175",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "41e88006c9e9fb846ab7c1f1ce90a35babd3d533b44ed9978f2aae4b01d06075",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "d9d532dfc8aa5623f6e7a1bc0e97e900f086a6b4468bb56d41308cea681252fb",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "price_cross_above_ma",
+      "legacy_key": "price_cross_above_ma__moving_average_ratio__s1_l50",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "moving_average_ratio__s1_l50",
+        "form": "crossover_event",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "none",
+        "rule": {
+          "current": ">0",
+          "event_score": 1,
+          "otherwise": "neutral",
+          "previous": "<=0"
+        },
+        "tie_policy": "not_applicable"
+      },
+      "mapping": {
+        "family_key": "price_cross_above_ma",
+        "origin_stage": 2,
+        "variant_key": "price_cross_above_ma__s1_l50"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "9848d4dc-b58a-4e79-8fb8-513a93e21f29",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "1e80ffdb333784777c6568de903246555ad19f5330b0ae8f86be89138de21c1b",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2572,
+          "semantic_fingerprint": "8d1763a42352d4da209e741227b81462bc45373b6c945af0d252f96ddaa9a64b",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "20a55c78-e320-4260-b61d-19f3d89f7e54",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "23e58ebf6599144267622f63e298aa1b3cd879072d73f1c9860d3ad3ef137027",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19100,
+          "semantic_fingerprint": "4d4df092b2ac6071761cafd73c5535e8d6156806ceab941406935181510c7322",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "price_cross_above_ma",
+      "legacy_key": "price_cross_above_ma__moving_average_ratio__s1_l200",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "moving_average_ratio__s1_l200",
+        "form": "crossover_event",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "none",
+        "rule": {
+          "current": ">0",
+          "event_score": 1,
+          "otherwise": "neutral",
+          "previous": "<=0"
+        },
+        "tie_policy": "not_applicable"
+      },
+      "mapping": {
+        "family_key": "price_cross_above_ma",
+        "origin_stage": 2,
+        "variant_key": "price_cross_above_ma__s1_l200"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "9bb19c7e-2e60-4280-9b3f-138f2a32bb87",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "cbb9cec7c1ba5139469b5485b99bbed91a6097351b0fee6329e4dc99591d6c29",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2572,
+          "semantic_fingerprint": "4382f70dc8548aa7c410c7ce786dd859afb30c01a144cf9146d78cab43d29c21",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "bc062c17-3ff3-49e0-a063-6af7b34c53b0",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "fe2609345114a0570badbcc3a611e7fc4380c7993f89545205dcdd146a6f753a",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19100,
+          "semantic_fingerprint": "b75313d9b748c9c0ad65984cccf355ea5e6c28d717bf7a93eb3383840ff43ff8",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "executable"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "price_cross_below_ma",
+      "legacy_key": "price_cross_below_ma__moving_average_ratio__s1_l50",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "moving_average_ratio__s1_l50",
+        "form": "crossover_event",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "none",
+        "rule": {
+          "current": "<0",
+          "event_score": -1,
+          "otherwise": "neutral",
+          "previous": ">=0"
+        },
+        "tie_policy": "not_applicable"
+      },
+      "mapping": {
+        "family_key": "price_cross_below_ma",
+        "origin_stage": 2,
+        "variant_key": "price_cross_below_ma__s1_l50"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "77d3098a-00af-406e-9d0c-82c5a297b5b6",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "482eec98a5f249a4cf826d197755d0821cd49a951bd9ee3889ba4c056c811448",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2572,
+          "semantic_fingerprint": "2a0f817ede929b53bab66fecbc744611cc280d45cc2ce7a5ae6e0b90d89b032d",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "b6acc158-9c3c-4f28-b4a4-09d78b24ccb2",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "e6af42141b9f1fc6a97f1f136c4066ce657156fc3feeabaaab3a0a2aef9e7f38",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19100,
+          "semantic_fingerprint": "d2a720b5933c904227bbe14d17d6d57821d7fb6096f774722aff7a4b9b7fdda7",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "price_cross_below_ma",
+      "legacy_key": "price_cross_below_ma__moving_average_ratio__s1_l200",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "moving_average_ratio__s1_l200",
+        "form": "crossover_event",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "none",
+        "rule": {
+          "current": "<0",
+          "event_score": -1,
+          "otherwise": "neutral",
+          "previous": ">=0"
+        },
+        "tie_policy": "not_applicable"
+      },
+      "mapping": {
+        "family_key": "price_cross_below_ma",
+        "origin_stage": 2,
+        "variant_key": "price_cross_below_ma__s1_l200"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "6ea14c87-8f7c-4360-a54c-5883ef71e079",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "b2689a86932c51ae41a6a44a9d741a16c7d82c31fb02a4e3c6365b959e8e122c",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2572,
+          "semantic_fingerprint": "7441fea5c5a33caed2bcd732c0cd660a38d86f1899f0cad861db65c29bb6dfab",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "12e395ea-1bb3-45f4-9ad6-a0452edb1374",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "fbc6ab8e9de3b2e3b1807cf4561456bc2550c990d5691b770b80a7629df1e123",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19100,
+          "semantic_fingerprint": "0eb699f495cb41a4f034f3ad024610beb9798e5c4f59f9025aeef4b6a3f97316",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "golden_cross_event",
+      "legacy_key": "golden_cross_event__moving_average_ratio__s50_l200",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "moving_average_ratio__s50_l200",
+        "form": "crossover_event",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "none",
+        "rule": {
+          "current": ">0",
+          "event_score": 1,
+          "otherwise": "neutral",
+          "previous": "<=0"
+        },
+        "tie_policy": "not_applicable"
+      },
+      "mapping": {
+        "family_key": "golden_cross_event",
+        "origin_stage": 2,
+        "variant_key": "golden_cross_event__s50_l200"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "5fb8d5e2-5820-4472-9a71-ce5f4f6186cf",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "fd8cca708d3d2d05517cbfaa841d55019e350a9c555a6852ccba5bd292652923",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2572,
+          "semantic_fingerprint": "b87b1a28906258b0ddc607c22972cae6ff85a0b5d07db247f1d840e90c0a6ff1",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "81bb896d-dcbf-418f-a6a5-764709259cb7",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "88a53e3c1e6ec5f6a0cf07c4a54c28698978ff26444f4a8f1e90a19c2be9ea76",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19100,
+          "semantic_fingerprint": "3c8b12bd4eb8c46d0cc20ea2a981e5d638b4bd131d022e35421309798559225b",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "death_cross_event",
+      "legacy_key": "death_cross_event__moving_average_ratio__s50_l200",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "moving_average_ratio__s50_l200",
+        "form": "crossover_event",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "none",
+        "rule": {
+          "current": "<0",
+          "event_score": -1,
+          "otherwise": "neutral",
+          "previous": ">=0"
+        },
+        "tie_policy": "not_applicable"
+      },
+      "mapping": {
+        "family_key": "death_cross_event",
+        "origin_stage": 2,
+        "variant_key": "death_cross_event__s50_l200"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "86886fe1-a002-4f14-89c6-20a7b0eae0ad",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "90ee4a74445be85571f84e976c8ff44d8c002c90a6cd2397c4e6cbeba62c8767",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2572,
+          "semantic_fingerprint": "5f6a5a050b237187bbf8c08a45c134bc1011d94c2807affa32cba58038c90dcc",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "5d64f251-f022-4e67-a9b8-921a06a98845",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "5b453305a3359a15f614378296b6274f0a7448a64a371d19b2595b703f400811",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19100,
+          "semantic_fingerprint": "97881406ca059520a36a04ca7ebc7350fda0985196885a541511480fc2e5eb4a",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "rsi_relative_strength",
+      "legacy_key": "rsi_relative_strength__rsi__w14",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "rsi__w14",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "rsi_relative_strength",
+        "origin_stage": 2,
+        "variant_key": "rsi_relative_strength__w14"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "4dbac45c-24a2-4deb-9426-dbc07f714c1e",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "82976d43c1ce257ff509ea406f2c0ba99d947cca55a5891887b1ba0577735bdc",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "e2819b3deecc556bcf7dba01f5c3b97bd1432b65f9c4e644cd5cbf0382369d7c",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "537a2a28-d606-4f67-804b-b964340e13ee",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "79d9ee48aeae6d24bf8868b8ec41f5de1e718587826af0e2a9a08dd7c6378b55",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "a0740bf74a07dc7cae23a4fdf54552a582b5eaaac992d4b64567cd65d0e2a583",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "rsi_mean_reversion",
+      "legacy_key": "rsi_mean_reversion__rsi__w14",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "rsi__w14",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "rsi_mean_reversion",
+        "origin_stage": 2,
+        "variant_key": "rsi_mean_reversion__w14"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "a48bddba-9b3b-4ba2-b3b2-7c489ff3ce8d",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "045ebc419959c888923149caf85473a4bc39afb769ed701db544793e188956e9",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "a24aa5f79125121a0a2f76da0c9e74b07d2f83aad70159d1acd1b4436ade52f1",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "55f2bcd9-fb9a-4390-8e73-1c80f9cb19ad",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "79c7e135f617d12d41abd724d3615e64ac25940ad2a13045fe20b58028dac3af",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "ead64f91582c2654c2720cfa0b292b5605cff295f000bd6e56a3ac62a600c001",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "rsi_oversold_state",
+      "legacy_key": "rsi_oversold_state__rsi__w14",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "rsi__w14",
+        "form": "threshold_state",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "none",
+        "rule": {
+          "false_score": 0,
+          "operator": "<=",
+          "threshold": 30,
+          "true_score": 1
+        },
+        "tie_policy": "not_applicable"
+      },
+      "mapping": {
+        "family_key": "rsi_oversold_state",
+        "origin_stage": 2,
+        "variant_key": "rsi_oversold_state__w14"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "960b8602-da98-46ba-a2eb-51159b16233f",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "1a07b68d24cb3f0b73b43942e9dab54e55ae2a2fe459f0db19c8dc7b1699b6f2",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "878cbfa1ec4611083588a2b282edd140be1b3c1f8a0fc4f53a1b5d7b51cb5de7",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "13f942a4-540c-455d-8203-230c65c57794",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "94a53f45c274ae402a3f76d2fbfe3e05f45aba77c93b553ed8f832a38936e660",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "6f82af621d599f4bcffb92c6a1d33df546201a567e05c868bd6d3a42b333cc92",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "rsi_overbought_state",
+      "legacy_key": "rsi_overbought_state__rsi__w14",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "rsi__w14",
+        "form": "threshold_state",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "none",
+        "rule": {
+          "false_score": 0,
+          "operator": ">=",
+          "threshold": 70,
+          "true_score": -1
+        },
+        "tie_policy": "not_applicable"
+      },
+      "mapping": {
+        "family_key": "rsi_overbought_state",
+        "origin_stage": 2,
+        "variant_key": "rsi_overbought_state__w14"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "52ef4b9a-2571-4775-8933-bb18850cff99",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "0d54fed400e371c5d0fe685a2a3cb5d83e4fe7e5595cbd2a50afacd22a443c39",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "c3604df51ee5ffe9ae5f8a5b345d2e52a9cf88f9bbca6c3a875a25df463bb989",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "294a6920-7f0e-4413-b4e3-a870ccafa37e",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "ff425efc06c3ba2229205d330a25bbc1e2fd04c02bce108b91d79ba37b9bd5ea",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "ea0cc13864d18c1221b30f149080f425c321ee90ffd5e16bae57dd6a8809528d",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "low_skew_premium",
+      "legacy_key": "low_skew_premium__return_skewness__w60",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "return_skewness__w60",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "low_skew_premium",
+        "origin_stage": 2,
+        "variant_key": "low_skew_premium__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "1c66ab89-8b7c-40d8-bc36-ff145468de39",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "9a009253eefec857d930e05b89b47fd478a6cd02edf5b6511099b652ea7ecb42",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "5513071fa96d9a1d5fdeb10eaab70277c3e7c94af82d3cb01159ccf53ae7e2b1",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "7bc5e969-ad7e-4575-909e-30417dc27cc2",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "6225d67578ee94520e9876bab45f4070e16ec6c0ee632835409e0a03180f55ca",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "d2be05b8af6d5d2b5f9e29d50c253cbe10c5cfe685885e9a44120a5443a697f7",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "low_skew_premium",
+      "legacy_key": "low_skew_premium__return_skewness__w120",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "return_skewness__w120",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "low_skew_premium",
+        "origin_stage": 2,
+        "variant_key": "low_skew_premium__w120"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "1eff3ebe-4e22-4c26-9a1d-ebf3c159c553",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "90d2f2d81cf6271c84bb5c29c54169a3b20510ae76f1accfd4aa433d53251f08",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "699c6c28a02656ae1bca063b41ab99c03056c75607ea85d3ba7adc9992f6cac4",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "9cdbf20a-b5bc-4b40-a665-6502307dd209",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "6d28990b9bf143a498fb66e80b9b917b0891e6655b5ae65026e6608e0ae76d9e",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "7f2199130728ff3efe206f16d02f7dc3728431fa6af2652a21a51feaba3faf10",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "high_skew_regime",
+      "legacy_key": "high_skew_regime__return_skewness__w60",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "return_skewness__w60",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "high_skew_regime",
+        "origin_stage": 2,
+        "variant_key": "high_skew_regime__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "4c15b553-9415-4e71-af49-08e5771e1ca0",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "16204a4382e5362723715c9d15189b58acbddb1c56f4a7554b5fac0060450c3c",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "2b19607b9b8fe888faf5647a3de5075d63745e36da48b04f1f88756c56372028",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "11ddb0fa-5c49-400f-9391-f53cdc122949",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "d01e95b901b3ed985f4480f788158205ae95194caec03584dd52cd701a13d48d",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "e9a28745b4ea18aedb2fd7629032b4bf9d09973dde78a145c23afc19891186f3",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "high_skew_regime",
+      "legacy_key": "high_skew_regime__return_skewness__w120",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "return_skewness__w120",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "high_skew_regime",
+        "origin_stage": 2,
+        "variant_key": "high_skew_regime__w120"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "6598d73c-d158-4e91-9bd0-6ad78054188b",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "2ac05773d7889518d0ef4b343eb64c17db7dd8707e18d65e7d6d21892a71f564",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "32d9a015be6e523d696663b4590ee4b79b38abb17898300ae086ccb59b41d2e8",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "53332333-051d-4fb6-857c-0ba523d5eea6",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "613c97d29d79a7ea85a515a51e1a5b52afd86ea7761027fc6cee7095808310bd",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "7cb989352b3bd0cd4c6c8af5f2f440d879df86f0a0883bef92773053381d0f42",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "low_kurtosis_quality",
+      "legacy_key": "low_kurtosis_quality__return_excess_kurtosis__w120",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "return_excess_kurtosis__w120",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "low_kurtosis_quality",
+        "origin_stage": 2,
+        "variant_key": "low_kurtosis_quality__w120"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "4a389df5-7d3e-433d-9985-91ff0825fb5d",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "95a1bd28f2da64c27bbccf1234d3695fed6f3b92fce4b7dd38997735da6c14f2",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "eba85bcf79dd966c173454e1e43322139bd5937faab4870c8f8de3a47746e482",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "3246e77f-3d37-40bb-bdac-0371708ab8f3",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "9b8a8e435426bef2cfb56ed8219a411dc990dce5d52c573b899a40b9f81d79da",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "cfe60fc7150425c75efe570719d75ff94bd5e31d774b94ce17aed4fbb8645dac",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "low_kurtosis_quality",
+      "legacy_key": "low_kurtosis_quality__return_excess_kurtosis__w252",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "return_excess_kurtosis__w252",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "low_kurtosis_quality",
+        "origin_stage": 2,
+        "variant_key": "low_kurtosis_quality__w252"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "37ff9e8b-cb10-4b1a-8124-de9a996c8c18",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "f0f682e563509c26e17ab651a2ee67d1cf966dcc8a3c1f30e23ba0def6764f29",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "3c09309e18f10f82aa44b25194258e1e785c9fbd4a46241ae8ddf7360561d5b1",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "2aa05e5e-05f2-45b2-baa0-070afde13885",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "f764561f9e87b8fb7fc5d11572ccab4e6617c785206b7f783f8b170e65872229",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "a770d96fe5e38bb31135842dcdf36ee5db686afee2bb508393a975703f2bfb7a",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "high_kurtosis_tail_regime",
+      "legacy_key": "high_kurtosis_tail_regime__return_excess_kurtosis__w120",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "return_excess_kurtosis__w120",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "high_kurtosis_tail_regime",
+        "origin_stage": 2,
+        "variant_key": "high_kurtosis_tail_regime__w120"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "ac785071-25ef-4932-b5e9-e8eb9ff103b9",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "510ffaca9216cdf1ad0a867eac02b0579bbdd5c02bff047d71dfbdb392500f5a",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "fd1bd96a4a180cc78bd079f2c1b71ae807cc3173ef372b2ca334dbf11dc9aef8",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "1fb0c9a0-6dab-4e77-9cce-0d842c1c972e",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "171aeca79c980496f66377ea76f9e4ee0e930bf2f7e20d08f3696c7f43b66d8b",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "46d743c26c92974491bdebc97570a91a2bd648ada8ce6d6968d773ad03f97222",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "high_kurtosis_tail_regime",
+      "legacy_key": "high_kurtosis_tail_regime__return_excess_kurtosis__w252",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "return_excess_kurtosis__w252",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "high_kurtosis_tail_regime",
+        "origin_stage": 2,
+        "variant_key": "high_kurtosis_tail_regime__w252"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "394b0b78-ada1-4d97-a77d-feccd41a3310",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "905adcfad54adceca8a24aeddc2dc05233e0d023cb552c0a24cb1bb296ffc4e7",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "c3911f71cb7b894cdb334947c694992a34588eb5206bb19e1bad12086a8f4ed4",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "af67f8c4-c5da-44f8-acfe-1e51985f4a25",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "81c81368e70f27a04b1518914a3bfd63c7126cb1e6be83c43c05fdc6d52f0833",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "47fe75a8ec37e26ded415e1d27eeef2dd4a38d985544f06fafe132572a58255d",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "low_volatility",
+      "legacy_key": "low_volatility__realized_volatility__w20",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "realized_volatility__w20",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "low_volatility",
+        "origin_stage": 2,
+        "variant_key": "low_volatility__w20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "9df65326-d7e9-4d3f-af0e-448d0df3d282",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "dc7f17119a785bdab4807e24800bb20d24c20efe20821e2f21f47fe0095c786e",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "bd2f44e6d53d6371d4256a677ba29015d78f62daee0133de4d72984d3cc80267",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "f6266c70-68cf-4dc6-8738-fca53c2087d0",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "fb2cffb7e8003ffd1badaa405c3a30c97c6c1b85ffce50d51e73dd675302b1fa",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "376d1f86b620172170aa91eafa4f0376c4c29c09ff42e092879e20c8c945b50c",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "low_volatility",
+      "legacy_key": "low_volatility__realized_volatility__w60",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "realized_volatility__w60",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "low_volatility",
+        "origin_stage": 2,
+        "variant_key": "low_volatility__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "ce663363-fad9-43e8-b395-c3393e69e29e",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "b7f50a0edd1d5564022b4c2230b9ff2a1e1562be574b51709ff2a40209d83561",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "6166ceba2e950548d5499c8afab88556c812ddfa04dbfb269e1287acdf0683eb",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "c36df9c6-474f-43e9-8a32-67f9eb18bc12",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "b80f561a1d7d4cac1cb6294ca18495cd9e49acad7c1fce344fddc4c7f5c0a20b",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "fba65863beec3c3ef42b74e3e1c2668e485b683659dbfb7e03dc212c1719abae",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "low_downside_risk",
+      "legacy_key": "low_downside_risk__downside_deviation__w20",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "downside_deviation__w20",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "low_downside_risk",
+        "origin_stage": 2,
+        "variant_key": "low_downside_risk__w20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "05b6c9cb-26f7-43d4-965b-493162e053fd",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "158b584694cef1617a85fdbf6abe0e184717d17ee059f0bf381dbad17e708687",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "2d23c6ec983a4b73e15958d9684c96052088273c873c55882892395ec23d5549",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "45773465-1178-40bc-9bcb-2d1e0d4b28ec",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "411ec22e418ba0f6cf1a6eda61db4b67159442dcde5c460afeb0f3130defc9f2",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "786843f7cc8e199f63d0cf0d052bae27c6b27e5c4f44c7f9dc6403ba137562ce",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "low_downside_risk",
+      "legacy_key": "low_downside_risk__downside_deviation__w60",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "downside_deviation__w60",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "low_downside_risk",
+        "origin_stage": 2,
+        "variant_key": "low_downside_risk__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "de3ef5cb-9b80-4c8d-a1ae-fe3c5c4cffb0",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "c098519e1ca94ebfc812a5b7689c7683ebe5a5eebe01814b5928f2823b1c8b93",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "848e233f08b8fc0006ccaaae2a93c38fc4dd50ebc37385046b309f2d4cd71e3c",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "13b52fa6-0ea1-4b1b-be50-b86eae94a52b",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "d6d7b5ab981bc0fc344d7579bc16f12798f4036a003857e335e5c8c61536f8da",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "30912f5a0c6ec15ec7a271b72d49b1be5f489e912d34fbd16cf62b95bd1409af",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "drawdown_resilience",
+      "legacy_key": "drawdown_resilience__maximum_drawdown__w60",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "maximum_drawdown__w60",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "drawdown_resilience",
+        "origin_stage": 2,
+        "variant_key": "drawdown_resilience__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "3c0868ef-224d-4aef-88ad-16e6a02c9aee",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "524040adf0609f4bae2e8d8caeaba60343d59c4ce115188b4efbc25cf225f95c",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "6be9104d8504acc33cb265595cd24cd9b4748f48907301538ea1113dfdc99f1a",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "9db5f4c5-6c40-4682-9ea9-03e25a61aeb7",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "8b722864ade0d5d0ee1fb05f1d53c388b0c38b863a484fa193b8345285fbeecd",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "35e4635e5b332f8378921d9771cfd4e7b93e98148053d0c4736411bdaf825bba",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "drawdown_resilience",
+      "legacy_key": "drawdown_resilience__maximum_drawdown__w120",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "maximum_drawdown__w120",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "drawdown_resilience",
+        "origin_stage": 2,
+        "variant_key": "drawdown_resilience__w120"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "2042fee3-fe43-458a-b097-80cfe5b6af0e",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "a81dbb409447e027de3444b7d6cf242c3989d6c28e542c99329b4a0dfc266660",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "c3a8cb055957397c263add1e4b2e8b031e9d49af3ac4ea9d6b23c88345a11a21",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "5675653c-82bd-4572-836b-e1d1900ff9e3",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "a8f49e8b956023b57e09ada5d0b2e8526303ec1c2abce6d6f695528dcc5f8da6",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "90a59532c1a70e174b0d59aaf69e762ab16a9a48803d4f8640ca1a376bc48efb",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "deep_drawdown_reversal",
+      "legacy_key": "deep_drawdown_reversal__maximum_drawdown__w60",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "maximum_drawdown__w60",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "deep_drawdown_reversal",
+        "origin_stage": 2,
+        "variant_key": "deep_drawdown_reversal__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "e89f3796-d8d6-4e7e-b889-271ab08f88a5",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "f39c804fbfaa9bfbb4f268c9e1a3c2e0e0a6eab5a91e3544481092ed04c596ac",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "3f485e6e8850fce8df4c5f68f41539164b98388b685986d636e0c14ed867d929",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "f6d1e220-db5f-410b-a3df-bac07663e2ca",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "7880b0e77bb6cdd9c51b7d4f754a27c37dde977b67a4ee38632284249f688d8d",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "65fd7f39723814b298cbfbd15c763c4fdb55bf074dad5ec962eb719186126610",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "deep_drawdown_reversal",
+      "legacy_key": "deep_drawdown_reversal__maximum_drawdown__w120",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "maximum_drawdown__w120",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "deep_drawdown_reversal",
+        "origin_stage": 2,
+        "variant_key": "deep_drawdown_reversal__w120"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "a2907f9c-1105-4d30-9876-5e82d079fdf8",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "03e6b1180fe30ab7b739d94aa61de389b0c3fb3d31a10381d25e992d959bf93d",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "3c01daae1d2b712f67c546c25e76d945351408045cdf27b4d96be301b83ed0de",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "6daa0c36-2704-404b-924c-b3ae610e9470",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "b72189633f2222980726f9310a4591b406603876a1b7531af22545dba4d5ef7f",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "819b862f978c8a176f2f74b23ce7160a9095bf94a788f2b02f1d566e5f07d67f",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "dollar_volume_attention",
+      "legacy_key": "dollar_volume_attention__relative_dollar_volume__w20",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "relative_dollar_volume__w20",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "dollar_volume_attention",
+        "origin_stage": 2,
+        "variant_key": "dollar_volume_attention__w20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "eeb0e495-3688-46e7-80fb-923dd2c39423",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "598f4c12e551508b60643842716b5a2ef3e3270d4f5988cb01c04ad48857f9d9",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "3b0ddc53aa18872c95c45de47b7308ece7f3b19891028661f10ec8422afd8572",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "900a9867-e810-4c9f-940e-21698af8591a",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "ff4072320dde8ac90bc0e1700ba906f67a6121dfa0b03fa38c358020feced98b",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "8c393f019d26de59b3dada4d33e40e72d4fb5be5786f5989ac40c4bb17034146",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "dollar_volume_attention",
+      "legacy_key": "dollar_volume_attention__relative_dollar_volume__w60",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "relative_dollar_volume__w60",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "dollar_volume_attention",
+        "origin_stage": 2,
+        "variant_key": "dollar_volume_attention__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "a9d15f23-fd32-4ac8-b18c-d77a91367fa5",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "89526f97ee651a41ba7e3cecde9c443ee2301d5b3e8ee17e16ab87de87a90cce",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "d250d997c8f8575a5e0a397ed9dfc26c6638c684e5ecaaa6482c9d785bfe9920",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "a9332849-a202-428f-8eab-fa35c2fda179",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "8f10bc3d58bb1683a828e68da5795933dc22c74a06824f6e9c47008faa07c00c",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "8444f88c83b259fa3c0a03c85d6b67319c6ca20b5a3bf48a73ae15b8d195af91",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "low_illiquidity_quality",
+      "legacy_key": "low_illiquidity_quality__amihud_illiquidity__w20",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "amihud_illiquidity__w20",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "low_illiquidity_quality",
+        "origin_stage": 3,
+        "variant_key": "low_illiquidity_quality__w20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "63bf6e3b-d727-485e-808c-4a1d4b030a89",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "9debc895b7d239b301af332a7896ddbc0fc6cf013664577386ce93fff4fee02a",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "18b523b71714faca19694bf4ede26b98bb61640cf4829f042eb1469bd9bf9409",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "c360e46b-689a-4188-a8ae-cb3b1abe401f",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "8f616c3a5130b683356f88b82070ea5a12da31524e4c99ae21d2d0944a0b7ac1",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "1fbff40150e66d7dc50ee409cc876d48ab9d77f243a81615569093fd8df62d3c",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "executable"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "low_illiquidity_quality",
+      "legacy_key": "low_illiquidity_quality__amihud_illiquidity__w60",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "amihud_illiquidity__w60",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "low_illiquidity_quality",
+        "origin_stage": 3,
+        "variant_key": "low_illiquidity_quality__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "98101caf-ce55-4dcd-9695-6dfd80fc8e16",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "b384806cc47482011fd670998144dbea426ae5a077a16b8545a47c8bdb433545",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "c39cbf65e8eb0c698e64d8ba786f01ca5dee0e70d4fb3ffb34b0b139c6745f8e",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "354a98a3-9854-47fa-994a-2b4745ef1f24",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "b7cdca00a27d04839410e0652e15cc9e2fe6d6ba282c9b30aa4007c0efd66a28",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "d3a9b6916448ab92afa16d143b034af31642793bdcadc3b52ba881adc2956788",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "illiquidity_premium",
+      "legacy_key": "illiquidity_premium__amihud_illiquidity__w20",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "amihud_illiquidity__w20",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "illiquidity_premium",
+        "origin_stage": 3,
+        "variant_key": "illiquidity_premium__w20"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "2e0feb31-01d3-4c74-8cd8-c738b960ac45",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "21a85cc3539293858218674f7d8d0dc1100fa90bb92e98d32e85ea1d465fa9f5",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "ee3d83041111f21b9182d433c63e3859110049ec49eeb4fccfb3a0117bc1564d",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "0cdb2599-7304-432f-afdd-fa18d0422df5",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "6905cd339fdd38b156b6cea2ee85d112d6a3232103583d4f4570fc8d43e59b04",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "f7500fc6f9dc0114c91e81fb2b6465ab05f3f71ca721cbfa768ff9de6f2ac420",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "illiquidity_premium",
+      "legacy_key": "illiquidity_premium__amihud_illiquidity__w60",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "amihud_illiquidity__w60",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "illiquidity_premium",
+        "origin_stage": 3,
+        "variant_key": "illiquidity_premium__w60"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "96e71f54-a71f-4ddc-a548-6a96bf4923a5",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "607b9b539e843c541b412ea03589d02ccc39c4a57689ffba7597c98dc34570e8",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "74fe12f5d5cc8af15ad82e84dc9f9865ca82d8422403e1267bfaf2b4f336bb1f",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "b5bcb9c1-e4e7-4160-a434-e298c0554f8f",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "e078d1363c87082abb2a40fb3302700c133ff19660bf4b302524c18783b08070",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "27b612a7f40f363296e90b75800d8b7e92ecf1b371836e1e51022370588fdc13",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "ppo_trend_acceleration",
+      "legacy_key": "ppo_trend_acceleration__ppo_histogram__f12_s26_g9",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "ppo_histogram__f12_s26_g9",
+        "form": "continuous",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "cross_sectional_centered_rank_-1_1",
+        "rule": null,
+        "tie_policy": "average_rank"
+      },
+      "mapping": {
+        "family_key": "ppo_trend_acceleration",
+        "origin_stage": 2,
+        "variant_key": "ppo_trend_acceleration__f12_s26_g9"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "74415fd1-cb06-492d-9ab2-5f765fa5972f",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "7c2383dec7b094df5f0cdb35e6f5bc88905dee3995a2755a396775a583753be2",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2576,
+          "semantic_fingerprint": "678cc816877fcf157db53d69c0fc2b1fbcc4eb945587056aa51ab2b5b22932bd",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "927de73f-a8ca-4d72-a63e-d8d82a74c485",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "c083944b96c4e0c8b880a404b2338a8a78317e88698405f794eae0aa598dadf6",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-08",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19104,
+          "semantic_fingerprint": "302350dcdd69a8dd8a98771527fe038a833c6f5a09e4f10e063fd17b516868ca",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "ppo_cross_above_zero",
+      "legacy_key": "ppo_cross_above_zero__ppo_histogram__f12_s26_g9",
+      "legacy_recipe": {
+        "direction": "higher_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "ppo_histogram__f12_s26_g9",
+        "form": "crossover_event",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "none",
+        "rule": {
+          "current": ">0",
+          "event_score": 1,
+          "otherwise": "neutral",
+          "previous": "<=0"
+        },
+        "tie_policy": "not_applicable"
+      },
+      "mapping": {
+        "family_key": "ppo_cross_above_zero",
+        "origin_stage": 2,
+        "variant_key": "ppo_cross_above_zero__f12_s26_g9"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "6178db71-d389-4157-92a3-42fc4b4545e5",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "cb81af7339082c8708348c038a4edb80f9f8a91c05f1cd1705926d8033479ac7",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2572,
+          "semantic_fingerprint": "dd6f927f3ba01b0ad505124d6765442961379b750567d963c005dd916c360d39",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "107a73a7-355a-4609-8432-5bed4b0b994f",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "57f9fa9570d35c803832da391dd78ebe780d1f81c1bdb28a08c888bf16820931",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19100,
+          "semantic_fingerprint": "0c78f70b71ab41d48b1f49456528af9c375fbe3540d6d4081fa7df66a08c880f",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    },
+    {
+      "component_kind": "signal_version",
+      "legacy_family_key": "ppo_cross_below_zero",
+      "legacy_key": "ppo_cross_below_zero__ppo_histogram__f12_s26_g9",
+      "legacy_recipe": {
+        "direction": "lower_is_better",
+        "extreme_policy": "none",
+        "factor_variant_key": "ppo_histogram__f12_s26_g9",
+        "form": "crossover_event",
+        "missing_policy": "error_after_common_warmup",
+        "normalization": "none",
+        "rule": {
+          "current": "<0",
+          "event_score": -1,
+          "otherwise": "neutral",
+          "previous": ">=0"
+        },
+        "tie_policy": "not_applicable"
+      },
+      "mapping": {
+        "family_key": "ppo_cross_below_zero",
+        "origin_stage": 2,
+        "variant_key": "ppo_cross_below_zero__f12_s26_g9"
+      },
+      "oracle_outputs": [
+        {
+          "artifact_id": "c2fd87fe-f957-40a2-a1ea-f0cb60a9e5be",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "content_hash": "38bdb0d5a6824a8c3a6e5ca0758d08e69e36124cceb86e16f5dce712c1a02d75",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2024-01-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 2572,
+          "semantic_fingerprint": "0733144aa826b26148b2ba81950a5ca32032f9d2289a7b2c70f3793131beae41",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        },
+        {
+          "artifact_id": "26bad3ac-594b-4049-a736-6368316964aa",
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "content_hash": "6d46d197eca061cb57488da5ad4c58746fb5136e19f0cafd88e893de10194849",
+          "coverage_end": "2026-08-03",
+          "coverage_start": "2007-08-09",
+          "engine_key": "signal_engine",
+          "engine_version": 1,
+          "row_count": 19100,
+          "semantic_fingerprint": "e5c31ef372fa58284c1a6179964f60b3cf18e1c53fd53c552cc779d7392e698e",
+          "universe_key": "us_style_rotation_core",
+          "universe_version": 1
+        }
+      ],
+      "status": "mapped"
+    }
+  ],
+  "registry_version": "0.22.2",
+  "signal_catalog_fingerprint": "ef0fa65f69991cab4523f367b699bbb24557de3e31825f053d18b7e7fe3ab7da"
+}

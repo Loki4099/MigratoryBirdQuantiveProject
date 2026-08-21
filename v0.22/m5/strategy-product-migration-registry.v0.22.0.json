@@ -1,0 +1,952 @@
+{
+  "aggregation_catalog_fingerprint": "332d33fbd30fbfd5d03444a9259bb2fc9904bcda63f537c6263d6a5c04e0f190",
+  "catalog_type": "v022_strategy_product_migration_registry",
+  "contract_version": "v0.22.0",
+  "defense_baselines": [
+    {
+      "historical_strategy_reference_count": 8,
+      "legacy_key": "none",
+      "mapping": null,
+      "status": "catalog_validated"
+    },
+    {
+      "historical_strategy_reference_count": 6,
+      "legacy_key": "fixed_20",
+      "mapping": {
+        "variant_key": "fixed20_defense",
+        "version_number": 2
+      },
+      "status": "catalog_validated"
+    },
+    {
+      "historical_strategy_reference_count": 0,
+      "legacy_key": "internal_timing_v1",
+      "mapping": {
+        "variant_key": "ma200_tiered_defense",
+        "version_number": 1
+      },
+      "status": "catalog_validated"
+    }
+  ],
+  "defense_catalog_fingerprint": "76615f8dd92cd1b3bc339a03740c0b8ac05b9c2b379d67b9bec387f4b687ba0b",
+  "oracle_baseline_id": "v021-oracle-v0.22.0-m0",
+  "oracle_manifest_fingerprint": "86ecfda326bdc98e61fde026fcd85edf83f7dab6f77b053d249dead33366760c",
+  "product_records": [
+    {
+      "aggregation_mapping": {
+        "family_key": "flat_equal_weight_mean",
+        "input_signal_variant_keys": [
+          "low_skew_premium__w60",
+          "return_continuation__w20",
+          "return_continuation__w60"
+        ],
+        "legacy_compiled_model_instance_id": "2ba7b78b-7838-4caa-a4e3-fe0e316ecf3f",
+        "legacy_input_signal_keys": [
+          "low_skew_premium__return_skewness__w60",
+          "return_continuation__total_return__w20",
+          "return_continuation__total_return__w60"
+        ],
+        "legacy_instance_fingerprint": "a3af5db3833a95bd39c8fdf8e0d0b58444bb860feb4f9b008ce9b38d49346f8c",
+        "legacy_target_key": "cross_sectional_relative_return__h5",
+        "parameter_preset_key": "signal_equal_v1"
+      },
+      "defense_mapping_key": "none",
+      "legacy_identity": {
+        "artifact_id": "5ca3d254-4489-4e36-936c-73729bcc324d",
+        "artifact_status": "published",
+        "compiled_model_instance_id": "2ba7b78b-7838-4caa-a4e3-fe0e316ecf3f",
+        "compiled_strategy_version_id": "5bb7c5cf-344c-44c6-91b6-4694a6dcd7f3",
+        "content_hash": "20cdb5be50bef069c42124fc6fc638a126ae28df9722159edaac00e3504b738e",
+        "family_key": "linear_weighted",
+        "health": "observing",
+        "lifecycle": "active",
+        "preset_key": "linear_weighted__signal_equal_v1",
+        "product_enrollment_id": "566fec09-a5d7-4b6a-b09d-3f318ae4ae8f",
+        "product_fingerprint": "9232af7f7a3a571b7276f29a45caf9d815350ec37697128d87bf31a625488b80",
+        "product_key": "candidate__9232af7f7a3a571b7276f29a",
+        "product_version_id": "c2c5ef42-2568-482f-a6b6-8f9f6d93da12",
+        "semantic_fingerprint": "4aec80cc53535c5e7e90f9d3ac7ac2ecf503a1f938a05f1cf0fda5e461232c1d",
+        "slot_assignments": [
+          {
+            "signal_version_keys": [
+              "low_skew_premium__return_skewness__w60",
+              "return_continuation__total_return__w20",
+              "return_continuation__total_return__w60"
+            ],
+            "slot_key": "continuous_inputs"
+          }
+        ],
+        "specification_fingerprint": "a18b0d0df7d73fb68ff41031ca703491e4b6336f28cd4d849ab89dee38b72ac4",
+        "strategy_fingerprint": "5a1a14440b1e40c83405b35535fcbc0b138d2fc5fcea8375f75ed2694271e4f5",
+        "version_number": 1
+      },
+      "lineage_closure": {
+        "artifact_closure_fingerprint": "f59b04186ee75bdade927e98553382563c387ca94f5db3c93517bb19fbb55bbd",
+        "artifact_count": 218,
+        "dependency_edge_count": 418,
+        "dependency_edges_fingerprint": "fcd47f3334b6e5a5e52eb195be8d0b94c45d2b4c8b167d42d250b54633c713a7"
+      },
+      "status": "oracle_bound",
+      "strategy_mapping": {
+        "family_key": "cross_section_rank_top_k",
+        "frequency": "weekly",
+        "sector_cap": "none",
+        "selection_buffer": "half_k",
+        "target_k": 10,
+        "variant_key": "cross_section_rank_top_k_large_cap_parity",
+        "version_number": 1
+      }
+    }
+  ],
+  "registry_fingerprint": "d7977378380fd80a610b14b38f668c0961507f8df22325720ad1cd0b6a6c22e5",
+  "registry_version": "0.22.0",
+  "signal_registry_fingerprint": "456668c42247d47fbbce38c22b7b485ead2f35566a398a3a9766fe5b0d827ef1",
+  "source_database": {
+    "alembic_revision": "20260809_47_signal_export_job",
+    "database_name": "style_rotation",
+    "transaction_mode": "read_only"
+  },
+  "strategy_catalog_fingerprint": "f4ce96cc9dc594ad15438ae8465659925a2a609a5401de9f07855e320d11e488",
+  "strategy_records": [
+    {
+      "defense_mapping_key": "none",
+      "legacy_identity": {
+        "aggregation_family_key": "single_signal",
+        "aggregation_preset_key": "single_signal__identity_v1",
+        "artifact_id": "25a0f748-d1af-4830-98fa-5ce960a00581",
+        "artifact_status": "published",
+        "branch_key": "single_signal__identity_v1__weekly__multi_etf_top_k__k2__none__none__none",
+        "compiled_model_instance_id": "e80d9504-17a9-4a75-9861-1df1d0dd2cb4",
+        "compiled_strategy_version_id": "67c78331-88fe-486d-bed2-a7d5c9d8f9ea",
+        "content_hash": "b9fb010d696b427d3285c05743b53d61022942d570b85fd393318e70b87e180a",
+        "instance_fingerprint": "4f9c9cccc2387552b3b4e2d4001006c0566288dbd30f40f30d1782a56c5dc311",
+        "rule_graph": {
+          "branch_key": "single_signal__identity_v1__weekly__multi_etf_top_k__k2__none__none__none",
+          "frequency": "weekly",
+          "model_instance_key": "single_signal__identity_v1__weekly",
+          "parameters": {
+            "defense": "none",
+            "sector_cap": "none",
+            "selection_buffer": "none",
+            "target_k": 2
+          },
+          "portfolio_cell_count": 6,
+          "predictive_cell_count": 1,
+          "strategy_family_key": "multi_etf_top_k",
+          "strategy_preset_key": "multi_etf_top_k__k2__none__none__none",
+          "target_k": 2
+        },
+        "schedule_key": "weekly",
+        "semantic_fingerprint": "4c4514924be7906c0a803eb423a631e7dc13740669f44a4692231e6d89348daf",
+        "strategy_family_key": "multi_etf_top_k",
+        "strategy_fingerprint": "f034afeb0fd3ba2e2c6c36b53d93c4ed706b6d7992da4302de25a787d3f3a709",
+        "strategy_preset_key": "multi_etf_top_k__k2__none__none__none"
+      },
+      "model_mapping": {
+        "family_key": "single_signal_identity",
+        "input_signal_variant_keys": [
+          "return_continuation__w120"
+        ],
+        "legacy_compiled_model_instance_id": "e80d9504-17a9-4a75-9861-1df1d0dd2cb4",
+        "legacy_input_signal_keys": [
+          "return_continuation__total_return__w120"
+        ],
+        "legacy_instance_fingerprint": "4f9c9cccc2387552b3b4e2d4001006c0566288dbd30f40f30d1782a56c5dc311",
+        "legacy_target_key": null,
+        "parameter_preset_key": null
+      },
+      "status": "oracle_bound",
+      "strategy_mapping": {
+        "family_key": "cross_section_rank_top_k",
+        "frequency": "weekly",
+        "sector_cap": "none",
+        "selection_buffer": "none",
+        "target_k": 2,
+        "variant_key": "cross_section_rank_top_k_parity",
+        "version_number": 1
+      }
+    },
+    {
+      "defense_mapping_key": "none",
+      "legacy_identity": {
+        "aggregation_family_key": "single_signal",
+        "aggregation_preset_key": "single_signal__identity_v1",
+        "artifact_id": "36f5f674-8954-4497-b082-97d8de1a981a",
+        "artifact_status": "published",
+        "branch_key": "single_signal__identity_v1__cross_sectional_relative_return__h5__weekly__multi_etf_top_k__k2__none__none__none",
+        "compiled_model_instance_id": "3db8e629-ddba-4579-b570-84eb69237f4c",
+        "compiled_strategy_version_id": "4eeef411-9b32-4dec-b46a-9ae7ac73e797",
+        "content_hash": "fdae08e04954a6d518a04bfe8a9ff07822e0143a867d4737ff7375c0a91e36c4",
+        "instance_fingerprint": "0df0ac7723d7a907e7e221c963a0837a5e913affe234c6749b02db99f086b3c9",
+        "rule_graph": {
+          "branch_key": "single_signal__identity_v1__cross_sectional_relative_return__h5__weekly__multi_etf_top_k__k2__none__none__none",
+          "frequency": "weekly",
+          "model_instance_key": "single_signal__identity_v1__cross_sectional_relative_return__h5__weekly",
+          "parameters": {
+            "defense": "none",
+            "sector_cap": "none",
+            "selection_buffer": "none",
+            "target_k": 2
+          },
+          "portfolio_cell_count": 6,
+          "predictive_cell_count": 1,
+          "strategy_family_key": "multi_etf_top_k",
+          "strategy_preset_key": "multi_etf_top_k__k2__none__none__none",
+          "target_k": 2
+        },
+        "schedule_key": "weekly",
+        "semantic_fingerprint": "c97c4d66611d1ad5f567c9e85f1a82b7b15c3313c9f368a3473981bd19e9865e",
+        "strategy_family_key": "multi_etf_top_k",
+        "strategy_fingerprint": "5dc6014999afedd2fd1837249ef88d1bed342f9f2bcf3dae2778478ca5c8d305",
+        "strategy_preset_key": "multi_etf_top_k__k2__none__none__none"
+      },
+      "model_mapping": {
+        "family_key": "single_signal_identity",
+        "input_signal_variant_keys": [
+          "return_continuation__w120"
+        ],
+        "legacy_compiled_model_instance_id": "3db8e629-ddba-4579-b570-84eb69237f4c",
+        "legacy_input_signal_keys": [
+          "return_continuation__total_return__w120"
+        ],
+        "legacy_instance_fingerprint": "0df0ac7723d7a907e7e221c963a0837a5e913affe234c6749b02db99f086b3c9",
+        "legacy_target_key": "cross_sectional_relative_return__h5",
+        "parameter_preset_key": null
+      },
+      "status": "oracle_bound",
+      "strategy_mapping": {
+        "family_key": "cross_section_rank_top_k",
+        "frequency": "weekly",
+        "sector_cap": "none",
+        "selection_buffer": "none",
+        "target_k": 2,
+        "variant_key": "cross_section_rank_top_k_parity",
+        "version_number": 1
+      }
+    },
+    {
+      "defense_mapping_key": "fixed_20",
+      "legacy_identity": {
+        "aggregation_family_key": "linear_weighted",
+        "aggregation_preset_key": "linear_weighted__signal_equal_v1",
+        "artifact_id": "a292794f-72af-457c-9d3f-e52ae5e776fe",
+        "artifact_status": "published",
+        "branch_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__fixed_20__half_k__none",
+        "compiled_model_instance_id": "2ba7b78b-7838-4caa-a4e3-fe0e316ecf3f",
+        "compiled_strategy_version_id": "62460c26-c3b1-492e-b386-bfee2e79c684",
+        "content_hash": "da6cb1eeb50b006114129acc170c046c93a6c24f405ead66f25a1f76ac9fcf0c",
+        "instance_fingerprint": "a3af5db3833a95bd39c8fdf8e0d0b58444bb860feb4f9b008ce9b38d49346f8c",
+        "rule_graph": {
+          "branch_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__fixed_20__half_k__none",
+          "frequency": "weekly",
+          "model_instance_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly",
+          "parameters": {
+            "defense": "fixed_20",
+            "sector_cap": "none",
+            "selection_buffer": "half_k",
+            "target_k": 10
+          },
+          "portfolio_cell_count": 6,
+          "predictive_cell_count": 1,
+          "strategy_family_key": "us_large_cap_top_k",
+          "strategy_preset_key": "us_large_cap_top_k__k10__fixed_20__half_k__none",
+          "target_k": 10
+        },
+        "schedule_key": "weekly",
+        "semantic_fingerprint": "2cc858a04405028bce58c052fb0f18e67ad02d079cb6dc0189aac60cb68815bc",
+        "strategy_family_key": "us_large_cap_top_k",
+        "strategy_fingerprint": "7420970474fab3ca430deb56c6f1d62238b329199127b3f0a2b8d018e3c26936",
+        "strategy_preset_key": "us_large_cap_top_k__k10__fixed_20__half_k__none"
+      },
+      "model_mapping": {
+        "family_key": "flat_equal_weight_mean",
+        "input_signal_variant_keys": [
+          "low_skew_premium__w60",
+          "return_continuation__w20",
+          "return_continuation__w60"
+        ],
+        "legacy_compiled_model_instance_id": "2ba7b78b-7838-4caa-a4e3-fe0e316ecf3f",
+        "legacy_input_signal_keys": [
+          "low_skew_premium__return_skewness__w60",
+          "return_continuation__total_return__w20",
+          "return_continuation__total_return__w60"
+        ],
+        "legacy_instance_fingerprint": "a3af5db3833a95bd39c8fdf8e0d0b58444bb860feb4f9b008ce9b38d49346f8c",
+        "legacy_target_key": "cross_sectional_relative_return__h5",
+        "parameter_preset_key": "signal_equal_v1"
+      },
+      "status": "oracle_bound",
+      "strategy_mapping": {
+        "family_key": "cross_section_rank_top_k",
+        "frequency": "weekly",
+        "sector_cap": "none",
+        "selection_buffer": "half_k",
+        "target_k": 10,
+        "variant_key": "cross_section_rank_top_k_large_cap_parity",
+        "version_number": 1
+      }
+    },
+    {
+      "defense_mapping_key": "none",
+      "legacy_identity": {
+        "aggregation_family_key": "linear_weighted",
+        "aggregation_preset_key": "linear_weighted__signal_equal_v1",
+        "artifact_id": "adc0f593-44c4-48c1-9fe2-d2c15efa33a2",
+        "artifact_status": "published",
+        "branch_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__none__half_k__none",
+        "compiled_model_instance_id": "2ba7b78b-7838-4caa-a4e3-fe0e316ecf3f",
+        "compiled_strategy_version_id": "5bb7c5cf-344c-44c6-91b6-4694a6dcd7f3",
+        "content_hash": "9a0c83e86d193e510c9451bbd03c93406d4f46e4207bfb70d3be6c3675c370a9",
+        "instance_fingerprint": "a3af5db3833a95bd39c8fdf8e0d0b58444bb860feb4f9b008ce9b38d49346f8c",
+        "rule_graph": {
+          "branch_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__none__half_k__none",
+          "frequency": "weekly",
+          "model_instance_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly",
+          "parameters": {
+            "defense": "none",
+            "sector_cap": "none",
+            "selection_buffer": "half_k",
+            "target_k": 10
+          },
+          "portfolio_cell_count": 6,
+          "predictive_cell_count": 1,
+          "strategy_family_key": "us_large_cap_top_k",
+          "strategy_preset_key": "us_large_cap_top_k__k10__none__half_k__none",
+          "target_k": 10
+        },
+        "schedule_key": "weekly",
+        "semantic_fingerprint": "15ff5b921020f0b19441bc30256957af550d3224178cbf9d1e49f3e7898350ea",
+        "strategy_family_key": "us_large_cap_top_k",
+        "strategy_fingerprint": "5a1a14440b1e40c83405b35535fcbc0b138d2fc5fcea8375f75ed2694271e4f5",
+        "strategy_preset_key": "us_large_cap_top_k__k10__none__half_k__none"
+      },
+      "model_mapping": {
+        "family_key": "flat_equal_weight_mean",
+        "input_signal_variant_keys": [
+          "low_skew_premium__w60",
+          "return_continuation__w20",
+          "return_continuation__w60"
+        ],
+        "legacy_compiled_model_instance_id": "2ba7b78b-7838-4caa-a4e3-fe0e316ecf3f",
+        "legacy_input_signal_keys": [
+          "low_skew_premium__return_skewness__w60",
+          "return_continuation__total_return__w20",
+          "return_continuation__total_return__w60"
+        ],
+        "legacy_instance_fingerprint": "a3af5db3833a95bd39c8fdf8e0d0b58444bb860feb4f9b008ce9b38d49346f8c",
+        "legacy_target_key": "cross_sectional_relative_return__h5",
+        "parameter_preset_key": "signal_equal_v1"
+      },
+      "status": "oracle_bound",
+      "strategy_mapping": {
+        "family_key": "cross_section_rank_top_k",
+        "frequency": "weekly",
+        "sector_cap": "none",
+        "selection_buffer": "half_k",
+        "target_k": 10,
+        "variant_key": "cross_section_rank_top_k_large_cap_parity",
+        "version_number": 1
+      }
+    },
+    {
+      "defense_mapping_key": "none",
+      "legacy_identity": {
+        "aggregation_family_key": "single_signal",
+        "aggregation_preset_key": "single_signal__identity_v1",
+        "artifact_id": "98d6f143-f06c-42f8-8c7a-a045d37b7e8f",
+        "artifact_status": "published",
+        "branch_key": "single_signal__identity_v1__cross_sectional_relative_return__h5__weekly__multi_etf_top_k__k2__none__none__none",
+        "compiled_model_instance_id": "02b88485-8d16-4032-8abf-a04135b050e6",
+        "compiled_strategy_version_id": "8bb72f5d-37c9-4be0-b91b-14753108122a",
+        "content_hash": "c3516b3b6ba08b2ca86523de3bd071740dcf9a96c75515a487e5d3276f4abe63",
+        "instance_fingerprint": "78cf7c7c3fccdb2104d9d4098a17347ad813e15d43efd946c2cad063340a13de",
+        "rule_graph": {
+          "branch_key": "single_signal__identity_v1__cross_sectional_relative_return__h5__weekly__multi_etf_top_k__k2__none__none__none",
+          "frequency": "weekly",
+          "model_instance_key": "single_signal__identity_v1__cross_sectional_relative_return__h5__weekly",
+          "parameters": {
+            "defense": "none",
+            "sector_cap": "none",
+            "selection_buffer": "none",
+            "target_k": 2
+          },
+          "portfolio_cell_count": 6,
+          "predictive_cell_count": 1,
+          "strategy_family_key": "multi_etf_top_k",
+          "strategy_preset_key": "multi_etf_top_k__k2__none__none__none",
+          "target_k": 2
+        },
+        "schedule_key": "weekly",
+        "semantic_fingerprint": "670c4c5bda63115b2a0b65d13bcf3fa82cb28a60bbdb8f6629ca285f9f0d00cb",
+        "strategy_family_key": "multi_etf_top_k",
+        "strategy_fingerprint": "09ce0d58b95f81e3637df90ca353d8d164e34674e27c15970812b102954c8d8e",
+        "strategy_preset_key": "multi_etf_top_k__k2__none__none__none"
+      },
+      "model_mapping": {
+        "family_key": "single_signal_identity",
+        "input_signal_variant_keys": [
+          "return_continuation__w120"
+        ],
+        "legacy_compiled_model_instance_id": "02b88485-8d16-4032-8abf-a04135b050e6",
+        "legacy_input_signal_keys": [
+          "return_continuation__total_return__w120"
+        ],
+        "legacy_instance_fingerprint": "78cf7c7c3fccdb2104d9d4098a17347ad813e15d43efd946c2cad063340a13de",
+        "legacy_target_key": "cross_sectional_relative_return__h5",
+        "parameter_preset_key": null
+      },
+      "status": "oracle_bound",
+      "strategy_mapping": {
+        "family_key": "cross_section_rank_top_k",
+        "frequency": "weekly",
+        "sector_cap": "none",
+        "selection_buffer": "none",
+        "target_k": 2,
+        "variant_key": "cross_section_rank_top_k_parity",
+        "version_number": 1
+      }
+    },
+    {
+      "defense_mapping_key": "none",
+      "legacy_identity": {
+        "aggregation_family_key": "linear_weighted",
+        "aggregation_preset_key": "linear_weighted__signal_equal_v1",
+        "artifact_id": "adb5e542-cd2c-490b-ad0a-b3a663838e74",
+        "artifact_status": "published",
+        "branch_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__none__half_k__none",
+        "compiled_model_instance_id": "eb2a8ad4-4202-45f2-b032-275ce6f8e05f",
+        "compiled_strategy_version_id": "0244a849-f027-49b9-9c34-2f23c98eb059",
+        "content_hash": "d9dc6a1833cf7f666f5970d74a2e9f13566e2f63045d2544403ff39b854449f5",
+        "instance_fingerprint": "9d4872bbe42ec7d466a8e324a8da7d51075bd5a10cc3e7de32ed1a34fbdaa04c",
+        "rule_graph": {
+          "branch_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__none__half_k__none",
+          "frequency": "weekly",
+          "model_instance_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly",
+          "parameters": {
+            "defense": "none",
+            "sector_cap": "none",
+            "selection_buffer": "half_k",
+            "target_k": 10
+          },
+          "portfolio_cell_count": 6,
+          "predictive_cell_count": 1,
+          "strategy_family_key": "us_large_cap_top_k",
+          "strategy_preset_key": "us_large_cap_top_k__k10__none__half_k__none",
+          "target_k": 10
+        },
+        "schedule_key": "weekly",
+        "semantic_fingerprint": "6af4f9e06fdbdee54045575adc529e5631f140d45dde9b8056797efbb2e36840",
+        "strategy_family_key": "us_large_cap_top_k",
+        "strategy_fingerprint": "96b7665ad696fe30a95c83b2ea785f645fe90f7a0cee7c50071939fe6ffed8dc",
+        "strategy_preset_key": "us_large_cap_top_k__k10__none__half_k__none"
+      },
+      "model_mapping": {
+        "family_key": "flat_equal_weight_mean",
+        "input_signal_variant_keys": [
+          "return_continuation__w20",
+          "return_continuation__w60"
+        ],
+        "legacy_compiled_model_instance_id": "eb2a8ad4-4202-45f2-b032-275ce6f8e05f",
+        "legacy_input_signal_keys": [
+          "return_continuation__total_return__w20",
+          "return_continuation__total_return__w60"
+        ],
+        "legacy_instance_fingerprint": "9d4872bbe42ec7d466a8e324a8da7d51075bd5a10cc3e7de32ed1a34fbdaa04c",
+        "legacy_target_key": "cross_sectional_relative_return__h5",
+        "parameter_preset_key": "signal_equal_v1"
+      },
+      "status": "oracle_bound",
+      "strategy_mapping": {
+        "family_key": "cross_section_rank_top_k",
+        "frequency": "weekly",
+        "sector_cap": "none",
+        "selection_buffer": "half_k",
+        "target_k": 10,
+        "variant_key": "cross_section_rank_top_k_large_cap_parity",
+        "version_number": 1
+      }
+    },
+    {
+      "defense_mapping_key": "fixed_20",
+      "legacy_identity": {
+        "aggregation_family_key": "linear_weighted",
+        "aggregation_preset_key": "linear_weighted__dimension_equal_v1",
+        "artifact_id": "5f0d5145-4f63-4ef5-8be2-60f9c11c42bc",
+        "artifact_status": "published",
+        "branch_key": "linear_weighted__dimension_equal_v1__cross_sectional_relative_return__h21__weekly__us_large_cap_top_k__k20__fixed_20__half_k__none",
+        "compiled_model_instance_id": "780fdcdd-44d1-4ad6-a1f3-c84cd70ee900",
+        "compiled_strategy_version_id": "8e77169e-729b-424b-bc32-91e0c0ac1457",
+        "content_hash": "3afa47eb1c2db6f1f3f407e820e312d9b58df0ad443ee22686b1537b51c766ca",
+        "instance_fingerprint": "83a9425fd47ea931332001425ea6a3f778ed09eba1991e5ffe8c42ce70ebe9d5",
+        "rule_graph": {
+          "branch_key": "linear_weighted__dimension_equal_v1__cross_sectional_relative_return__h21__weekly__us_large_cap_top_k__k20__fixed_20__half_k__none",
+          "frequency": "weekly",
+          "model_instance_key": "linear_weighted__dimension_equal_v1__cross_sectional_relative_return__h21__weekly",
+          "parameters": {
+            "defense": "fixed_20",
+            "sector_cap": "none",
+            "selection_buffer": "half_k",
+            "target_k": 20
+          },
+          "portfolio_cell_count": 6,
+          "predictive_cell_count": 1,
+          "strategy_family_key": "us_large_cap_top_k",
+          "strategy_preset_key": "us_large_cap_top_k__k20__fixed_20__half_k__none",
+          "target_k": 20
+        },
+        "schedule_key": "weekly",
+        "semantic_fingerprint": "1c1f3f63d354d79841f0a0650525e5188ffd68f612df7180b589d509816e642a",
+        "strategy_family_key": "us_large_cap_top_k",
+        "strategy_fingerprint": "37ab447ea026a50924234000d634cd76ea475b23c8f7ceddeab421959bbdc303",
+        "strategy_preset_key": "us_large_cap_top_k__k20__fixed_20__half_k__none"
+      },
+      "model_mapping": {
+        "family_key": "hierarchical_weighted_mean",
+        "input_signal_variant_keys": [
+          "high_kurtosis_tail_regime__w120",
+          "low_skew_premium__w60"
+        ],
+        "legacy_compiled_model_instance_id": "780fdcdd-44d1-4ad6-a1f3-c84cd70ee900",
+        "legacy_input_signal_keys": [
+          "high_kurtosis_tail_regime__return_excess_kurtosis__w120",
+          "low_skew_premium__return_skewness__w60"
+        ],
+        "legacy_instance_fingerprint": "83a9425fd47ea931332001425ea6a3f778ed09eba1991e5ffe8c42ce70ebe9d5",
+        "legacy_target_key": "cross_sectional_relative_return__h21",
+        "parameter_preset_key": "legacy_dimension_equal_v1"
+      },
+      "status": "oracle_bound",
+      "strategy_mapping": {
+        "family_key": "cross_section_rank_top_k",
+        "frequency": "weekly",
+        "sector_cap": "none",
+        "selection_buffer": "half_k",
+        "target_k": 20,
+        "variant_key": "cross_section_rank_top_k_large_cap_parity",
+        "version_number": 1
+      }
+    },
+    {
+      "defense_mapping_key": "fixed_20",
+      "legacy_identity": {
+        "aggregation_family_key": "single_signal",
+        "aggregation_preset_key": "single_signal__identity_v1",
+        "artifact_id": "e3898a1f-fdf0-4002-a679-60be15a22a49",
+        "artifact_status": "published",
+        "branch_key": "single_signal__identity_v1__cross_sectional_relative_return__h5__weekly__multi_etf_top_k__k1__fixed_20__none__none",
+        "compiled_model_instance_id": "5507ef68-d4b6-42ca-aa3c-91cd4eeb99fd",
+        "compiled_strategy_version_id": "de7cb6ea-e5ca-497b-a9ec-38a44127b899",
+        "content_hash": "934000cd80d8f51978986326788c91ec3c9d27ce09daabbcb4ad6cff7c9ad39f",
+        "instance_fingerprint": "e45b5c0e790fcddbf9586c7c4975ee7cebb9e9ffb697e11363ee81294c5077da",
+        "rule_graph": {
+          "branch_key": "single_signal__identity_v1__cross_sectional_relative_return__h5__weekly__multi_etf_top_k__k1__fixed_20__none__none",
+          "frequency": "weekly",
+          "model_instance_key": "single_signal__identity_v1__cross_sectional_relative_return__h5__weekly",
+          "parameters": {
+            "defense": "fixed_20",
+            "sector_cap": "none",
+            "selection_buffer": "none",
+            "target_k": 1
+          },
+          "portfolio_cell_count": 6,
+          "predictive_cell_count": 1,
+          "strategy_family_key": "multi_etf_top_k",
+          "strategy_preset_key": "multi_etf_top_k__k1__fixed_20__none__none",
+          "target_k": 1
+        },
+        "schedule_key": "weekly",
+        "semantic_fingerprint": "43d9f9387279573a87da68998029d643b3b1d98c5284f45403cf23d7878b8059",
+        "strategy_family_key": "multi_etf_top_k",
+        "strategy_fingerprint": "623beceee02be840c120ed3ea6088279476fdd162372661b3156d7f48fc8aa15",
+        "strategy_preset_key": "multi_etf_top_k__k1__fixed_20__none__none"
+      },
+      "model_mapping": {
+        "family_key": "single_signal_identity",
+        "input_signal_variant_keys": [
+          "low_volatility__w20"
+        ],
+        "legacy_compiled_model_instance_id": "5507ef68-d4b6-42ca-aa3c-91cd4eeb99fd",
+        "legacy_input_signal_keys": [
+          "low_volatility__realized_volatility__w20"
+        ],
+        "legacy_instance_fingerprint": "e45b5c0e790fcddbf9586c7c4975ee7cebb9e9ffb697e11363ee81294c5077da",
+        "legacy_target_key": "cross_sectional_relative_return__h5",
+        "parameter_preset_key": null
+      },
+      "status": "oracle_bound",
+      "strategy_mapping": {
+        "family_key": "cross_section_rank_top_k",
+        "frequency": "weekly",
+        "sector_cap": "none",
+        "selection_buffer": "none",
+        "target_k": 1,
+        "variant_key": "cross_section_rank_top_k_parity",
+        "version_number": 1
+      }
+    },
+    {
+      "defense_mapping_key": "fixed_20",
+      "legacy_identity": {
+        "aggregation_family_key": "linear_weighted",
+        "aggregation_preset_key": "linear_weighted__signal_equal_v1",
+        "artifact_id": "66d31989-63ad-4b8a-beac-a71ce656f321",
+        "artifact_status": "published",
+        "branch_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__fixed_20__half_k__none",
+        "compiled_model_instance_id": "b82a5c94-ba8d-4e0c-a943-971c368f2e83",
+        "compiled_strategy_version_id": "00ebf384-3974-4177-a4c8-2e08222c9522",
+        "content_hash": "e0bbf2df51f488ce68bcc9a63ed5d04b1b5f96303bdc85c00e97b85069ee355c",
+        "instance_fingerprint": "dceed2ca0a61029b7ef1d598fd1e41d7e8a1d6de94b49e7b5a86558c643e9192",
+        "rule_graph": {
+          "branch_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__fixed_20__half_k__none",
+          "frequency": "weekly",
+          "model_instance_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly",
+          "parameters": {
+            "defense": "fixed_20",
+            "sector_cap": "none",
+            "selection_buffer": "half_k",
+            "target_k": 10
+          },
+          "portfolio_cell_count": 6,
+          "predictive_cell_count": 1,
+          "strategy_family_key": "us_large_cap_top_k",
+          "strategy_preset_key": "us_large_cap_top_k__k10__fixed_20__half_k__none",
+          "target_k": 10
+        },
+        "schedule_key": "weekly",
+        "semantic_fingerprint": "8b7278286ffc950bbc409ebbee98e1f0f975647b6ac1ce49b36c3492b503f631",
+        "strategy_family_key": "us_large_cap_top_k",
+        "strategy_fingerprint": "f37aa5998ec9297d8b89096a9f4792447ee24e256f64e024e3c2f4778b7f503d",
+        "strategy_preset_key": "us_large_cap_top_k__k10__fixed_20__half_k__none"
+      },
+      "model_mapping": {
+        "family_key": "flat_equal_weight_mean",
+        "input_signal_variant_keys": [
+          "high_kurtosis_tail_regime__w120",
+          "low_skew_premium__w60",
+          "return_continuation__w20",
+          "return_continuation__w60"
+        ],
+        "legacy_compiled_model_instance_id": "b82a5c94-ba8d-4e0c-a943-971c368f2e83",
+        "legacy_input_signal_keys": [
+          "high_kurtosis_tail_regime__return_excess_kurtosis__w120",
+          "low_skew_premium__return_skewness__w60",
+          "return_continuation__total_return__w20",
+          "return_continuation__total_return__w60"
+        ],
+        "legacy_instance_fingerprint": "dceed2ca0a61029b7ef1d598fd1e41d7e8a1d6de94b49e7b5a86558c643e9192",
+        "legacy_target_key": "cross_sectional_relative_return__h5",
+        "parameter_preset_key": "signal_equal_v1"
+      },
+      "status": "oracle_bound",
+      "strategy_mapping": {
+        "family_key": "cross_section_rank_top_k",
+        "frequency": "weekly",
+        "sector_cap": "none",
+        "selection_buffer": "half_k",
+        "target_k": 10,
+        "variant_key": "cross_section_rank_top_k_large_cap_parity",
+        "version_number": 1
+      }
+    },
+    {
+      "defense_mapping_key": "none",
+      "legacy_identity": {
+        "aggregation_family_key": "linear_weighted",
+        "aggregation_preset_key": "linear_weighted__signal_equal_v1",
+        "artifact_id": "3ba16b71-bff8-4ef5-9a0f-966f513fbe60",
+        "artifact_status": "published",
+        "branch_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__none__half_k__none",
+        "compiled_model_instance_id": "b82a5c94-ba8d-4e0c-a943-971c368f2e83",
+        "compiled_strategy_version_id": "eec586c2-eba3-46f2-ab94-785f82183cf1",
+        "content_hash": "6fc4daafe2c9e65b99cba691c2568783e63eab90c48291fa4ca65ad6ddf9dcf1",
+        "instance_fingerprint": "dceed2ca0a61029b7ef1d598fd1e41d7e8a1d6de94b49e7b5a86558c643e9192",
+        "rule_graph": {
+          "branch_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__none__half_k__none",
+          "frequency": "weekly",
+          "model_instance_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly",
+          "parameters": {
+            "defense": "none",
+            "sector_cap": "none",
+            "selection_buffer": "half_k",
+            "target_k": 10
+          },
+          "portfolio_cell_count": 6,
+          "predictive_cell_count": 1,
+          "strategy_family_key": "us_large_cap_top_k",
+          "strategy_preset_key": "us_large_cap_top_k__k10__none__half_k__none",
+          "target_k": 10
+        },
+        "schedule_key": "weekly",
+        "semantic_fingerprint": "8394a51b611067c5d9ec693da746dce1ef12ac108f0639df3c3048f6cf1a2ceb",
+        "strategy_family_key": "us_large_cap_top_k",
+        "strategy_fingerprint": "2ffa6ee778aeb65c6229c0a0d6968718be1a0f39feb0cbce9bff672c9e20b550",
+        "strategy_preset_key": "us_large_cap_top_k__k10__none__half_k__none"
+      },
+      "model_mapping": {
+        "family_key": "flat_equal_weight_mean",
+        "input_signal_variant_keys": [
+          "high_kurtosis_tail_regime__w120",
+          "low_skew_premium__w60",
+          "return_continuation__w20",
+          "return_continuation__w60"
+        ],
+        "legacy_compiled_model_instance_id": "b82a5c94-ba8d-4e0c-a943-971c368f2e83",
+        "legacy_input_signal_keys": [
+          "high_kurtosis_tail_regime__return_excess_kurtosis__w120",
+          "low_skew_premium__return_skewness__w60",
+          "return_continuation__total_return__w20",
+          "return_continuation__total_return__w60"
+        ],
+        "legacy_instance_fingerprint": "dceed2ca0a61029b7ef1d598fd1e41d7e8a1d6de94b49e7b5a86558c643e9192",
+        "legacy_target_key": "cross_sectional_relative_return__h5",
+        "parameter_preset_key": "signal_equal_v1"
+      },
+      "status": "oracle_bound",
+      "strategy_mapping": {
+        "family_key": "cross_section_rank_top_k",
+        "frequency": "weekly",
+        "sector_cap": "none",
+        "selection_buffer": "half_k",
+        "target_k": 10,
+        "variant_key": "cross_section_rank_top_k_large_cap_parity",
+        "version_number": 1
+      }
+    },
+    {
+      "defense_mapping_key": "fixed_20",
+      "legacy_identity": {
+        "aggregation_family_key": "linear_weighted",
+        "aggregation_preset_key": "linear_weighted__signal_equal_v1",
+        "artifact_id": "4f9ad948-3da0-42fb-b074-fdddcbd9506a",
+        "artifact_status": "published",
+        "branch_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__fixed_20__half_k__none",
+        "compiled_model_instance_id": "93e517aa-8595-4dd2-bf89-ce7b29b011d1",
+        "compiled_strategy_version_id": "fa68a27e-8a37-4104-92a0-d93da41d32c9",
+        "content_hash": "f65a5603ab2957803b66486350b7dc57f4045b9d324d37ac41fd909f79bd043d",
+        "instance_fingerprint": "d686143a2fb59c5e285a1ece01238bc24fc7e373d88a131aa8c081bbb758defc",
+        "rule_graph": {
+          "branch_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__fixed_20__half_k__none",
+          "frequency": "weekly",
+          "model_instance_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly",
+          "parameters": {
+            "defense": "fixed_20",
+            "sector_cap": "none",
+            "selection_buffer": "half_k",
+            "target_k": 10
+          },
+          "portfolio_cell_count": 6,
+          "predictive_cell_count": 1,
+          "strategy_family_key": "us_large_cap_top_k",
+          "strategy_preset_key": "us_large_cap_top_k__k10__fixed_20__half_k__none",
+          "target_k": 10
+        },
+        "schedule_key": "weekly",
+        "semantic_fingerprint": "a3bd241f7709abc118f9963cfc85799e0939d46cad1296ad7b90e8d90c251c8f",
+        "strategy_family_key": "us_large_cap_top_k",
+        "strategy_fingerprint": "3a6e6013e877fea3c2f2d4bd6be21cc3d377cfa681b30b89e32494e309ca8a96",
+        "strategy_preset_key": "us_large_cap_top_k__k10__fixed_20__half_k__none"
+      },
+      "model_mapping": {
+        "family_key": "flat_equal_weight_mean",
+        "input_signal_variant_keys": [
+          "return_continuation__w20",
+          "return_continuation__w60"
+        ],
+        "legacy_compiled_model_instance_id": "93e517aa-8595-4dd2-bf89-ce7b29b011d1",
+        "legacy_input_signal_keys": [
+          "return_continuation__total_return__w20",
+          "return_continuation__total_return__w60"
+        ],
+        "legacy_instance_fingerprint": "d686143a2fb59c5e285a1ece01238bc24fc7e373d88a131aa8c081bbb758defc",
+        "legacy_target_key": "cross_sectional_relative_return__h5",
+        "parameter_preset_key": "signal_equal_v1"
+      },
+      "status": "oracle_bound",
+      "strategy_mapping": {
+        "family_key": "cross_section_rank_top_k",
+        "frequency": "weekly",
+        "sector_cap": "none",
+        "selection_buffer": "half_k",
+        "target_k": 10,
+        "variant_key": "cross_section_rank_top_k_large_cap_parity",
+        "version_number": 1
+      }
+    },
+    {
+      "defense_mapping_key": "none",
+      "legacy_identity": {
+        "aggregation_family_key": "linear_weighted",
+        "aggregation_preset_key": "linear_weighted__signal_equal_v1",
+        "artifact_id": "b8254acf-82ac-4269-8471-489d8ec2b76a",
+        "artifact_status": "published",
+        "branch_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__none__half_k__none",
+        "compiled_model_instance_id": "93e517aa-8595-4dd2-bf89-ce7b29b011d1",
+        "compiled_strategy_version_id": "298315fe-aeef-4b7b-a2f6-7e406bfc9226",
+        "content_hash": "ad01eece92e239724a588527a43f337bed29af8a158e883ab96058e06d3e38f4",
+        "instance_fingerprint": "d686143a2fb59c5e285a1ece01238bc24fc7e373d88a131aa8c081bbb758defc",
+        "rule_graph": {
+          "branch_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__none__half_k__none",
+          "frequency": "weekly",
+          "model_instance_key": "linear_weighted__signal_equal_v1__cross_sectional_relative_return__h5__weekly",
+          "parameters": {
+            "defense": "none",
+            "sector_cap": "none",
+            "selection_buffer": "half_k",
+            "target_k": 10
+          },
+          "portfolio_cell_count": 6,
+          "predictive_cell_count": 1,
+          "strategy_family_key": "us_large_cap_top_k",
+          "strategy_preset_key": "us_large_cap_top_k__k10__none__half_k__none",
+          "target_k": 10
+        },
+        "schedule_key": "weekly",
+        "semantic_fingerprint": "500829a0ac9b4e4c4fb0421985e40028e5fd1d5a2e37946f564854a85e208ff7",
+        "strategy_family_key": "us_large_cap_top_k",
+        "strategy_fingerprint": "aff1819bbd066e371ec66941098b57b65e635103c825a17c761b844880ce3b27",
+        "strategy_preset_key": "us_large_cap_top_k__k10__none__half_k__none"
+      },
+      "model_mapping": {
+        "family_key": "flat_equal_weight_mean",
+        "input_signal_variant_keys": [
+          "return_continuation__w20",
+          "return_continuation__w60"
+        ],
+        "legacy_compiled_model_instance_id": "93e517aa-8595-4dd2-bf89-ce7b29b011d1",
+        "legacy_input_signal_keys": [
+          "return_continuation__total_return__w20",
+          "return_continuation__total_return__w60"
+        ],
+        "legacy_instance_fingerprint": "d686143a2fb59c5e285a1ece01238bc24fc7e373d88a131aa8c081bbb758defc",
+        "legacy_target_key": "cross_sectional_relative_return__h5",
+        "parameter_preset_key": "signal_equal_v1"
+      },
+      "status": "oracle_bound",
+      "strategy_mapping": {
+        "family_key": "cross_section_rank_top_k",
+        "frequency": "weekly",
+        "sector_cap": "none",
+        "selection_buffer": "half_k",
+        "target_k": 10,
+        "variant_key": "cross_section_rank_top_k_large_cap_parity",
+        "version_number": 1
+      }
+    },
+    {
+      "defense_mapping_key": "fixed_20",
+      "legacy_identity": {
+        "aggregation_family_key": "single_signal",
+        "aggregation_preset_key": "single_signal__identity_v1",
+        "artifact_id": "e47761e8-bdeb-4a03-9d55-5541646830cd",
+        "artifact_status": "published",
+        "branch_key": "single_signal__identity_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__fixed_20__half_k__none",
+        "compiled_model_instance_id": "8347d6bd-41c8-41ea-819e-692d05d4c29c",
+        "compiled_strategy_version_id": "c18d5f80-7264-4c11-95b5-dd96ecb81746",
+        "content_hash": "889eed4dbe051b165d37e143cd3f5ddd5bf065eec29cf4c0430bbbd573d10643",
+        "instance_fingerprint": "282d0c4d4c438953687335be38f94c3289d7178f590994b2e055fdaac4b32284",
+        "rule_graph": {
+          "branch_key": "single_signal__identity_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__fixed_20__half_k__none",
+          "frequency": "weekly",
+          "model_instance_key": "single_signal__identity_v1__cross_sectional_relative_return__h5__weekly",
+          "parameters": {
+            "defense": "fixed_20",
+            "sector_cap": "none",
+            "selection_buffer": "half_k",
+            "target_k": 10
+          },
+          "portfolio_cell_count": 6,
+          "predictive_cell_count": 1,
+          "strategy_family_key": "us_large_cap_top_k",
+          "strategy_preset_key": "us_large_cap_top_k__k10__fixed_20__half_k__none",
+          "target_k": 10
+        },
+        "schedule_key": "weekly",
+        "semantic_fingerprint": "35783063cdda1d740a00617c72c341b68b8183539eb4306e2079d10545f0236c",
+        "strategy_family_key": "us_large_cap_top_k",
+        "strategy_fingerprint": "535ccce4133bdbf5cbb60ef876ee70484fb3e22f536ea7a90795f59a63131841",
+        "strategy_preset_key": "us_large_cap_top_k__k10__fixed_20__half_k__none"
+      },
+      "model_mapping": {
+        "family_key": "single_signal_identity",
+        "input_signal_variant_keys": [
+          "return_continuation__w20"
+        ],
+        "legacy_compiled_model_instance_id": "8347d6bd-41c8-41ea-819e-692d05d4c29c",
+        "legacy_input_signal_keys": [
+          "return_continuation__total_return__w20"
+        ],
+        "legacy_instance_fingerprint": "282d0c4d4c438953687335be38f94c3289d7178f590994b2e055fdaac4b32284",
+        "legacy_target_key": "cross_sectional_relative_return__h5",
+        "parameter_preset_key": null
+      },
+      "status": "oracle_bound",
+      "strategy_mapping": {
+        "family_key": "cross_section_rank_top_k",
+        "frequency": "weekly",
+        "sector_cap": "none",
+        "selection_buffer": "half_k",
+        "target_k": 10,
+        "variant_key": "cross_section_rank_top_k_large_cap_parity",
+        "version_number": 1
+      }
+    },
+    {
+      "defense_mapping_key": "none",
+      "legacy_identity": {
+        "aggregation_family_key": "single_signal",
+        "aggregation_preset_key": "single_signal__identity_v1",
+        "artifact_id": "e09ec464-3079-4a50-98ee-005d8b856098",
+        "artifact_status": "published",
+        "branch_key": "single_signal__identity_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__none__half_k__none",
+        "compiled_model_instance_id": "8347d6bd-41c8-41ea-819e-692d05d4c29c",
+        "compiled_strategy_version_id": "c85128a8-4c84-4974-b50d-97c3e01da4ef",
+        "content_hash": "b84c04a3c5145bb124827a4f46472698e1bfa7a5e6bfe4db0538cff0b3727492",
+        "instance_fingerprint": "282d0c4d4c438953687335be38f94c3289d7178f590994b2e055fdaac4b32284",
+        "rule_graph": {
+          "branch_key": "single_signal__identity_v1__cross_sectional_relative_return__h5__weekly__us_large_cap_top_k__k10__none__half_k__none",
+          "frequency": "weekly",
+          "model_instance_key": "single_signal__identity_v1__cross_sectional_relative_return__h5__weekly",
+          "parameters": {
+            "defense": "none",
+            "sector_cap": "none",
+            "selection_buffer": "half_k",
+            "target_k": 10
+          },
+          "portfolio_cell_count": 6,
+          "predictive_cell_count": 1,
+          "strategy_family_key": "us_large_cap_top_k",
+          "strategy_preset_key": "us_large_cap_top_k__k10__none__half_k__none",
+          "target_k": 10
+        },
+        "schedule_key": "weekly",
+        "semantic_fingerprint": "19a58dd46254e29c02d326df6e30c165bb206845c50c13c740c6dbc191732dae",
+        "strategy_family_key": "us_large_cap_top_k",
+        "strategy_fingerprint": "f809edcd5a496733e1060143333180992a96ff28b8b42e39d79b3922fe2988ad",
+        "strategy_preset_key": "us_large_cap_top_k__k10__none__half_k__none"
+      },
+      "model_mapping": {
+        "family_key": "single_signal_identity",
+        "input_signal_variant_keys": [
+          "return_continuation__w20"
+        ],
+        "legacy_compiled_model_instance_id": "8347d6bd-41c8-41ea-819e-692d05d4c29c",
+        "legacy_input_signal_keys": [
+          "return_continuation__total_return__w20"
+        ],
+        "legacy_instance_fingerprint": "282d0c4d4c438953687335be38f94c3289d7178f590994b2e055fdaac4b32284",
+        "legacy_target_key": "cross_sectional_relative_return__h5",
+        "parameter_preset_key": null
+      },
+      "status": "oracle_bound",
+      "strategy_mapping": {
+        "family_key": "cross_section_rank_top_k",
+        "frequency": "weekly",
+        "sector_cap": "none",
+        "selection_buffer": "half_k",
+        "target_k": 10,
+        "variant_key": "cross_section_rank_top_k_large_cap_parity",
+        "version_number": 1
+      }
+    }
+  ]
+}

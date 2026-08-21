@@ -65,7 +65,7 @@ export function WorkspaceSelectionProvider({ children }: { children: ReactNode }
   const conflictRef = useRef(false);
 
   const draft = useQuery({
-    queryKey: ["workspace", "draft", "local", "default"],
+    queryKey: ["workspace", "draft", "authenticated", "default"],
     queryFn: () => api.workspaceDraft(),
     retry: false,
   });
@@ -91,7 +91,7 @@ export function WorkspaceSelectionProvider({ children }: { children: ReactNode }
       revisionRef.current = saved.revision;
       lastSavedFingerprint.current = fingerprint(snapshot);
       setRevision(saved.revision);
-      queryClient.setQueryData(["workspace", "draft", "local", "default"], saved);
+      queryClient.setQueryData(["workspace", "draft", "authenticated", "default"], saved);
       if (fingerprint(selectionRef.current) === fingerprint(snapshot)) {
         persist(selectionRef.current, saved.revision);
         dirtyRef.current = false;

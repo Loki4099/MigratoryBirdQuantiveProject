@@ -16,15 +16,19 @@ NAMING_CONVENTION = {
 SCHEMA_NAMES = (
     "catalog",
     "data",
+    "processing",
     "factor",
     "signal",
     "model",
+    "aggregation",
     "strategy",
+    "defense",
     "experiment",
     "workspace",
     "product",
     "lineage",
     "ops",
+    "compatibility",
 )
 
 

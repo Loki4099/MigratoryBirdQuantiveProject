@@ -12,7 +12,7 @@ from sqlalchemy.engine import RowMapping
 from style_rotation.domain.enums import WorkFailureClass, WorkItemStatus
 from style_rotation.domain.lifecycle import ensure_work_item_transition
 
-WorkType = Literal["predictive", "portfolio", "monitoring", "export"]
+WorkType = Literal["predictive", "portfolio", "monitoring", "export", "asset_export"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -146,7 +146,13 @@ class WorkQueueService:
         *,
         worker_id: str,
         lease_seconds: int = 120,
-        work_types: tuple[WorkType, ...] = ("predictive", "portfolio", "monitoring", "export"),
+        work_types: tuple[WorkType, ...] = (
+            "predictive",
+            "portfolio",
+            "monitoring",
+            "export",
+            "asset_export",
+        ),
     ) -> WorkItem | None:
         if not worker_id.strip() or lease_seconds < 10:
             raise ValueError("Worker id is required and lease must be at least 10 seconds")
@@ -397,46 +403,71 @@ class WorkQueueService:
         failure_class: WorkFailureClass | None = None,
         failure_details: dict[str, Any] | None = None,
     ) -> WorkItem:
-        target = WorkItemStatus(status)
         with self._engine.begin() as connection:
-            current = self._get_locked(connection, work_item_id)
-            if current.status != WorkItemStatus.RUNNING or current.lease_owner != worker_id:
-                raise RuntimeError("Only the active lease owner can finish a work item")
-            ensure_work_item_transition(WorkItemStatus.RUNNING, target)
-            if target == WorkItemStatus.FAILED and failure_class is None:
-                raise ValueError("Failed work item requires an explicit failure class")
-            if target != WorkItemStatus.FAILED and failure_class is not None:
-                raise ValueError("Failure class is only valid for failed work")
-            row = (
-                connection.execute(
-                    text(
-                        """
+            return self.finish_in_transaction(
+                connection,
+                work_item_id,
+                worker_id=worker_id,
+                status=status,
+                failure_class=failure_class,
+                failure_details=failure_details,
+            )
+
+    def finish_in_transaction(
+        self,
+        connection: Any,
+        work_item_id: uuid.UUID,
+        *,
+        worker_id: str,
+        status: Literal["completed", "failed", "cancelled"],
+        failure_class: WorkFailureClass | None = None,
+        failure_details: dict[str, Any] | None = None,
+    ) -> WorkItem:
+        """Finish leased work inside the caller's transaction.
+
+        Publishers use this to commit their immutable result and terminal queue
+        transition atomically, so a process crash cannot leave a published
+        result attached to a still-running work item.
+        """
+        target = WorkItemStatus(status)
+        current = self._get_locked(connection, work_item_id)
+        if current.status != WorkItemStatus.RUNNING or current.lease_owner != worker_id:
+            raise RuntimeError("Only the active lease owner can finish a work item")
+        ensure_work_item_transition(WorkItemStatus.RUNNING, target)
+        if target == WorkItemStatus.FAILED and failure_class is None:
+            raise ValueError("Failed work item requires an explicit failure class")
+        if target != WorkItemStatus.FAILED and failure_class is not None:
+            raise ValueError("Failure class is only valid for failed work")
+        row = (
+            connection.execute(
+                text(
+                    """
                     UPDATE ops.work_item SET status = :status, stage = :status,
                         lease_owner = NULL, lease_expires_at = NULL, heartbeat_at = NULL,
                         failure_class = :failure_class,
                         failure_details = CAST(:failure_details AS jsonb), updated_at = now()
                     WHERE work_item_id = :id RETURNING *
                     """
-                    ),
-                    {
-                        "id": work_item_id,
-                        "status": status,
-                        "failure_class": failure_class.value if failure_class else None,
-                        "failure_details": _json(failure_details or {}),
-                    },
-                )
-                .mappings()
-                .one()
+                ),
+                {
+                    "id": work_item_id,
+                    "status": status,
+                    "failure_class": failure_class.value if failure_class else None,
+                    "failure_details": _json(failure_details or {}),
+                },
             )
-            self._append_event(
-                connection,
-                work_item_id,
-                status,
-                "running",
-                status,
-                {"failure_class": failure_class.value if failure_class else None},
-            )
-            return WorkItem.from_row(row)
+            .mappings()
+            .one()
+        )
+        self._append_event(
+            connection,
+            work_item_id,
+            status,
+            "running",
+            status,
+            {"failure_class": failure_class.value if failure_class else None},
+        )
+        return WorkItem.from_row(row)
 
     def retry(self, work_item_id: uuid.UUID) -> WorkItem:
         with self._engine.begin() as connection:

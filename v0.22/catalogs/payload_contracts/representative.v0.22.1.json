@@ -1,0 +1,28 @@
+{
+  "catalog_type": "v022_payload",
+  "catalog_version": "0.22.1",
+  "extends": ["payload_contracts/core.v0.22.0.json"],
+  "contracts": [
+    {
+      "contract_key": "intermediate_numeric_feature",
+      "name": "PIT intermediate numeric feature",
+      "semantic_role": "intermediate_numeric_feature",
+      "description": "A numeric asset-by-session Processing output that remains typed and exportable but is not automatically aggregation-ready.",
+      "version_number": 1,
+      "payload_kind": "numeric_scalar",
+      "schema_document": {"value_field": "feature_value", "dtype": "decimal_or_float64", "unit_required": true, "rank_meaning": false},
+      "entity_axis": {"kind": "asset", "identity_field": "asset_id", "identity_namespace": "research_asset", "cardinality": "one_per_time", "duplicate_policy": "reject"},
+      "time_axis": {"observation_time_field": "session_date", "known_at_field": "known_at", "calendar": "frozen_by_context", "revision_field": "input_revision"},
+      "observation_grain": {"frequency": "session", "rows_per_entity_time": 1},
+      "primary_key_fields": ["session_date", "asset_id"],
+      "ordering_contract": {"canonical_order": ["session_date", "asset_id"]},
+      "missingness_contract": {"missing_allowed": true, "reason_required": true, "implicit_fill": false},
+      "pit_contract": {"known_at_required": true, "future_revision_forbidden": true},
+      "quality_contract": {"finite_when_present": true},
+      "aggregation_role": "not_aggregation_ready",
+      "export_policy": {"allowed": true, "restricted_fields": []},
+      "compatibility_class": "initial"
+    }
+  ],
+  "encodings": []
+}

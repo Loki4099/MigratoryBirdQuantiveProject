@@ -26,7 +26,7 @@ class ArchitectureTests(unittest.TestCase):
         project_root = Path(__file__).resolve().parents[2]
         with (project_root / "pyproject.toml").open("rb") as handle:
             pyproject = tomllib.load(handle)
-        self.assertEqual(style_rotation.__version__, "0.21.0")
+        self.assertEqual(style_rotation.__version__, "0.22.0")
         self.assertEqual(pyproject["project"]["version"], style_rotation.__version__)
 
 

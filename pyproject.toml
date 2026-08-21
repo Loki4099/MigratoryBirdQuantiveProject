@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "style-rotation-engine"
-version = "0.21.0"
+version = "0.22.0"
 description = "Targeted cross-sectional research and candidate monitoring platform"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -13,13 +13,17 @@ dependencies = [
   "exchange-calendars>=4.11,<5",
   "fastapi>=0.116,<1",
   "httpx>=0.28,<1",
+  "lightgbm>=4.6,<5",
+  "numpy>=2.3,<3",
   "pandas>=3.0.3,<4",
   "pyarrow>=23,<24",
   "psycopg[binary]>=3.2,<4",
   "pydantic>=2.11,<3",
   "pydantic-settings>=2.10,<3",
+  "scikit-learn>=1.9,<2",
   "sqlalchemy>=2.0.41,<3",
   "uvicorn>=0.35,<1",
+  "xgboost>=3.4,<4",
   "yfinance>=1.5.1,<2",
 ]
 
@@ -62,5 +66,5 @@ strict = true
 packages = ["style_rotation"]
 
 [[tool.mypy.overrides]]
-module = ["exchange_calendars", "pandas", "yfinance"]
+module = ["exchange_calendars", "lightgbm", "lightgbm.*", "pandas", "sklearn", "sklearn.*", "xgboost", "xgboost.*", "yfinance"]
 ignore_missing_imports = true

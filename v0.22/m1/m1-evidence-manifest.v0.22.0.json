@@ -1,0 +1,135 @@
+{
+  "evidence_schema_version": "1.0.0",
+  "evidence_id": "v022-m1-evidence-v0.22.0",
+  "contract_id": "bird-migration-v0.22.0",
+  "milestone": "M1",
+  "status": "passed",
+  "generated_at": "2026-08-10T18:10:58+08:00",
+  "prerequisites": {
+    "contract_tag": "v0.22.0-contract",
+    "contract_commit": "c9b6aec36df52630dbb4e07e39b18b591005954f",
+    "m0_commit": "c2629ee09c001b7e8dcdb21717fa2d1545399dda",
+    "m0_oracle_payload_sha256": "5949ca9b71b68bbde935402d792e89bef58c8d28143fe1f4e7446d78c34c8329",
+    "m0_oracle_byte_equivalent_after_m1": true
+  },
+  "database": {
+    "previous_revision": "20260809_47_signal_export_job",
+    "head_revision": "20260810_50_v022_release",
+    "migrations": [
+      {
+        "revision": "20260810_48_v022_payload",
+        "path": "migrations/versions/20260810_48_v022_shared_payload.py",
+        "sha256": "7b4858e47501f134e1cf78a8c7ea2bd7f9b27b79f15e1f159a39e1246006739d"
+      },
+      {
+        "revision": "20260810_49_v022_catalog",
+        "path": "migrations/versions/20260810_49_v022_catalog_identity.py",
+        "sha256": "71ad6f3b1a04b6137b95b89b50e5229dd95dea9c8befce4dc0016aa5d56e2b5d"
+      },
+      {
+        "revision": "20260810_50_v022_release",
+        "path": "migrations/versions/20260810_50_v022_catalog_release.py",
+        "sha256": "01b9b69717738573ac4b12afacb2ebb0e1658e13f86fc0ee0de68bd2fa651925"
+      }
+    ],
+    "empty_upgrade_passed": true,
+    "v021_additive_upgrade_passed": true,
+    "v021_marker_preserved": true,
+    "destructive_database_name_guard": "style_rotation_test",
+    "production_database_writes": 0
+  },
+  "catalog_release": {
+    "release_key": "bird_v022_catalog",
+    "catalog_version": "0.22.0",
+    "contract_version": "v0.22.0",
+    "processing_stage_count": 3,
+    "release_manifest_path": "v0.22/catalogs/releases/catalog_release.v0.22.0.json",
+    "release_manifest_sha256": "e13e6c12b4f3927e4d5dff38e31398db728c718e8d59279292b7821aff734e37",
+    "source_manifest_hash": "6d6aa878ce6d227f8eac19406a216fd53c72d044707f10e6ad8e89643295d15c",
+    "release_fingerprint": "461717206df62b0ccd167ed55ea847067d320827f46f02775f2d2b8697d06251",
+    "component_count": 67,
+    "second_publish_reused_components": 67,
+    "release_reused": true,
+    "validation_evidence_reused": true,
+    "database_rebuild_verified": true,
+    "inventory": {
+      "payload_contract_families": 5,
+      "payload_contract_versions": 5,
+      "physical_encodings": 1,
+      "raw_feature_families": 9,
+      "raw_feature_variants": 9,
+      "raw_feature_versions": 9,
+      "processing_nodes": 0,
+      "deterministic_aggregation_families": 4,
+      "deterministic_aggregation_versions": 4,
+      "aggregation_preset_definitions": 6,
+      "aggregation_preset_versions": 6,
+      "strategy_families": 1,
+      "strategy_variants": 1,
+      "strategy_versions": 1,
+      "defense_families": 2,
+      "defense_variants": 2,
+      "defense_versions": 2
+    }
+  },
+  "contract_checks": {
+    "strict_extra_forbid": true,
+    "canonical_hashing": true,
+    "append_only": true,
+    "family_identity": true,
+    "safe_source_paths": true,
+    "adjacent_stage_edges_only": true,
+    "fixed_required_bindings_only": true,
+    "payload_contract_compatibility_enforced": true,
+    "unique_feature_producer": true,
+    "deterministic_axes_conditional": true,
+    "authenticated_publisher_context": true,
+    "release_rebuildable_from_database": true
+  },
+  "verification": {
+    "full_pytest": {
+      "command": ".venv/Scripts/python.exe -m pytest -q",
+      "passed": 369,
+      "failed": 0,
+      "warnings": 1,
+      "warning_scope": "upstream Starlette TestClient deprecation"
+    },
+    "ruff": {
+      "command": ".venv/Scripts/ruff.exe check src scripts tests migrations",
+      "result": "passed"
+    },
+    "mypy": {
+      "command": ".venv/Scripts/mypy.exe src/style_rotation scripts/v022_m0_baseline.py",
+      "source_files": 198,
+      "result": "passed"
+    },
+    "catalog_commands": {
+      "lint": "passed",
+      "diff_same_release_changed_count": 0,
+      "plan_component_count": 67,
+      "publish": "passed",
+      "verify": "passed"
+    }
+  },
+  "feature_gates": {
+    "v022_shared_payload": "hidden",
+    "v022_catalog_release": "hidden",
+    "v022_workspace": "hidden",
+    "v022_processing_runtime": "hidden",
+    "v022_default_route": "disabled",
+    "v022_lightgbm": "planned_disabled",
+    "v022_rv20_defense": "planned_disabled"
+  },
+  "gate_conditions": {
+    "db1_shared_payload_complete": true,
+    "db2_all_catalog_identity_complete": true,
+    "db3_catalog_release_complete": true,
+    "nine_raw_inputs_published": true,
+    "minimum_release_rebuildable": true,
+    "illegal_edge_and_contract_rejected": true,
+    "legacy_regression_green": true,
+    "unrelated_v01_documents_excluded": true
+  },
+  "next_milestone": "M2",
+  "m2_entry_allowed": true
+}

@@ -111,6 +111,71 @@ class V021DatabaseExecutor:
             )
         if context is None:
             raise _contract("Product Enrollment or Data Bundle is unavailable")
+        return self._scores_from_context(
+            dict(context),
+            as_of_session=as_of_session,
+            cached_signals_only=cached_signals_only,
+        )
+
+    def replay_product_version_scores(
+        self,
+        *,
+        product_version_id: uuid.UUID,
+        data_bundle_artifact_id: uuid.UUID,
+        as_of_session: date,
+        cached_signals_only: bool = False,
+    ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+        """Evaluate an immutable v0.21 Product Version without an Enrollment."""
+        with self._engine.connect() as connection:
+            context = (
+                connection.execute(
+                    text("""
+                SELECT model.slot_assignments, model.parameters,
+                       spec.normalized_selection, spec.frequency,
+                       strategy.strategy_family_key,
+                       strategy.rule_graph -> 'parameters' AS strategy_parameters,
+                       bundle.data_bundle_version_id,
+                       policy.document ->> 'defensive_basket_version'
+                           AS defensive_basket_version,
+                       policy.document #>> '{release_gate_artifact_ids,pit_universe}'
+                           AS pit_gate_artifact_id,
+                       policy.document #>> '{release_gate_artifact_ids,terminal_event}'
+                           AS terminal_gate_artifact_id
+                FROM product.product_version version
+                JOIN strategy.compiled_strategy_version strategy
+                  ON strategy.compiled_strategy_version_id = version.compiled_strategy_version_id
+                JOIN workspace.compiled_model_instance model
+                  ON model.compiled_model_instance_id = strategy.compiled_model_instance_id
+                JOIN workspace.compiled_research_spec spec
+                  ON spec.compiled_research_spec_id = strategy.compiled_research_spec_id
+                JOIN experiment.execution_policy_catalog policy
+                  ON policy.artifact_id = version.capital_policy_artifact_id
+                JOIN data.data_bundle_version bundle ON bundle.artifact_id = :bundle_id
+                WHERE version.product_version_id = :product_version_id
+            """),
+                    {
+                        "bundle_id": data_bundle_artifact_id,
+                        "product_version_id": product_version_id,
+                    },
+                )
+                .mappings()
+                .one_or_none()
+            )
+        if context is None:
+            raise _contract("Product Version or Data Bundle is unavailable")
+        return self._scores_from_context(
+            dict(context),
+            as_of_session=as_of_session,
+            cached_signals_only=cached_signals_only,
+        )
+
+    def _scores_from_context(
+        self,
+        context: Mapping[str, Any],
+        *,
+        as_of_session: date,
+        cached_signals_only: bool,
+    ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
         keys = tuple(
             key for slot in context["slot_assignments"] for key in slot["signal_version_keys"]
         )

@@ -1,0 +1,40 @@
+{
+  "catalog_type": "v022_yahoo_equity_series_contract",
+  "catalog_version": "0.22.0",
+  "release_key": "v022_equity_market_data_contracts",
+  "provider_key": "yahoo_yfinance",
+  "series_key": "us_equity_daily_market_yahoo",
+  "name": "US equity daily market data via Yahoo",
+  "description": "Raw daily OHLC, retrospective adjusted close, volume, dividends and splits for one stable Security provider-symbol interval.",
+  "subject_type": "asset_listing",
+  "value_kind": "market_bar",
+  "price_semantics": "frozen_retrospective_yahoo_adjusted_price_snapshot",
+  "historical_pit_claimed": false,
+  "version": {
+    "version_number": 1,
+    "provider_series_key": "{provider_symbol}",
+    "interval_unit": "day",
+    "interval_count": 1,
+    "calendar_key": "XNYS",
+    "timestamp_semantics": "exchange_session_date",
+    "availability_semantics": "historical membership is source-backed; Yahoo prices are a frozen retrospective download, not provider-native PIT vintages",
+    "parser_version": "yfinance_daily_security_segment_v1",
+    "request_template": {
+      "interval": "1d",
+      "auto_adjust": false,
+      "back_adjust": false,
+      "actions": true,
+      "keepna": true
+    },
+    "field_mapping": {
+      "Open": "open_raw",
+      "High": "high_raw",
+      "Low": "low_raw",
+      "Close": "close_raw",
+      "Adj Close": "adj_close",
+      "Volume": "volume_raw",
+      "Dividends": "cash_dividend",
+      "Stock Splits": "split_ratio"
+    }
+  }
+}

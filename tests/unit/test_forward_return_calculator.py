@@ -91,3 +91,71 @@ def test_missing_execution_open_fails_instead_of_silently_dropping_asset() -> No
             requested_start=date(2024, 1, 1),
             requested_end=date(2024, 1, 15),
         )
+
+
+def test_forward_returns_require_opens_only_for_each_dates_selectable_assets() -> None:
+    sessions = tuple(
+        date(2024, 1, day)
+        for day in range(1, 23)
+        if date(2024, 1, day).weekday() < 5
+    )
+    first = uuid.uuid4()
+    recent_ipo = uuid.uuid4()
+    opens = tuple(
+        ForwardOpen(asset_id, asset_key, session, Decimal("100"))
+        for asset_id, asset_key in ((first, "A"), (recent_ipo, "B"))
+        for session in sessions
+        if asset_id == first or session >= date(2024, 1, 15)
+    )
+
+    result = calculate_forward_returns(
+        _weekly_target(),
+        sessions,
+        opens,
+        requested_start=date(2024, 1, 1),
+        requested_end=date(2024, 1, 22),
+        candidate_asset_ids_by_date={
+            date(2024, 1, 5): frozenset({first}),
+            date(2024, 1, 12): frozenset({first, recent_ipo}),
+        },
+    )
+
+    assert [(point.decision_date, point.asset_id) for point in result.points] == [
+        (date(2024, 1, 5), first),
+        (date(2024, 1, 12), first),
+        (date(2024, 1, 12), recent_ipo),
+    ]
+
+
+def test_auxiliary_labels_can_report_an_eligible_assets_missing_terminal_price() -> None:
+    sessions = tuple(
+        date(2024, 1, day)
+        for day in range(1, 23)
+        if date(2024, 1, day).weekday() < 5
+    )
+    complete = uuid.uuid4()
+    delisted = uuid.uuid4()
+    opens = tuple(
+        ForwardOpen(asset_id, asset_key, session, Decimal("100"))
+        for asset_id, asset_key in ((complete, "A"), (delisted, "B"))
+        for session in sessions
+        if asset_id == complete or session < date(2024, 1, 22)
+    )
+
+    result = calculate_forward_returns(
+        _weekly_target(),
+        sessions,
+        opens,
+        requested_start=date(2024, 1, 1),
+        requested_end=date(2024, 1, 22),
+        candidate_asset_ids_by_date={
+            date(2024, 1, 5): frozenset({complete, delisted}),
+            date(2024, 1, 12): frozenset({complete, delisted}),
+        },
+        allow_missing_eligible_opens=True,
+    )
+
+    assert len(result.points) == 3
+    assert (date(2024, 1, 12), delisted) not in {
+        (point.decision_date, point.asset_id) for point in result.points
+    }

@@ -1,0 +1,21 @@
+name: migratorybird-green
+
+services:
+  postgres-green:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: style_rotation_green
+      POSTGRES_USER: style_rotation
+      POSTGRES_PASSWORD: style_rotation
+    ports:
+      - "55433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U style_rotation -d style_rotation_green"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - style_rotation_postgres_green:/var/lib/postgresql/data
+
+volumes:
+  style_rotation_postgres_green:

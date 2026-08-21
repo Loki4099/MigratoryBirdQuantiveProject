@@ -1,0 +1,261 @@
+{
+  "contract_id": "bird-migration-v0.22.0",
+  "status": "frozen",
+  "release_series": "0.22",
+  "candidate_frozen_on": "2026-08-10T16:29:50+08:00",
+  "frozen_at": "2026-08-10T16:29:50+08:00",
+  "supersedes": [
+    "all_unversioned_v0.22_discussion_drafts"
+  ],
+  "normative_plan": "候鸟v0.22最终开发计划.md",
+  "candidate_contract_id": "bird-migration-v0.22.0-rc1",
+  "candidate_plan": "候鸟v0.22实施基线_rc1_候选记录.md",
+  "decisions": {
+    "release_scope": {
+      "v0.22.0": "processing_graph_legacy_parity_workspace_product_runtime",
+      "v0.22.1": "lightgbm_trainable_aggregation",
+      "v0.22.2": "rv20_exploratory_defense"
+    },
+    "processing": {
+      "raw_is_processing_stage": false,
+      "processing_stage_count": 3,
+      "user_can_create_stages_nodes_edges_or_formulas": false,
+      "calculation_edges_must_be_adjacent": true,
+      "binding_kinds": [
+        "required"
+      ],
+      "producer_cardinality_per_feature_variant_version": 1,
+      "frozen_model_resources_are_allowed": true,
+      "online_processing_training_is_available": false,
+      "layer_projection": {
+        "calculation": false,
+        "payload_copy": false,
+        "identity_change": false
+      }
+    },
+    "workspace": {
+      "draft_stores_explicit_intent_only": true,
+      "forward_selection": true,
+      "reverse_stage3_selection": true,
+      "descendant_required_ancestors_are_locked": true,
+      "cascade_removal_requires_preview": true,
+      "aggregation_inputs_source": "stage3_explicit_occurrences_only",
+      "all_aggregators_receive_same_complete_ordered_inputs": true,
+      "selection_state_is_orthogonal": [
+        "is_explicit",
+        "required_by",
+        "availability",
+        "lock_state"
+      ]
+    },
+    "family_identity": {
+      "same_family_requires": [
+        "same_algorithm_or_formula",
+        "same_input_roles",
+        "same_output_semantics",
+        "same_direction",
+        "same_research_hypothesis"
+      ],
+      "parameter_changes_create": "variant_or_preset",
+      "objective_change_creates_new_family": true
+    },
+    "payload": {
+      "schema": "data",
+      "run_io_references_exact_payload_manifest": true,
+      "hashes": [
+        "logical_payload_fingerprint",
+        "manifest_hash",
+        "object_content_hash"
+      ],
+      "implicit_transformations_allowed": false,
+      "decimal_to_float64_is_explicit_processing_adapter_node": true,
+      "published_manifests_are_immutable": true,
+      "multi_output_run_publication_is_atomic": true,
+      "lineage_metadata_may_outlive_physical_cache_objects": true,
+      "strong_gc_roots": [
+        "product_evidence_model_state",
+        "active_or_explicitly_pinned_run",
+        "unexpired_export",
+        "legal_hold"
+      ],
+      "evicted_run_is_cache_eligible": false
+    },
+    "aggregation": {
+      "layer_count": 1,
+      "deterministic_families": [
+        "single_signal_identity",
+        "flat_equal_weight_mean",
+        "hierarchical_weighted_mean",
+        "directional_weighted_vote"
+      ],
+      "core86_family_counts": {
+        "single_signal_identity": 51,
+        "flat_equal_weight_mean": 0,
+        "hierarchical_weighted_mean": 33,
+        "directional_weighted_vote": 2
+      },
+      "legacy_vote_formula": {
+        "decimal_quantum": "0.000000000000000001",
+        "rounding": "ROUND_HALF_EVEN",
+        "order": "weighted_component_continuous_dimension_score_then_dimension_sign_then_weighted_dimension_vote",
+        "quantization_points": [
+          "dimension_score",
+          "final_vote_score",
+          "confidence"
+        ],
+        "tie_direction": "neutral"
+      },
+      "deterministic_uses_target_axis": false,
+      "supervised_requires_target_and_training_preset": true,
+      "aggregation_instance_contains_fitted_model_state": false
+    },
+    "legacy_migration": {
+      "factor_variant_count": 28,
+      "factor_family_count": 12,
+      "signal_variant_count": 51,
+      "signal_family_count": 27,
+      "model_specification_count": 86,
+      "workspace_signal_equal_is_in_core_86": false,
+      "workspace_signal_equal_independent_parity_oracle_required": true,
+      "parity_oracle": "immutable_v021_baseline_manifest",
+      "waiver_counts_as_parity": false
+    },
+    "target": {
+      "horizon_rule_kinds": [
+        "fixed_sessions",
+        "next_scheduled_execution"
+      ],
+      "weekly_monthly_first_target": "next_scheduled_execution",
+      "purge_uses_actual_label_intervals": true,
+      "future_outcome_availability_may_filter_population": false,
+      "outcome_policy_is_versioned": true,
+      "formal_missing_entry_or_unresolved_exit_fails_decision_group": true,
+      "terminal_event_return_basis": "incremental_from_last_legal_preterminal_total_return_index",
+      "terminal_forward_return_formula": "last_preterminal_index*(1+terminal_event_return)/entry_index-1"
+    },
+    "runtime_identity": {
+      "compiled_graph_is_reusable_across_drafts": true,
+      "node_run_is_reusable_across_graphs": true,
+      "compile_attempt_is_immutable": true,
+      "run_usage_is_recorded_by_graph_run_binding": true,
+      "instant_data_availability_enters_configuration_fingerprint": false,
+      "execution_fingerprint_includes_exact_input_manifests_resources_range_checkpoint_executor_environment_and_cache_policy": true,
+      "reuse_eligibility_check_and_binding_are_atomic": true
+    },
+    "dag": {
+      "graph_run_ready_gate": true,
+      "planning_work_is_claimable": false,
+      "dependencies_and_work_are_published_atomically": true,
+      "upstream_failure_has_terminal_propagation": true,
+      "leases_use_fencing_tokens": true
+    },
+    "incremental_execution": {
+      "modes": [
+        "full_recompute",
+        "append_safe",
+        "windowed",
+        "stateful"
+      ],
+      "default_mode": "full_recompute",
+      "runtime_may_infer_undeclared_incrementality": false
+    },
+    "product": {
+      "version_types": [
+        "execution",
+        "qualification",
+        "monitoring"
+      ],
+      "scheduled_decision_runtime_required": true,
+      "v0.22.0_deterministic_active_model_state": null,
+      "decision_uniqueness": [
+        "product_execution_version",
+        "decision_session"
+      ],
+      "planned_retraining_creates_execution_version": false,
+      "decision_semantic_change_restarts_oos": true,
+      "execution_cost_policy_change_restarts_oos": true,
+      "evaluation_only_cost_scenario_creates_qualification_version": true,
+      "enrollment_anchor_fields": [
+        "oos_anchor_cutoff_at",
+        "activation_effective_at",
+        "first_eligible_decision_session_id",
+        "schedule_version_id"
+      ],
+      "first_eligible_session_predicate": "decision_cutoff_at>max(oos_anchor_cutoff_at,activation_effective_at)"
+    },
+    "lightgbm": {
+      "release": "0.22.1",
+      "initial_status": "planned",
+      "formal_context_is_gated": true,
+      "evidence_classes": [
+        "walk_forward_backtest",
+        "locked_historical_test",
+        "prospective_oos"
+      ],
+      "common_evaluation_panel_required_for_controlled_comparison": true,
+      "final_signal_rank_centering": {
+        "sort": "raw_prediction_descending",
+        "ties": "average_rank",
+        "n_equals_one": 0,
+        "n_greater_than_one_formula": "1-2*(average_rank-1)/(n-1)",
+        "non_finite": "missing_excluded_from_n"
+      }
+    },
+    "rv20_defense": {
+      "release": "0.22.2",
+      "family_or_package_key": "spy_rv20_proxy_target15_floor25_reserve_v1",
+      "initial_status": "planned",
+      "maximum_v0.22.2_release_status": "exploratory_available",
+      "is_portfolio_target_volatility": false,
+      "exposure_matched_static_baseline_required": true,
+      "context_compatibility_is_prepublished_not_realized_beta_filtered": true,
+      "static_baseline_uses_preregistered_defense_calibration_window": true,
+      "price_field": "vendor_total_return_adjusted_close",
+      "required_price_count": 21,
+      "sample_std_ddof": 1,
+      "staleness_limit_sessions": 0,
+      "execution_policy": "next_common_session_raw_open"
+    },
+    "deployment": {
+      "v0.22.0_boundary": "trusted_single_user_local_or_private_research_environment",
+      "multi_tenant_or_public_network_in_scope": false,
+      "actor_is_derived_from_authentication_context": true,
+      "database_and_object_store_restore_drill_required": true
+    },
+    "cutover": {
+      "shadow_contexts": [
+        "etf",
+        "large_cap"
+      ],
+      "minimum_weekly_prospective_decision_sessions": 12,
+      "minimum_monthly_prospective_decision_sessions": 3,
+      "shadow_count_scope": "per_representative_asset_context_frequency_enrollment_execution_version_no_pooling",
+      "missing_active_monthly_uses_frozen_representative_shadow_cell": true,
+      "explicit_eligible_may_precede_full_shadow": true,
+      "rollback_workspace_mode": "maintenance_read_only",
+      "rollback_allows_new_legacy_research_creation": false,
+      "active_v021_product_runtime_during_rollback": "continue_pinned_v021_runtime",
+      "affected_v022_enrollment_during_rollback": "suspended"
+    },
+    "database_milestone_binding": {
+      "M1": "DB1_DB2_DB3_expand_backfill_validate_enable",
+      "M2": "DB4_DB5_DB6_expand_backfill_validate_enable_and_DB7A_expand_backfill_validate_enable_deterministic_only",
+      "M5": "DB7A_enable_strategy_defense_sleeve_runtime",
+      "M7": "DB8_expand_backfill_validate_enable",
+      "M9": "DB7B_expand_backfill_validate_enable"
+    },
+    "freeze_protocol": {
+      "preserve_rc1_candidate_files": true,
+      "final_contract_id": "bird-migration-v0.22.0",
+      "final_status": "frozen",
+      "final_files": [
+        "候鸟v0.22最终开发计划.md",
+        "contract-decisions.v0.22.0.json",
+        "README.md",
+        "freeze-manifest.v0.22.0.json"
+      ],
+      "atomic_consistency_check_required": true,
+      "git_identity_is_external_tag_or_attestation_to_avoid_self_hash": true
+    }
+  }
+}

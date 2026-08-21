@@ -1,0 +1,95 @@
+{
+  "catalog_type": "v022_processing",
+  "catalog_version": "0.22.1",
+  "nodes": [
+    {
+      "node_key": "total_return", "variant_key": "total_return_node__w120", "name": "Total return", "algorithm_identity": "close_adj[t]/close_adj[t-window]-1", "parameters": {"window": 120}, "version_number": 1, "stage_no": 1,
+      "implementation_key": "style_rotation.v022.processing.total_return_v1", "implementation_version": "1", "determinism_policy": "deterministic", "cache_policy": "content_addressed",
+      "execution_contract": {"execution_mode": "full_recompute", "partition_key": ["asset_id"], "lookback": 120, "lookforward": 0, "revision_impact_policy": "from_revised_session_forward", "watermark_policy": "completed_session", "checkpoint_contract": "none"},
+      "ports": [
+        {"port_key": "close_adj", "direction": "input", "ordinal": 0, "payload_contract_key": "market_price_scalar", "binding_cardinality": "required", "semantics": {"role": "adjusted_close"}},
+        {"port_key": "total_return", "direction": "output", "ordinal": 0, "payload_contract_key": "intermediate_numeric_feature", "binding_cardinality": "required", "semantics": {"unit": "decimal_return"}}
+      ],
+      "input_bindings": [{"input_port_key": "close_adj", "source_feature_variant_key": "adjusted_close", "binding_role": "adjusted_close", "ordinal": 0}],
+      "output_features": [{"output_port_key": "total_return", "family_key": "total_return", "variant_key": "total_return__w120", "name": "Total return", "formula_identity": "close_adj[t]/close_adj[t-window]-1", "parameters": {"window": 120}, "semantic_role": "return_feature", "unit": "decimal_return", "direction": "higher_is_better", "payload_contract_key": "intermediate_numeric_feature", "aggregation_readiness": "not_aggregation_ready", "research_hypothesis": "Past total return captures medium-term price continuation.", "research_tier": "canonical", "output_semantics": {"continuous": true, "rank_meaning": false}}]
+    },
+    {
+      "node_key": "moving_average_ratio", "variant_key": "moving_average_ratio_node__s1_l200", "name": "Moving-average ratio", "algorithm_identity": "SMA(close_adj,short)/SMA(close_adj,long)-1", "parameters": {"short_window": 1, "long_window": 200}, "version_number": 1, "stage_no": 1,
+      "implementation_key": "style_rotation.v022.processing.moving_average_ratio_v1", "implementation_version": "1", "determinism_policy": "deterministic", "cache_policy": "content_addressed",
+      "execution_contract": {"execution_mode": "full_recompute", "partition_key": ["asset_id"], "lookback": 199, "lookforward": 0, "revision_impact_policy": "windowed_forward", "watermark_policy": "completed_session", "checkpoint_contract": "none"},
+      "ports": [
+        {"port_key": "close_adj", "direction": "input", "ordinal": 0, "payload_contract_key": "market_price_scalar", "binding_cardinality": "required", "semantics": {"role": "adjusted_close"}},
+        {"port_key": "ma_ratio", "direction": "output", "ordinal": 0, "payload_contract_key": "intermediate_numeric_feature", "binding_cardinality": "required", "semantics": {"unit": "ratio_minus_one"}}
+      ],
+      "input_bindings": [{"input_port_key": "close_adj", "source_feature_variant_key": "adjusted_close", "binding_role": "adjusted_close", "ordinal": 0}],
+      "output_features": [{"output_port_key": "ma_ratio", "family_key": "moving_average_ratio", "variant_key": "moving_average_ratio__s1_l200", "name": "Moving-average ratio", "formula_identity": "SMA(close_adj,short)/SMA(close_adj,long)-1", "parameters": {"short_window": 1, "long_window": 200}, "semantic_role": "trend_ratio", "unit": "ratio", "direction": "higher_is_bullish", "payload_contract_key": "intermediate_numeric_feature", "aggregation_readiness": "not_aggregation_ready", "research_hypothesis": "Price relative to its long moving average captures trend state.", "research_tier": "canonical", "output_semantics": {"continuous": true, "zero": "moving_average_boundary"}}]
+    },
+    {
+      "node_key": "amihud_daily_primitives", "variant_key": "amihud_daily_primitives__canonical", "name": "Amihud daily primitives", "algorithm_identity": "return,dollar_volume,abs(return)/dollar_volume", "parameters": {}, "version_number": 1, "stage_no": 1,
+      "implementation_key": "style_rotation.v022.processing.amihud_daily_primitives_v1", "implementation_version": "1", "determinism_policy": "deterministic", "cache_policy": "content_addressed",
+      "execution_contract": {"execution_mode": "full_recompute", "partition_key": ["asset_id"], "lookback": 1, "lookforward": 0, "revision_impact_policy": "from_revised_session_forward", "watermark_policy": "completed_session", "checkpoint_contract": "none", "atomic_output_quality_gate": true},
+      "ports": [
+        {"port_key": "close_adj", "direction": "input", "ordinal": 0, "payload_contract_key": "market_price_scalar", "binding_cardinality": "required", "semantics": {"role": "adjusted_close"}},
+        {"port_key": "close_raw", "direction": "input", "ordinal": 1, "payload_contract_key": "market_price_scalar", "binding_cardinality": "required", "semantics": {"role": "unadjusted_close"}},
+        {"port_key": "volume_raw", "direction": "input", "ordinal": 2, "payload_contract_key": "market_volume_scalar", "binding_cardinality": "required", "semantics": {"role": "share_volume"}},
+        {"port_key": "simple_return", "direction": "output", "ordinal": 0, "payload_contract_key": "intermediate_numeric_feature", "binding_cardinality": "required", "semantics": {"unit": "decimal_return"}},
+        {"port_key": "dollar_volume", "direction": "output", "ordinal": 1, "payload_contract_key": "intermediate_numeric_feature", "binding_cardinality": "required", "semantics": {"unit": "currency"}},
+        {"port_key": "daily_price_impact", "direction": "output", "ordinal": 2, "payload_contract_key": "intermediate_numeric_feature", "binding_cardinality": "required", "semantics": {"unit": "return_per_currency"}}
+      ],
+      "input_bindings": [
+        {"input_port_key": "close_adj", "source_feature_variant_key": "adjusted_close", "binding_role": "adjusted_close", "ordinal": 0},
+        {"input_port_key": "close_raw", "source_feature_variant_key": "close_raw", "binding_role": "unadjusted_close", "ordinal": 1},
+        {"input_port_key": "volume_raw", "source_feature_variant_key": "volume_raw", "binding_role": "share_volume", "ordinal": 2}
+      ],
+      "output_features": [
+        {"output_port_key": "simple_return", "family_key": "simple_return", "variant_key": "simple_return__amihud_daily", "name": "Simple return", "formula_identity": "close_adj[t]/close_adj[t-1]-1", "parameters": {}, "semantic_role": "daily_return", "unit": "decimal_return", "direction": "not_applicable", "payload_contract_key": "intermediate_numeric_feature", "aggregation_readiness": "not_aggregation_ready", "research_hypothesis": "Daily return is an explicit primitive of price impact.", "research_tier": "canonical", "output_semantics": {"continuous": true}},
+        {"output_port_key": "dollar_volume", "family_key": "dollar_volume", "variant_key": "dollar_volume__close_times_volume", "name": "Dollar volume", "formula_identity": "close_raw[t]*volume_raw[t]", "parameters": {}, "semantic_role": "trading_value", "unit": "currency", "direction": "not_applicable", "payload_contract_key": "intermediate_numeric_feature", "aggregation_readiness": "not_aggregation_ready", "research_hypothesis": "Trading value supplies the scale denominator for price impact.", "research_tier": "canonical", "output_semantics": {"continuous": true, "non_negative": true}},
+        {"output_port_key": "daily_price_impact", "family_key": "daily_price_impact", "variant_key": "daily_price_impact__amihud", "name": "Daily price impact", "formula_identity": "abs(simple_return)/dollar_volume", "parameters": {}, "semantic_role": "daily_illiquidity", "unit": "return_per_currency", "direction": "lower_is_better", "payload_contract_key": "intermediate_numeric_feature", "aggregation_readiness": "not_aggregation_ready", "research_hypothesis": "Price movement per unit traded measures daily illiquidity.", "research_tier": "canonical", "output_semantics": {"continuous": true, "zero_denominator": "missing"}}
+      ]
+    },
+    {
+      "node_key": "price_cross_above_ma", "variant_key": "price_cross_above_ma_node__s1_l200", "name": "Price cross above moving average", "algorithm_identity": "previous_ratio<=0 and current_ratio>0", "parameters": {"short_window": 1, "long_window": 200}, "version_number": 1, "stage_no": 2,
+      "implementation_key": "style_rotation.v022.processing.price_cross_above_ma_v1", "implementation_version": "1", "determinism_policy": "deterministic", "cache_policy": "content_addressed",
+      "execution_contract": {"execution_mode": "full_recompute", "partition_key": ["asset_id"], "lookback": 1, "lookforward": 0, "revision_impact_policy": "from_revised_session_forward", "watermark_policy": "completed_session", "checkpoint_contract": "none"},
+      "ports": [
+        {"port_key": "ma_ratio", "direction": "input", "ordinal": 0, "payload_contract_key": "intermediate_numeric_feature", "binding_cardinality": "required", "semantics": {"role": "moving_average_ratio"}},
+        {"port_key": "event_score", "direction": "output", "ordinal": 0, "payload_contract_key": "final_signal_numeric", "binding_cardinality": "required", "semantics": {"values": [0, 1], "event": true}}
+      ],
+      "input_bindings": [{"input_port_key": "ma_ratio", "source_feature_variant_key": "moving_average_ratio__s1_l200", "binding_role": "moving_average_ratio", "ordinal": 0}],
+      "output_features": [{"output_port_key": "event_score", "family_key": "price_cross_above_ma", "variant_key": "price_cross_above_ma__s1_l200", "name": "Price cross above moving average", "formula_identity": "previous_ratio<=0 and current_ratio>0", "parameters": {"short_window": 1, "long_window": 200}, "semantic_role": "bullish_crossover_event", "unit": "event_score", "direction": "higher_is_bullish", "payload_contract_key": "final_signal_numeric", "aggregation_readiness": "aggregation_ready", "research_hypothesis": "An upward price crossover marks a discrete positive trend event.", "research_tier": "canonical", "output_semantics": {"event": true, "neutral": 0, "positive": 1, "rank_meaning": true}}]
+    },
+    {
+      "node_key": "amihud_illiquidity", "variant_key": "amihud_illiquidity_node__w20", "name": "Amihud illiquidity", "algorithm_identity": "rolling_mean(daily_price_impact,window)", "parameters": {"window": 20}, "version_number": 1, "stage_no": 2,
+      "implementation_key": "style_rotation.v022.processing.amihud_illiquidity_v1", "implementation_version": "1", "determinism_policy": "deterministic", "cache_policy": "content_addressed",
+      "execution_contract": {"execution_mode": "full_recompute", "partition_key": ["asset_id"], "lookback": 19, "lookforward": 0, "revision_impact_policy": "windowed_forward", "watermark_policy": "completed_session", "checkpoint_contract": "none"},
+      "ports": [
+        {"port_key": "daily_price_impact", "direction": "input", "ordinal": 0, "payload_contract_key": "intermediate_numeric_feature", "binding_cardinality": "required", "semantics": {"role": "daily_price_impact"}},
+        {"port_key": "rolling_mean_impact", "direction": "output", "ordinal": 0, "payload_contract_key": "intermediate_numeric_feature", "binding_cardinality": "required", "semantics": {"unit": "return_per_currency"}}
+      ],
+      "input_bindings": [{"input_port_key": "daily_price_impact", "source_feature_variant_key": "daily_price_impact__amihud", "binding_role": "daily_price_impact", "ordinal": 0}],
+      "output_features": [{"output_port_key": "rolling_mean_impact", "family_key": "amihud_illiquidity", "variant_key": "amihud_illiquidity__w20", "name": "Amihud illiquidity", "formula_identity": "rolling_mean(daily_price_impact,window)", "parameters": {"window": 20}, "semantic_role": "illiquidity_feature", "unit": "return_per_currency", "direction": "lower_is_better", "payload_contract_key": "intermediate_numeric_feature", "aggregation_readiness": "not_aggregation_ready", "research_hypothesis": "Persistent price impact identifies low trading liquidity.", "research_tier": "canonical", "output_semantics": {"continuous": true, "complete_window_required": true}}]
+    },
+    {
+      "node_key": "return_continuation", "variant_key": "return_continuation_node__w120", "name": "Return continuation signal", "algorithm_identity": "directional_cross_sectional_centered_rank_q18", "parameters": {"window": 120, "direction": 1}, "version_number": 1, "stage_no": 3,
+      "implementation_key": "style_rotation.v022.processing.continuous_cross_sectional_signal_v1", "implementation_version": "1", "determinism_policy": "deterministic", "cache_policy": "content_addressed",
+      "execution_contract": {"execution_mode": "full_recompute", "partition_key": ["session_date"], "lookback": 0, "lookforward": 0, "revision_impact_policy": "same_cross_section", "watermark_policy": "completed_session", "checkpoint_contract": "none"},
+      "ports": [
+        {"port_key": "feature", "direction": "input", "ordinal": 0, "payload_contract_key": "intermediate_numeric_feature", "binding_cardinality": "required", "semantics": {"role": "total_return"}},
+        {"port_key": "signal_score", "direction": "output", "ordinal": 0, "payload_contract_key": "final_signal_numeric", "binding_cardinality": "required", "semantics": {"unit": "centered_rank", "quantum": "1e-18"}}
+      ],
+      "input_bindings": [{"input_port_key": "feature", "source_feature_variant_key": "total_return__w120", "binding_role": "total_return", "ordinal": 0}],
+      "output_features": [{"output_port_key": "signal_score", "family_key": "return_continuation", "variant_key": "return_continuation__w120", "name": "Return continuation", "formula_identity": "directional_cross_sectional_centered_rank_q18", "parameters": {"window": 120, "direction": 1}, "semantic_role": "momentum_signal", "unit": "centered_rank", "direction": "higher_is_better", "payload_contract_key": "final_signal_numeric", "aggregation_readiness": "aggregation_ready", "research_hypothesis": "Assets with stronger medium-term returns tend to continue outperforming.", "research_tier": "canonical", "output_semantics": {"continuous": true, "rank_meaning": true, "range": [-1, 1], "quantum": "1e-18"}}]
+    },
+    {
+      "node_key": "low_illiquidity_quality", "variant_key": "low_illiquidity_quality_node__w20", "name": "Low-illiquidity quality signal", "algorithm_identity": "negative_cross_sectional_centered_rank_q18", "parameters": {"window": 20, "direction": -1}, "version_number": 1, "stage_no": 3,
+      "implementation_key": "style_rotation.v022.processing.continuous_cross_sectional_signal_v1", "implementation_version": "1", "determinism_policy": "deterministic", "cache_policy": "content_addressed",
+      "execution_contract": {"execution_mode": "full_recompute", "partition_key": ["session_date"], "lookback": 0, "lookforward": 0, "revision_impact_policy": "same_cross_section", "watermark_policy": "completed_session", "checkpoint_contract": "none"},
+      "ports": [
+        {"port_key": "feature", "direction": "input", "ordinal": 0, "payload_contract_key": "intermediate_numeric_feature", "binding_cardinality": "required", "semantics": {"role": "amihud_illiquidity"}},
+        {"port_key": "signal_score", "direction": "output", "ordinal": 0, "payload_contract_key": "final_signal_numeric", "binding_cardinality": "required", "semantics": {"unit": "centered_rank", "quantum": "1e-18"}}
+      ],
+      "input_bindings": [{"input_port_key": "feature", "source_feature_variant_key": "amihud_illiquidity__w20", "binding_role": "amihud_illiquidity", "ordinal": 0}],
+      "output_features": [{"output_port_key": "signal_score", "family_key": "low_illiquidity_quality", "variant_key": "low_illiquidity_quality__w20", "name": "Low-illiquidity quality", "formula_identity": "negative_cross_sectional_centered_rank_q18", "parameters": {"window": 20, "direction": -1}, "semantic_role": "liquidity_quality_signal", "unit": "centered_rank", "direction": "higher_is_better", "payload_contract_key": "final_signal_numeric", "aggregation_readiness": "aggregation_ready", "research_hypothesis": "More liquid assets provide a higher-quality cross-sectional exposure.", "research_tier": "canonical", "output_semantics": {"continuous": true, "rank_meaning": true, "range": [-1, 1], "quantum": "1e-18"}}]
+    }
+  ]
+}

@@ -35,7 +35,7 @@ function renderPage() {
 }
 
 const baseJob = {
-  context: { api_version: "v2", system_version: "0.21.0", read_only: false },
+  context: { api_version: "v2", system_version: "0.22.0", read_only: false },
   quality: { state: "ok", codes: [] },
   export_job_id: "00000000-0000-0000-0000-000000000101",
   work_item_id: "00000000-0000-0000-0000-000000000102",

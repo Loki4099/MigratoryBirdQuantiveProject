@@ -195,6 +195,7 @@ def publish_data_bundle(
     calendar_artifact_id: uuid.UUID,
     *,
     version_number: int,
+    market_dataset_key: str = "us_etf_daily_market_canonical",
 ) -> tuple[PublicationResult, PublicationResult]:
     with engine.begin() as connection:
         service = ArtifactService(cast(Engine, _BoundConnection(connection)))
@@ -224,9 +225,7 @@ def publish_data_bundle(
             ),
             {"id": definition.artifact_id},
         ).scalar_one()
-        market = _published_dataset(
-            connection, market_dataset_artifact_id, "us_etf_daily_market_canonical"
-        )
+        market = _published_dataset(connection, market_dataset_artifact_id, market_dataset_key)
         rate = _published_dataset(connection, rate_dataset_artifact_id, "dgs3mo_canonical")
         reserve = _published_dataset(
             connection, reserve_dataset_artifact_id, "dgs3mo_reserve_return"

@@ -1,0 +1,84 @@
+{
+  "catalog_type": "v022_payload",
+  "catalog_version": "0.22.3",
+  "extends": ["payload_contracts/runtime_outputs.v0.22.2.json"],
+  "contracts": [
+    {
+      "contract_key": "training_matrix_numeric",
+      "name": "Immutable supervised training matrix",
+      "semantic_role": "training_matrix_numeric",
+      "description": "Complete-case daily asset cross-sections over an exact ordered Feature Schema and one fixed-session Target; labels retain their maturity evidence.",
+      "version_number": 1,
+      "payload_kind": "tabular",
+      "schema_document": {
+        "identity_fields": ["decision_date", "asset_id", "security_key"],
+        "feature_fields": ["ordered_feature_values", "feature_schema_fingerprint"],
+        "target_fields": ["target_value", "target_known_at", "target_entry_date", "target_exit_date"],
+        "decimal_policy": "canonical_decimal_string",
+        "complete_case_required": true
+      },
+      "entity_axis": {"kind": "asset", "identity_field": "asset_id", "identity_namespace": "security", "cardinality": "many_per_time", "duplicate_policy": "reject"},
+      "time_axis": {"observation_time_field": "decision_date", "known_at_field": "decision_cutoff_at", "calendar": "frozen_evaluation_cohort", "revision_field": "matrix_fingerprint"},
+      "observation_grain": {"frequency": "session", "rows_per_entity_time": 1},
+      "primary_key_fields": ["decision_date", "asset_id"],
+      "ordering_contract": {"canonical_order": ["decision_date", "security_key", "asset_id"]},
+      "missingness_contract": {"missing_allowed": false, "implicit_fill": false},
+      "pit_contract": {"known_at_required": true, "future_revision_forbidden": true, "label_maturity_required": true},
+      "quality_contract": {"finite_when_present": true, "exact_feature_schema_required": true, "unique_asset_identity": true},
+      "aggregation_role": "not_aggregation_ready",
+      "export_policy": {"allowed": false, "restricted_fields": ["ordered_feature_values", "target_value"]},
+      "compatibility_class": "initial"
+    },
+    {
+      "contract_key": "fitted_regression_model",
+      "name": "Immutable fitted regression model state",
+      "semantic_role": "fitted_regression_model",
+      "description": "One deterministic fitted-state document for an exact Base Learner Spec and walk-forward Fold; coefficients use hexadecimal float serialization.",
+      "version_number": 1,
+      "payload_kind": "model_state",
+      "schema_document": {
+        "sections": ["adapter_identity", "feature_schema_identity", "hyperparameters", "fitted_parameters", "fit_diagnostics", "environment"],
+        "float_policy": "ieee754_hex_string",
+        "single_model_state": true
+      },
+      "entity_axis": {"kind": "custom", "identity_field": "state_fingerprint", "identity_namespace": "v022_fitted_model_state", "cardinality": "one_per_time", "duplicate_policy": "reject"},
+      "time_axis": {"observation_time_field": "trained_through", "known_at_field": "labels_known_through", "calendar": "frozen_evaluation_cohort", "revision_field": "state_fingerprint"},
+      "observation_grain": {"frequency": "fold", "rows_per_entity_time": 1},
+      "primary_key_fields": ["state_fingerprint"],
+      "ordering_contract": {"canonical_order": ["state_fingerprint"]},
+      "missingness_contract": {"missing_allowed": false, "implicit_fill": false},
+      "pit_contract": {"known_at_required": true, "future_revision_forbidden": true},
+      "quality_contract": {"finite_when_present": true, "exact_adapter_version_required": true, "exact_environment_required": true},
+      "aggregation_role": "not_aggregation_ready",
+      "export_policy": {"allowed": false, "restricted_fields": ["fitted_parameters"]},
+      "compatibility_class": "initial"
+    },
+    {
+      "contract_key": "oof_regression_prediction",
+      "name": "Strict out-of-fold regression prediction",
+      "semantic_role": "oof_regression_prediction",
+      "description": "Daily strict out-of-fold cross-sectional predictions and their centered ranks for one exact Base Learner Spec and frozen Fold sequence.",
+      "version_number": 1,
+      "payload_kind": "tabular",
+      "schema_document": {
+        "identity_fields": ["session_date", "asset_id", "security_key"],
+        "value_fields": ["raw_prediction", "feature_value"],
+        "fold_field": "fold_ordinal",
+        "decimal_policy": "canonical_decimal_string",
+        "strict_oof_required": true
+      },
+      "entity_axis": {"kind": "asset", "identity_field": "asset_id", "identity_namespace": "security", "cardinality": "many_per_time", "duplicate_policy": "reject"},
+      "time_axis": {"observation_time_field": "session_date", "known_at_field": "known_at", "calendar": "frozen_evaluation_cohort", "revision_field": "prediction_fingerprint"},
+      "observation_grain": {"frequency": "session", "rows_per_entity_time": 1},
+      "primary_key_fields": ["session_date", "asset_id"],
+      "ordering_contract": {"canonical_order": ["session_date", "security_key", "asset_id"]},
+      "missingness_contract": {"missing_allowed": false, "implicit_fill": false},
+      "pit_contract": {"known_at_required": true, "future_revision_forbidden": true, "strict_oof_required": true},
+      "quality_contract": {"finite_when_present": true, "exact_fold_coverage_required": true, "unique_asset_identity": true},
+      "aggregation_role": "not_aggregation_ready",
+      "export_policy": {"allowed": false, "restricted_fields": ["raw_prediction"]},
+      "compatibility_class": "initial"
+    }
+  ],
+  "encodings": []
+}

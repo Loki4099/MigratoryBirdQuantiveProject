@@ -12,7 +12,7 @@ class SettingsTests(unittest.TestCase):
     def test_defaults_target_local_postgres(self) -> None:
         with patch.dict(os.environ, {}, clear=True):
             settings = Settings(_env_file=None)  # type: ignore[call-arg]
-        self.assertEqual(settings.system_version, "0.21.0")
+        self.assertEqual(settings.system_version, "0.22.0")
         self.assertEqual(settings.cell_result_directory, "artifacts/cell_result_payloads")
         self.assertEqual(settings.signal_export_directory, "artifacts/signal_research_exports")
         self.assertTrue(settings.database_url.startswith("postgresql+psycopg://"))

@@ -1,0 +1,107 @@
+{
+  "catalog_type": "v022_strategy",
+  "catalog_version": "0.22.2",
+  "strategies": [
+    {
+      "family_key": "cross_section_rank_top_k",
+      "variant_key": "cross_section_rank_top_k_parity",
+      "name": "Cross-section rank Top-K",
+      "selection_semantics": {
+        "ranking": "descending_higher_is_better",
+        "selection": "top_k",
+        "tie_break": "asset_key"
+      },
+      "research_hypothesis": "A directionally stable cross-sectional score can select the strongest assets at each planned rebalance.",
+      "parameters": {
+        "allowed_k": [1, 2, 3],
+        "allowed_frequency": ["weekly", "monthly"]
+      },
+      "version_number": 1,
+      "implementation_key": "style_rotation.strategy.v021_topk",
+      "input_payload_contract_key": "final_signal_numeric",
+      "schedule_policy": {
+        "decision_cutoff": "after_completed_session",
+        "frequencies": ["weekly", "monthly"]
+      },
+      "execution_policy": {
+        "long_only": true,
+        "weighting": "equal_selected_assets",
+        "missing_decision": "fail"
+      }
+    },
+    {
+      "family_key": "cross_section_rank_top_k",
+      "variant_key": "cross_section_rank_top_k_large_cap_parity",
+      "name": "Cross-section rank Top-K",
+      "selection_semantics": {
+        "ranking": "descending_higher_is_better",
+        "selection": "top_k",
+        "tie_break": "asset_key"
+      },
+      "research_hypothesis": "A directionally stable cross-sectional score can select the strongest assets at each planned rebalance.",
+      "parameters": {
+        "allowed_k": [10, 20],
+        "allowed_frequency": ["weekly"],
+        "legacy_family_key": "us_large_cap_top_k",
+        "required_instrument_type": "common_stock_or_adr",
+        "selection_buffer": ["half_k"],
+        "sector_cap": ["none"]
+      },
+      "version_number": 1,
+      "implementation_key": "style_rotation.strategy.v021_topk",
+      "input_payload_contract_key": "final_signal_numeric",
+      "schedule_policy": {
+        "decision_cutoff": "after_completed_session",
+        "frequencies": ["weekly"]
+      },
+      "execution_policy": {
+        "long_only": true,
+        "weighting": "equal_selected_assets_with_boundary_tie_sharing",
+        "missing_decision": "fail",
+        "selection_buffer": "half_k"
+      }
+    }
+  ],
+  "parameter_presets": [
+    {
+      "strategy_variant_key": "cross_section_rank_top_k_parity",
+      "preset_key": "k1",
+      "name": "Top 1",
+      "description": "Select the highest-ranked asset with the ETF parity rules.",
+      "version_number": 1,
+      "parameters": {"target_k": 1, "selection_buffer": "none", "sector_cap": "none"}
+    },
+    {
+      "strategy_variant_key": "cross_section_rank_top_k_parity",
+      "preset_key": "k2",
+      "name": "Top 2",
+      "description": "Select the two highest-ranked assets with the ETF parity rules.",
+      "version_number": 1,
+      "parameters": {"target_k": 2, "selection_buffer": "none", "sector_cap": "none"}
+    },
+    {
+      "strategy_variant_key": "cross_section_rank_top_k_parity",
+      "preset_key": "k3",
+      "name": "Top 3",
+      "description": "Select the three highest-ranked assets with the ETF parity rules.",
+      "version_number": 1,
+      "parameters": {"target_k": 3, "selection_buffer": "none", "sector_cap": "none"}
+    },
+    {
+      "strategy_variant_key": "cross_section_rank_top_k_large_cap_parity",
+      "preset_key": "k10",
+      "name": "Top 10 with half-K buffer",
+      "description": "Select ten large-cap assets with the frozen half-K holding buffer.",
+      "version_number": 1,
+      "parameters": {"target_k": 10, "selection_buffer": "half_k", "sector_cap": "none"}
+    },
+    {
+      "strategy_variant_key": "cross_section_rank_top_k_large_cap_parity",
+      "preset_key": "k20",
+      "name": "Top 20 with half-K buffer",
+      "description": "Select twenty large-cap assets with the frozen half-K holding buffer.",
+      "version_number": 1,
+      "parameters": {"target_k": 20, "selection_buffer": "half_k", "sector_cap": "none"}
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "policy_schema_version": "1.0.0",
+  "policy_id": "v022-m0-policy-v0.22.0",
+  "contract_id": "bird-migration-v0.22.0",
+  "status": "frozen",
+  "effective_from_milestone": "M1",
+  "deployment_boundary": "trusted_single_user_local_or_private_research_environment",
+  "performance_budgets": {
+    "workspace_derived_view": {
+      "p50_ms": 200,
+      "p95_ms": 750,
+      "hard_timeout_ms": 5000
+    },
+    "workspace_selection_preview": {
+      "p50_ms": 250,
+      "p95_ms": 1000,
+      "hard_timeout_ms": 5000
+    },
+    "workspace_compile": {
+      "p50_ms": 500,
+      "p95_ms": 2500,
+      "hard_timeout_ms": 15000
+    },
+    "workspace_lineage_slice": {
+      "p50_ms": 250,
+      "p95_ms": 1000,
+      "hard_timeout_ms": 5000
+    },
+    "api_json_response_max_bytes": 2097152,
+    "performance_fixture": {
+      "feature_occurrences": 1000,
+      "edges": 2500,
+      "stage3_explicit_inputs": 64,
+      "aggregation_candidates": 8,
+      "strategy_candidates": 4,
+      "defense_candidates": 4
+    }
+  },
+  "admission_limits": {
+    "max_explicit_stage3_inputs": 128,
+    "max_feature_occurrences": 2000,
+    "max_ancestor_occurrences": 2000,
+    "max_graph_edges": 5000,
+    "max_aggregation_candidates": 16,
+    "max_strategy_candidates": 16,
+    "max_defense_candidates": 8,
+    "max_branches": 256,
+    "max_cells": 2048,
+    "max_work_items_per_suite": 10000,
+    "max_folds_per_trainable_cell": 512,
+    "max_export_bytes": 2147483648,
+    "max_solver_cpu_ms": 5000,
+    "max_estimated_memory_bytes_per_run": 17179869184,
+    "max_concurrent_graph_runs": 2,
+    "max_worker_concurrency": 4
+  },
+  "feature_gates": {
+    "v022_contract": "frozen",
+    "v022_m0_oracle": "enabled",
+    "v022_shared_payload": "hidden",
+    "v022_catalog_release": "hidden",
+    "v022_workspace": "hidden",
+    "v022_processing_runtime": "hidden",
+    "v022_deterministic_aggregation": "hidden",
+    "v022_product_runtime": "hidden",
+    "v022_default_route": "disabled",
+    "v022_lightgbm": "planned_disabled",
+    "v022_rv20_defense": "planned_disabled"
+  },
+  "test_strategy": {
+    "python": "3.12",
+    "postgres": "16",
+    "production_like_database": {
+      "purpose": "read_only_inventory_and_oracle_verification_only",
+      "reset_allowed": false
+    },
+    "test_database": {
+      "environment_variable": "STYLE_ROTATION_TEST_DATABASE_URL",
+      "expected_database_name": "style_rotation_test",
+      "reset_confirmation": "style_rotation_test",
+      "migration_mode": "empty_upgrade_and_v021_additive_upgrade"
+    },
+    "required_suites": [
+      "unit",
+      "contract",
+      "database_integration",
+      "legacy_parity",
+      "frontend_unit",
+      "frontend_accessibility",
+      "frontend_build"
+    ],
+    "m0_commands": [
+      ".venv/Scripts/python.exe scripts/v022_m0_baseline.py --verify",
+      ".venv/Scripts/python.exe -m pytest -q tests/unit/test_v022_m0_baseline.py",
+      ".venv/Scripts/python.exe -m ruff check src tests scripts",
+      ".venv/Scripts/python.exe -m mypy src/style_rotation"
+    ]
+  },
+  "change_control": {
+    "research_semantic_change_requires": "new_contract_version_and_adr",
+    "operational_budget_change_requires": "operational_adr_and_benchmark_evidence",
+    "runtime_may_silently_raise_limits": false,
+    "runtime_may_silently_relax_gates": false
+  }
+}

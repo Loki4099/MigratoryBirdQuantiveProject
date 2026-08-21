@@ -1,0 +1,56 @@
+{
+  "benchmark_dataset_publication_id": "528886d4-42ed-4564-a079-80379a82812b",
+  "dataset_gate_assessment_id": "526f32c6-6569-598e-a758-55a1fc82de8c",
+  "monthly": {
+    "cohort": {
+      "artifact_id": "a51a673e-2e17-4ddb-8ff2-52973d6a6125",
+      "cohort_fingerprint": "cbb20daffe2fd0081895130f19680a6098649343900be06b543955b965327ec4",
+      "decision_session_count": 233,
+      "eligibility_interval_count": 4880,
+      "evaluation_cohort_version_id": "64c0f45c-72e2-587e-b704-385b34c0ffa4",
+      "reused": true,
+      "session_count": 5407
+    },
+    "frequency": "monthly",
+    "runtime": {
+      "artifact_id": "ec40bf38-e2ea-4e77-8aa6-b8bd19abef6d",
+      "dataset_gate_assessment_id": "526f32c6-6569-598e-a758-55a1fc82de8c",
+      "evaluation_cohort_runtime_contract_id": "c2fb75c4-ecb0-5116-aa6b-f35e7875e824",
+      "evaluation_cohort_version_id": "64c0f45c-72e2-587e-b704-385b34c0ffa4",
+      "lifecycle_event_count": 7,
+      "mask_interval_count": 4884,
+      "product_eligibility": "eligible_with_warnings",
+      "ranking_eligibility": "rankable_research",
+      "reused": false,
+      "runtime_fingerprint": "afc359e8934682328d8bace45575fc9acabe41c26d21e3993b66c5c311204f05",
+      "settlement_instruction_count": 7
+    }
+  },
+  "risk_dataset_publication_id": "7b8940ed-85ea-5109-81c2-f8e5d7fffc78",
+  "universe_history_id": "66a0f811-3faf-5986-91f1-27d10f7a7be4",
+  "weekly": {
+    "cohort": {
+      "artifact_id": "6dd6194e-25e9-4cba-9138-9c37865223a7",
+      "cohort_fingerprint": "9f652e5f18c9dcfe73164bd5a05e192aea8699d6303cab40dc815c70a18542ef",
+      "decision_session_count": 1017,
+      "eligibility_interval_count": 4880,
+      "evaluation_cohort_version_id": "b39dbaaf-48cd-5e23-b3b2-df77562b5065",
+      "reused": true,
+      "session_count": 5407
+    },
+    "frequency": "weekly",
+    "runtime": {
+      "artifact_id": "b1a5155e-195a-4472-bcd3-6e03472b6f31",
+      "dataset_gate_assessment_id": "526f32c6-6569-598e-a758-55a1fc82de8c",
+      "evaluation_cohort_runtime_contract_id": "89d05ec9-2f6a-5384-a0b2-d87317feeb0f",
+      "evaluation_cohort_version_id": "b39dbaaf-48cd-5e23-b3b2-df77562b5065",
+      "lifecycle_event_count": 7,
+      "mask_interval_count": 4884,
+      "product_eligibility": "eligible_with_warnings",
+      "ranking_eligibility": "rankable_research",
+      "reused": false,
+      "runtime_fingerprint": "d0fd91b7c8ef36187cccd429a5e65dd4c83fd22535d7f4a1f60288fdc75cd7be",
+      "settlement_instruction_count": 7
+    }
+  }
+}

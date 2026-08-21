@@ -5,15 +5,19 @@ import os
 import re
 import subprocess
 import uuid
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import BinaryIO
 
 from sqlalchemy import Engine, text
 from sqlalchemy.engine import make_url
 
 from style_rotation import __version__
+from style_rotation.core.canonical import sha256_hexdigest
 from style_rotation.persistence.database import database_status
+from style_rotation.persistence.session import create_postgres_engine
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,16 +59,8 @@ class BackupService:
         temporary = output_path.with_suffix(f".{uuid.uuid4().hex}.tmp")
         try:
             command, environment = self._dump_command(docker_service)
-            completed = subprocess.run(
-                command,
-                check=False,
-                capture_output=True,
-                env=environment,
-            )
-            if completed.returncode != 0:
-                message = completed.stderr.decode("utf-8", errors="replace").strip()
-                raise RuntimeError(f"pg_dump failed: {message or 'unknown error'}")
-            temporary.write_bytes(completed.stdout)
+            with temporary.open("wb") as dump_output:
+                _run(command, environment=environment, output_stream=dump_output)
             _verify_custom_dump(temporary)
             checksum = _sha256(temporary)
             os.replace(temporary, output_path)
@@ -98,8 +94,13 @@ class BackupService:
         )
 
     def restore_test(
-        self, backup_record_id: uuid.UUID, *, docker_service: str
+        self,
+        backup_record_id: uuid.UUID,
+        *,
+        docker_service: str,
+        restored_database_verifier: Callable[[str], None] | None = None,
     ) -> BackupPublication:
+        _validate_docker_service(docker_service)
         with self._engine.connect() as connection:
             row = (
                 connection.execute(
@@ -144,15 +145,30 @@ class BackupService:
         environment = {**os.environ, "PGPASSWORD": password}
         try:
             _run(create, environment=environment)
-            _run(
-                [*compose, "pg_restore", "-U", user, "-d", restore_database, "--exit-on-error"],
-                environment=environment,
-                input_bytes=dump_path.read_bytes(),
-            )
+            with dump_path.open("rb") as dump_input:
+                _run(
+                    [
+                        *compose,
+                        "pg_restore",
+                        "-U",
+                        user,
+                        "-d",
+                        restore_database,
+                        "--exit-on-error",
+                        "--no-owner",
+                        "--no-privileges",
+                    ],
+                    environment=environment,
+                    input_stream=dump_input,
+                )
             restored_url = self._url.set(database=restore_database)
-            restored = database_status(restored_url.render_as_string(hide_password=False))
-            if restored.current_revision != row["schema_revision"]:
-                raise RuntimeError("Restored database schema revision does not match the backup")
+            restored_database_url = restored_url.render_as_string(hide_password=False)
+            _verify_restored_database(
+                restored_database_url,
+                expected_revision=str(row["schema_revision"]),
+            )
+            if restored_database_verifier is not None:
+                restored_database_verifier(restored_database_url)
             now = datetime.now(UTC)
             with self._engine.begin() as connection:
                 connection.execute(
@@ -190,8 +206,7 @@ class BackupService:
             raise ValueError("Database URL must include a database name")
         environment = {**os.environ, "PGPASSWORD": self._url.password or ""}
         if docker_service is not None:
-            if not re.fullmatch(r"[a-zA-Z0-9_-]+", docker_service):
-                raise ValueError("Docker service name contains unsupported characters")
+            _validate_docker_service(docker_service)
             return (
                 [
                     "docker",
@@ -245,11 +260,50 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _validate_docker_service(docker_service: str) -> None:
+    if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9_-]*", docker_service):
+        raise ValueError("Docker service name contains unsupported characters")
+
+
+def _verify_restored_database(database_url: str, *, expected_revision: str) -> None:
+    restored = database_status(database_url)
+    if restored.current_revision != expected_revision:
+        raise RuntimeError("Restored database schema revision does not match the backup")
+    if restored.missing_schemas:
+        raise RuntimeError(
+            "Restored database is missing required schemas: " + ", ".join(restored.missing_schemas)
+        )
+
+    engine = create_postgres_engine(database_url)
+    try:
+        with engine.begin() as connection:
+            connection.execute(text("SET LOCAL search_path = pg_catalog"))
+            observed_fingerprint = connection.scalar(
+                text("SELECT strategy.v022_strategy_parameter_fingerprint(CAST(:value AS jsonb))"),
+                {"value": "{}"},
+            )
+        if observed_fingerprint != sha256_hexdigest({}):
+            raise RuntimeError(
+                "Restored database canonical fingerprint probe returned the wrong value"
+            )
+    finally:
+        engine.dispose()
+
+
 def _run(
-    command: list[str], *, environment: dict[str, str], input_bytes: bytes | None = None
+    command: list[str],
+    *,
+    environment: dict[str, str],
+    input_stream: BinaryIO | None = None,
+    output_stream: BinaryIO | None = None,
 ) -> None:
     completed = subprocess.run(
-        command, check=False, capture_output=True, env=environment, input=input_bytes
+        command,
+        check=False,
+        stdin=input_stream,
+        stdout=output_stream if output_stream is not None else subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=environment,
     )
     if completed.returncode != 0:
         message = completed.stderr.decode("utf-8", errors="replace").strip()

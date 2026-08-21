@@ -7,11 +7,15 @@ from decimal import Decimal
 from typing import Any, cast
 
 from sqlalchemy import Engine, bindparam, text
-from sqlalchemy.engine import RowMapping
+from sqlalchemy.engine import Connection, RowMapping
 
 from style_rotation.experiment.compare import classify_comparison
 from style_rotation.experiment.ranking import RankableValue, competition_ranks
 from style_rotation.experiment.result_payload import hydrate_cell_result_row
+from style_rotation.v022.workspace_context import (
+    ActiveV022WorkspaceIdentity,
+    active_v022_workspace_identity,
+)
 from style_rotation.workspace.options import Frequency, build_workspace_options
 from style_rotation.workspace.preview import build_compile_preview
 
@@ -27,6 +31,67 @@ _RANKING_METRICS = {
     "maximum_drawdown": ("strategy", "absolute", "maximum_drawdown", "higher_is_better"),
     "calmar": ("strategy", "absolute", "calmar_ratio", "higher_is_better"),
 }
+
+def _v022_candidate_dataset_members(
+    connection: Connection, identity: ActiveV022WorkspaceIdentity
+) -> dict[uuid.UUID, tuple[str, int]]:
+    """Return only members of the exact active risk/benchmark publications."""
+    rows = connection.execute(
+        text(
+            """
+            WITH eligible AS (
+              SELECT security.security_id,security.legacy_asset_id,
+                     CASE
+                       WHEN category.category_key='stocks'
+                        AND lower(replace(profile.instrument_type,'-',' '))
+                            IN ('common stock','adr') THEN 'stock'
+                       WHEN lower(replace(profile.instrument_type,'-',' ')) LIKE '%etf%'
+                         OR lower(replace(profile.instrument_type,'-',' ')) LIKE '%etp%'
+                         THEN 'fund'
+                       ELSE NULL
+                     END AS candidate_group
+                FROM catalog.security_profile profile
+                JOIN catalog.security security ON security.security_id=profile.security_id
+                JOIN catalog.asset_category category
+                  ON category.asset_category_id=profile.asset_category_id
+               WHERE profile.asset_registry_release_id=:release
+                 AND profile.tradability='tradable'
+                 AND profile.target_maturity IN (
+                   'research_ready','strategy_ready','product_eligible_input'
+                 )
+            )
+            SELECT DISTINCT eligible.security_id,publication.dataset_key,
+                            publication.version_number
+              FROM eligible
+              JOIN data.dataset_publication publication
+                ON publication.dataset_publication_id=CASE eligible.candidate_group
+                     WHEN 'stock' THEN :risk_dataset
+                     WHEN 'fund' THEN :benchmark_dataset
+                   END
+              JOIN lineage.artifact artifact
+                ON artifact.artifact_id=publication.artifact_id
+               AND artifact.status='published'
+              JOIN data.dataset_coverage dataset_coverage
+                ON dataset_coverage.dataset_publication_id=
+                   publication.dataset_publication_id
+               AND dataset_coverage.asset_id=eligible.legacy_asset_id
+             WHERE eligible.candidate_group IS NOT NULL
+             ORDER BY eligible.security_id
+            """
+        ),
+        {
+            "release": identity.asset_registry_release_id,
+            "risk_dataset": identity.risk_dataset_publication_id,
+            "benchmark_dataset": identity.benchmark_dataset_publication_id,
+        },
+    ).mappings()
+    return {
+        cast(uuid.UUID, row["security_id"]): (
+            str(row["dataset_key"]),
+            int(row["version_number"]),
+        )
+        for row in rows
+    }
 
 
 def _v021_overview_item(source: Any) -> dict[str, Any]:
@@ -198,6 +263,295 @@ _STRATEGY_TARGET_SUMMARY_SQL = """
                                                     product.rebalance_schedule_version_id
     WHERE true
 """
+
+_V022_PRODUCT_IDENTITY_SQL = """
+    SELECT enrollment.product_enrollment_id,enrollment.artifact_id AS enrollment_artifact_id,
+           enrollment.first_eligible_decision_session_id,enrollment.oos_anchor_cutoff_at,
+           enrollment.activation_effective_at,schedule.frequency,
+           first_session.session_date AS first_eligible_decision_session,
+           next_session.session_date AS next_pending_decision_session,
+           next_session.decision_cutoff_at AS next_pending_decision_cutoff_at,
+           next_input.product_input_snapshot_id AS next_product_input_snapshot_id,
+           next_input.inputs_available_at AS next_product_input_available_at,
+           next_runtime.product_runtime_execution_id AS next_product_runtime_execution_id,
+           CASE
+             WHEN COALESCE(lifecycle.to_lifecycle,'active')<>'active' THEN 'inactive'
+             WHEN next_session.decision_session_id IS NULL THEN 'schedule_complete'
+             WHEN next_session.decision_cutoff_at>now() THEN 'scheduled'
+             WHEN next_input.product_input_snapshot_id IS NULL THEN 'waiting_for_input'
+             WHEN next_runtime.product_runtime_execution_id IS NULL THEN 'input_prepared'
+             ELSE 'runtime_published'
+           END AS decision_pipeline_state,
+           COALESCE(decision_stats.decision_count,0) AS decision_count,
+           COALESCE(decision_stats.completed_decision_count,0)
+             AS completed_decision_count,
+           COALESCE(decision_stats.missing_decision_count,0) AS missing_decision_count,
+           latest_decision.session_date AS latest_decision_session,
+           latest_decision.decision_status AS latest_decision_status,
+           definition.product_key,definition.name,execution.execution_version_id,
+           execution.version_number AS execution_version_number,execution.execution_fingerprint,
+           execution.promotion_result_evidence_snapshot_id AS source_result_evidence_snapshot_id,
+           execution.configuration_snapshot_id,configuration.configuration_fingerprint,
+           configuration.semantic_identity_document,configuration.display_document,
+           qualification.qualification_document,policy.monitoring_policy_document,
+           disclosure.product_data_disclosure_id,
+           disclosure.disclosure_fingerprint AS product_data_disclosure_fingerprint,
+           disclosure.product_eligibility,disclosure.warning_codes,
+           disclosure.disclosure_document,
+           COALESCE(lifecycle.to_lifecycle,'active') AS lifecycle,
+           COALESCE(monitoring.health,'observing') AS health
+      FROM product.v022_product_enrollment enrollment
+      JOIN lineage.artifact enrollment_artifact
+        ON enrollment_artifact.artifact_id=enrollment.artifact_id
+       AND enrollment_artifact.status='published'
+      JOIN product.v022_execution_version execution
+        ON execution.execution_version_id=enrollment.execution_version_id
+      JOIN product.v022_product_definition definition
+        ON definition.product_definition_id=execution.product_definition_id
+      JOIN experiment.v022_research_configuration_snapshot configuration
+        ON configuration.configuration_snapshot_id=execution.configuration_snapshot_id
+      JOIN product.v022_qualification_version qualification
+        ON qualification.qualification_version_id=enrollment.qualification_version_id
+      JOIN product.v022_monitoring_policy_version policy
+        ON policy.monitoring_policy_version_id=enrollment.monitoring_policy_version_id
+      JOIN product.v022_decision_schedule_version schedule
+        ON schedule.decision_schedule_version_id=enrollment.decision_schedule_version_id
+      JOIN product.v022_decision_schedule_session first_session
+        ON first_session.decision_session_id=enrollment.first_eligible_decision_session_id
+      LEFT JOIN product.v022_product_data_disclosure disclosure
+        ON disclosure.execution_version_id=enrollment.execution_version_id
+       AND disclosure.qualification_version_id=enrollment.qualification_version_id
+      LEFT JOIN lineage.artifact disclosure_artifact
+        ON disclosure_artifact.artifact_id=disclosure.artifact_id
+       AND disclosure_artifact.status='published'
+      LEFT JOIN LATERAL (
+        SELECT event.to_lifecycle FROM product.v022_enrollment_lifecycle_event event
+         WHERE event.product_enrollment_id=enrollment.product_enrollment_id
+           AND event.effective_at<=now()
+         ORDER BY event.effective_at DESC,event.sequence_number DESC LIMIT 1
+      ) lifecycle ON true
+      LEFT JOIN LATERAL (
+        SELECT snapshot.health FROM product.v022_oos_monitoring_snapshot snapshot
+         WHERE snapshot.product_enrollment_id=enrollment.product_enrollment_id
+         ORDER BY snapshot.known_at DESC,snapshot.created_at DESC LIMIT 1
+      ) monitoring ON true
+      LEFT JOIN LATERAL (
+        SELECT session.decision_session_id,session.session_date,
+               session.decision_cutoff_at
+          FROM product.v022_decision_schedule_session session
+         WHERE session.decision_schedule_version_id=
+               enrollment.decision_schedule_version_id
+           AND session.ordinal>=first_session.ordinal
+           AND NOT EXISTS (
+             SELECT 1 FROM product.v022_product_decision decision
+              WHERE decision.product_enrollment_id=enrollment.product_enrollment_id
+                AND decision.decision_session_id=session.decision_session_id
+           )
+         ORDER BY session.ordinal LIMIT 1
+      ) next_session ON true
+      LEFT JOIN LATERAL (
+        SELECT snapshot.product_input_snapshot_id,snapshot.inputs_available_at
+          FROM product.v022_product_input_snapshot snapshot
+          JOIN lineage.artifact artifact ON artifact.artifact_id=snapshot.artifact_id
+                                     AND artifact.status='published'
+         WHERE snapshot.product_enrollment_id=enrollment.product_enrollment_id
+           AND snapshot.decision_session_id=next_session.decision_session_id
+         LIMIT 1
+      ) next_input ON true
+      LEFT JOIN LATERAL (
+        SELECT execution.product_runtime_execution_id
+          FROM product.v022_product_runtime_execution execution
+          JOIN lineage.artifact artifact ON artifact.artifact_id=execution.artifact_id
+                                     AND artifact.status='published'
+         WHERE execution.product_input_snapshot_id=
+               next_input.product_input_snapshot_id
+         ORDER BY execution.created_at DESC LIMIT 1
+      ) next_runtime ON true
+      LEFT JOIN LATERAL (
+        SELECT count(*) AS decision_count,
+               count(*) FILTER (WHERE decision.decision_status='completed')
+                 AS completed_decision_count,
+               count(*) FILTER (WHERE decision.decision_status='missing')
+                 AS missing_decision_count
+          FROM product.v022_product_decision decision
+         WHERE decision.product_enrollment_id=enrollment.product_enrollment_id
+      ) decision_stats ON true
+      LEFT JOIN LATERAL (
+        SELECT session.session_date,decision.decision_status
+          FROM product.v022_product_decision decision
+          JOIN product.v022_decision_schedule_session session
+            ON session.decision_session_id=decision.decision_session_id
+         WHERE decision.product_enrollment_id=enrollment.product_enrollment_id
+         ORDER BY session.ordinal DESC LIMIT 1
+      ) latest_decision ON true
+     WHERE true
+"""
+
+
+def _v022_configuration_summary(row: RowMapping) -> tuple[dict[str, Any], dict[str, Any]]:
+    semantic = dict(row["semantic_identity_document"])
+    display = dict(row["display_document"])
+    return semantic, display
+
+
+def _v022_experiment_item(row: RowMapping) -> dict[str, Any]:
+    configuration, display = _v022_configuration_summary(row)
+    return {
+        "result_evidence_snapshot_id": row["result_evidence_snapshot_id"],
+        "evidence_artifact_id": row["evidence_artifact_id"],
+        "result_artifact_id": row["result_artifact_id"],
+        "evidence_class": row["evidence_class"],
+        "configuration_snapshot_id": row["configuration_snapshot_id"],
+        "configuration_fingerprint": row["configuration_fingerprint"],
+        "configuration": configuration,
+        "display": display,
+        "created_at": row["created_at"],
+    }
+
+
+def _v022_metric_values(metric_document: Any) -> dict[str, dict[str, str | None]]:
+    document = dict(metric_document or {})
+    result: dict[str, dict[str, str | None]] = {}
+    for scope in ("absolute_metrics", "relative_metrics"):
+        values: dict[str, str | None] = {}
+        rows = document.get(scope, [])
+        if not isinstance(rows, list):
+            raise ValueError(f"v0.22 Result metric scope is not a list: {scope}")
+        for item in rows:
+            if not isinstance(item, dict) or not isinstance(item.get("metric_key"), str):
+                raise ValueError(f"v0.22 Result metric row is invalid: {scope}")
+            values[item["metric_key"]] = (
+                str(item["value"]) if item.get("value") is not None else None
+            )
+        result[scope] = values
+    return result
+
+
+def _v022_core_metrics(metric_document: Any) -> dict[str, str | None]:
+    values = _v022_metric_values(metric_document)
+    absolute = values["absolute_metrics"]
+    relative = values["relative_metrics"]
+    cagr = absolute.get("cagr")
+    spread = relative.get("cagr_spread")
+    benchmark_cagr = None
+    if cagr is not None and spread is not None:
+        benchmark_cagr = str(Decimal(cagr) - Decimal(spread))
+    return {
+        "cagr": cagr,
+        "benchmark_cagr": benchmark_cagr,
+        "cagr_spread": spread,
+        "sharpe_ratio": absolute.get("sharpe_ratio"),
+        "maximum_drawdown": absolute.get("maximum_drawdown"),
+    }
+
+
+def _v022_comparison_context(row: RowMapping) -> dict[str, Any] | None:
+    if row["evaluation_cohort_version_id"] is None:
+        return None
+    context = {
+        key: row[key]
+        for key in (
+            "evaluation_cohort_version_id",
+            "evaluation_cohort_fingerprint",
+            "cohort_key",
+            "frequency",
+            "warmup_start",
+            "evaluation_start",
+            "evaluation_end",
+            "benchmark_key",
+            "cost_bps_per_side",
+            "execution_delay_sessions",
+            "price_semantics",
+        )
+    }
+    context["cost_bps_per_side"] = str(context["cost_bps_per_side"])
+    return context
+
+
+def _v022_result_series(result_document: Any, *, maximum: int) -> dict[str, Any]:
+    if maximum < 2:
+        raise ValueError("v0.22 Result series maximum must be at least two")
+    document = dict(result_document or {})
+    strategy_rows = document.get("net_path")
+    benchmark_rows = document.get("benchmark_net_path")
+    if not isinstance(strategy_rows, list) or not isinstance(benchmark_rows, list):
+        raise ValueError("v0.22 Result net paths are missing")
+    if not strategy_rows or len(strategy_rows) != len(benchmark_rows):
+        raise ValueError("v0.22 Result net paths are empty or misaligned")
+    points: list[dict[str, Any]] = []
+    peak: Decimal | None = None
+    previous_date: date | None = None
+    for strategy_row, benchmark_row in zip(strategy_rows, benchmark_rows, strict=True):
+        if not isinstance(strategy_row, dict) or not isinstance(benchmark_row, dict):
+            raise ValueError("v0.22 Result net path row is invalid")
+        session_date = date.fromisoformat(str(strategy_row.get("session_date")))
+        if str(benchmark_row.get("session_date")) != session_date.isoformat():
+            raise ValueError("v0.22 Result strategy and benchmark dates differ")
+        if previous_date is not None and session_date <= previous_date:
+            raise ValueError("v0.22 Result net path dates are not strictly increasing")
+        strategy = Decimal(str(strategy_row.get("normalized_value")))
+        benchmark = Decimal(str(benchmark_row.get("normalized_value")))
+        if not strategy.is_finite() or not benchmark.is_finite() or min(strategy, benchmark) <= 0:
+            raise ValueError("v0.22 Result net path values must be finite and positive")
+        peak = strategy if peak is None else max(peak, strategy)
+        points.append(
+            {
+                "session_date": session_date,
+                "strategy_nav": str(strategy),
+                "benchmark_nav": str(benchmark),
+                "excess_nav": str(strategy / benchmark),
+                "drawdown": str(strategy / peak - Decimal(1)),
+            }
+        )
+        previous_date = session_date
+    return {
+        "total_points": len(points),
+        "points": _downsample_points(points, maximum=maximum),
+    }
+
+
+def _v022_product_item(row: RowMapping) -> dict[str, Any]:
+    configuration, display = _v022_configuration_summary(row)
+    return {
+        "product_enrollment_id": row["product_enrollment_id"],
+        "enrollment_artifact_id": row["enrollment_artifact_id"],
+        "product_key": row["product_key"],
+        "name": row["name"],
+        "execution_version_number": row["execution_version_number"],
+        "execution_fingerprint": row["execution_fingerprint"],
+        "source_result_evidence_snapshot_id": row["source_result_evidence_snapshot_id"],
+        "configuration_snapshot_id": row["configuration_snapshot_id"],
+        "configuration_fingerprint": row["configuration_fingerprint"],
+        "configuration": configuration,
+        "display": display,
+        "lifecycle": row["lifecycle"],
+        "health": row["health"],
+        "first_eligible_decision_session_id": row["first_eligible_decision_session_id"],
+        "frequency": row["frequency"],
+        "first_eligible_decision_session": row["first_eligible_decision_session"],
+        "next_pending_decision_session": row["next_pending_decision_session"],
+        "next_pending_decision_cutoff_at": row["next_pending_decision_cutoff_at"],
+        "decision_pipeline_state": row["decision_pipeline_state"],
+        "next_product_input_snapshot_id": row["next_product_input_snapshot_id"],
+        "next_product_input_available_at": row["next_product_input_available_at"],
+        "next_product_runtime_execution_id": row[
+            "next_product_runtime_execution_id"
+        ],
+        "decision_count": int(row["decision_count"]),
+        "completed_decision_count": int(row["completed_decision_count"]),
+        "missing_decision_count": int(row["missing_decision_count"]),
+        "latest_decision_session": row["latest_decision_session"],
+        "latest_decision_status": row["latest_decision_status"],
+        "oos_anchor_cutoff_at": row["oos_anchor_cutoff_at"],
+        "activation_effective_at": row["activation_effective_at"],
+        "product_data_disclosure_id": row["product_data_disclosure_id"],
+        "product_data_disclosure_fingerprint": row[
+            "product_data_disclosure_fingerprint"
+        ],
+        "product_eligibility": row["product_eligibility"],
+        "warning_codes": list(row["warning_codes"] or []),
+    }
+
 
 _WORKSPACE_ASSET_SELECTION_SQL = """
     SELECT security.security_id, profile.instrument_type, profile.tradability,
@@ -436,22 +790,38 @@ class ArtifactQueryService:
     ) -> dict[str, Any]:
         with self._engine.connect() as connection:
             connection.execute(text("SET TRANSACTION READ ONLY"))
-            release = (
-                connection.execute(
-                    text(
+            active_v022 = active_v022_workspace_identity(connection)
+            if active_v022 is None:
+                # Keep the read-only v0.21 Catalog usable while a new v0.22
+                # environment is being published.  It exposes no v0.22 candidates
+                # until the exact Registry/Gate/two-runtime chain is complete.
+                release_row = (
+                    connection.execute(
+                        text(
+                            """
+                        SELECT release.asset_registry_release_id, release.artifact_id,
+                               release.version_number, release.catalog_version,
+                               release.as_of_date
+                        FROM catalog.asset_registry_release release
+                        JOIN lineage.artifact artifact
+                          ON artifact.artifact_id = release.artifact_id
+                         AND artifact.status = 'published'
+                        ORDER BY release.version_number DESC LIMIT 1
                         """
-                    SELECT release.asset_registry_release_id, release.artifact_id,
-                           release.version_number, release.catalog_version, release.as_of_date
-                    FROM catalog.asset_registry_release release
-                    JOIN lineage.artifact artifact ON artifact.artifact_id = release.artifact_id
-                    WHERE artifact.status = 'published'
-                    ORDER BY release.version_number DESC LIMIT 1
-                    """
+                        )
                     )
+                    .mappings()
+                    .one_or_none()
                 )
-                .mappings()
-                .one_or_none()
-            )
+                release = dict(release_row) if release_row is not None else None
+            else:
+                release = {
+                    "asset_registry_release_id": active_v022.asset_registry_release_id,
+                    "artifact_id": active_v022.asset_registry_artifact_id,
+                    "version_number": active_v022.asset_registry_version_number,
+                    "catalog_version": active_v022.asset_registry_catalog_version,
+                    "as_of_date": active_v022.asset_registry_as_of_date,
+                }
             if release is None:
                 raise LookupError("Published v0.21 asset registry not found")
             release_id = release["asset_registry_release_id"]
@@ -562,9 +932,38 @@ class ArtifactQueryService:
                 .mappings()
                 .all()
             )
+            v022_candidate_members = (
+                _v022_candidate_dataset_members(connection, active_v022)
+                if active_v022 is not None
+                else {}
+            )
             items = [dict(row) for row in rows]
             for item in items:
                 item["selectable"] = bool(item["selectable"] and item["canonical_data_available"])
+                candidate_dataset = v022_candidate_members.get(item["security_id"])
+                item["v022_candidate_selectable"] = bool(
+                    item["selectable"] and candidate_dataset is not None
+                )
+                item["v022_candidate_dataset_key"] = (
+                    candidate_dataset[0] if candidate_dataset is not None else None
+                )
+                item["v022_candidate_dataset_version"] = (
+                    candidate_dataset[1] if candidate_dataset is not None else None
+                )
+                if item["v022_candidate_selectable"]:
+                    item["v022_candidate_reason_codes"] = []
+                elif not item["selectable"]:
+                    item["v022_candidate_reason_codes"] = [
+                        "asset_not_individually_executable"
+                    ]
+                elif active_v022 is None:
+                    item["v022_candidate_reason_codes"] = [
+                        "active_v022_environment_unavailable"
+                    ]
+                else:
+                    item["v022_candidate_reason_codes"] = [
+                        "outside_frozen_candidate_dataset"
+                    ]
                 item["data_inputs"] = [
                     {
                         "input_key": "canonical_market_bars",
@@ -574,8 +973,13 @@ class ArtifactQueryService:
                         "selectable": bool(item["canonical_data_available"]),
                         "point_in_time": True,
                         "downstream_factor_keys": [
-                            "open_raw", "high_raw", "low_raw", "close_raw",
-                            "volume_raw", "open_adj", "close_adj",
+                            "open_raw",
+                            "high_raw",
+                            "low_raw",
+                            "close_raw",
+                            "volume_raw",
+                            "open_adj",
+                            "close_adj",
                         ],
                         "status_note": "published canonical history"
                         if item["canonical_data_available"]
@@ -945,6 +1349,521 @@ class ArtifactQueryService:
             )
             return {"items": [dict(row) for row in rows.mappings().all()]}
 
+    def v022_experiment_identity_catalog(self) -> dict[str, Any]:
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            rows = tuple(
+                connection.execute(
+                    text(
+                        "SELECT evidence.result_evidence_snapshot_id,evidence.artifact_id AS "
+                        "evidence_artifact_id,evidence.result_artifact_id,evidence.evidence_class,"
+                        "evidence.configuration_snapshot_id,evidence.created_at,"
+                        "configuration.configuration_fingerprint,"
+                        "configuration.semantic_identity_document,configuration.display_document "
+                        "FROM experiment.v022_result_evidence_snapshot evidence "
+                        "JOIN lineage.artifact artifact ON "
+                        "artifact.artifact_id=evidence.artifact_id "
+                        "AND artifact.status='published' "
+                        "JOIN experiment.v022_research_configuration_snapshot configuration "
+                        "ON configuration.configuration_snapshot_id="
+                        "evidence.configuration_snapshot_id "
+                        "WHERE EXISTS ("
+                        "SELECT 1 FROM experiment.v022_portfolio_cell_runtime_result result "
+                        "JOIN workspace.v022_graph_work_consumer consumer ON "
+                        "consumer.graph_work_item_id=result.graph_work_item_id "
+                        "JOIN experiment.v022_research_suite_graph_run_binding suite_run ON "
+                        "suite_run.graph_run_id=consumer.graph_run_id "
+                        "JOIN experiment.v022_suite_launch_batch_child launch_child ON "
+                        "launch_child.research_suite_id=suite_run.research_suite_id "
+                        "JOIN experiment.v022_suite_launch_batch_round batch_round ON "
+                        "batch_round.suite_launch_batch_id=launch_child.suite_launch_batch_id "
+                        "JOIN workspace.v022_research_round research_round ON "
+                        "research_round.research_round_id=batch_round.research_round_id "
+                        "AND research_round.status='active' "
+                        "WHERE result.artifact_id=evidence.result_artifact_id) "
+                        "ORDER BY evidence.created_at DESC LIMIT 200"
+                    )
+                ).mappings()
+            )
+        return {"items": [_v022_experiment_item(row) for row in rows]}
+
+    def v022_experiment_leaderboard(
+        self,
+        *,
+        frequency: str,
+        ranking_cohort_release_id: uuid.UUID | None,
+        sort: str,
+        limit: int,
+        offset: int,
+    ) -> dict[str, Any]:
+        metric_columns = {
+            "sharpe_ratio": "member.sharpe_ratio",
+            "cagr": "member.cagr",
+            "cagr_spread": "member.cagr_spread",
+            "maximum_drawdown": "member.maximum_drawdown",
+        }
+        metric_column = metric_columns.get(sort)
+        if metric_column is None:
+            raise ValueError(f"Unsupported v0.22 leaderboard metric: {sort}")
+        if frequency not in {"weekly", "monthly"}:
+            raise ValueError(f"Unsupported v0.22 leaderboard frequency: {frequency}")
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            available_frequencies = list(
+                connection.scalars(
+                    text(
+                        """
+                        SELECT DISTINCT release.frequency
+                          FROM experiment.v022_ranking_cohort_release release
+                          JOIN lineage.artifact artifact
+                            ON artifact.artifact_id=release.artifact_id
+                          JOIN experiment.v022_ranking_cohort_release_round round_binding
+                            ON round_binding.ranking_cohort_release_id=
+                               release.ranking_cohort_release_id
+                          JOIN workspace.v022_research_round research_round
+                            ON research_round.research_round_id=
+                               round_binding.research_round_id
+                           AND research_round.status='active'
+                         WHERE artifact.status='published'
+                         ORDER BY release.frequency DESC
+                        """
+                    )
+                )
+            )
+            release = (
+                connection.execute(
+                    text(
+                        """
+                        SELECT release.ranking_cohort_release_id,
+                               release.artifact_id AS ranking_cohort_artifact_id,
+                               release.version_number AS ranking_version_number,
+                               release.member_count,cohort.evaluation_cohort_version_id,
+                               cohort.cohort_fingerprint AS evaluation_cohort_fingerprint,
+                               cohort.cohort_key,cohort.frequency,
+                               cohort.warmup_start,cohort.evaluation_start,
+                               cohort.evaluation_end,cohort.benchmark_key,
+                               cohort.cost_bps_per_side,cohort.execution_delay_sessions,
+                               cohort.price_semantics
+                          FROM experiment.v022_ranking_cohort_release release
+                          JOIN lineage.artifact release_artifact
+                            ON release_artifact.artifact_id=release.artifact_id
+                           AND release_artifact.status='published'
+                          JOIN experiment.v022_evaluation_cohort_version cohort
+                            ON cohort.evaluation_cohort_version_id=
+                               release.evaluation_cohort_version_id
+                          JOIN experiment.v022_ranking_cohort_release_round round_binding
+                            ON round_binding.ranking_cohort_release_id=
+                               release.ranking_cohort_release_id
+                          JOIN workspace.v022_research_round research_round
+                            ON research_round.research_round_id=
+                               round_binding.research_round_id
+                           AND research_round.status='active'
+                         WHERE release.frequency=:frequency
+                           AND (CAST(:release_id AS uuid) IS NULL OR
+                                release.ranking_cohort_release_id=:release_id)
+                         ORDER BY release.created_at DESC,release.version_number DESC
+                         LIMIT 1
+                        """
+                    ),
+                    {"frequency": frequency, "release_id": ranking_cohort_release_id},
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if release is None:
+                raise LookupError(
+                    f"Published v0.22 {frequency} Ranking Cohort Release not found"
+                )
+            rows = (
+                connection.execute(
+                    text(
+                        f"""
+                        SELECT member.result_evidence_snapshot_id,member.result_artifact_id,
+                               member.configuration_snapshot_id,member.cagr,
+                               member.benchmark_cagr,member.cagr_spread,
+                               member.sharpe_ratio,member.maximum_drawdown,
+                               configuration.configuration_fingerprint,
+                               configuration.semantic_identity_document,
+                               configuration.display_document,
+                               promotion.product_definition_id,
+                               promotion.execution_version_id,
+                               promotion.product_enrollment_id
+                          FROM experiment.v022_ranking_cohort_member member
+                          JOIN experiment.v022_research_configuration_snapshot configuration
+                            ON configuration.configuration_snapshot_id=
+                               member.configuration_snapshot_id
+                          LEFT JOIN LATERAL (
+                            SELECT qualification.product_definition_id,
+                                   qualification.execution_version_id,
+                                   enrollment.product_enrollment_id
+                              FROM product.v022_qualification_version qualification
+                              JOIN lineage.artifact artifact
+                                ON artifact.artifact_id=qualification.artifact_id
+                               AND artifact.status='published'
+                              LEFT JOIN product.v022_product_enrollment enrollment
+                                ON enrollment.execution_version_id=
+                                   qualification.execution_version_id
+                             WHERE qualification.result_evidence_snapshot_id=
+                                   member.result_evidence_snapshot_id
+                             ORDER BY qualification.version_number DESC
+                             LIMIT 1
+                          ) promotion ON true
+                         WHERE member.ranking_cohort_release_id=:release
+                         ORDER BY {metric_column} DESC,
+                                  member.result_evidence_snapshot_id
+                         LIMIT :limit OFFSET :offset
+                        """
+                    ),
+                    {
+                        "release": release["ranking_cohort_release_id"],
+                        "limit": limit,
+                        "offset": offset,
+                    },
+                )
+                .mappings()
+                .all()
+            )
+        result_rows = []
+        for index, row in enumerate(rows, start=offset + 1):
+            configuration, display = _v022_configuration_summary(row)
+            result_rows.append(
+                {
+                    "rank": index,
+                    "result_evidence_snapshot_id": row[
+                        "result_evidence_snapshot_id"
+                    ],
+                    "result_artifact_id": row["result_artifact_id"],
+                    "configuration_snapshot_id": row["configuration_snapshot_id"],
+                    "configuration_fingerprint": row["configuration_fingerprint"],
+                    "configuration": configuration,
+                    "display": display,
+                    "cagr": str(row["cagr"]),
+                    "benchmark_cagr": str(row["benchmark_cagr"]),
+                    "cagr_spread": str(row["cagr_spread"]),
+                    "sharpe_ratio": str(row["sharpe_ratio"]),
+                    "maximum_drawdown": str(row["maximum_drawdown"]),
+                    "product_candidate": row["product_definition_id"] is not None,
+                    "product_definition_id": row["product_definition_id"],
+                    "execution_version_id": row["execution_version_id"],
+                    "product_enrollment_id": row["product_enrollment_id"],
+                }
+            )
+        comparison_context = dict(release)
+        comparison_context["cost_bps_per_side"] = str(
+            comparison_context["cost_bps_per_side"]
+        )
+        return {
+            "comparison_context": comparison_context,
+            "available_frequencies": available_frequencies,
+            "sort": sort,
+            "total": release["member_count"],
+            "limit": limit,
+            "offset": offset,
+            "rows": result_rows,
+        }
+
+    def v022_experiment_identity_detail(self, evidence_id: uuid.UUID) -> dict[str, Any]:
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            row = (
+                connection.execute(
+                    text(
+                        """
+                        SELECT evidence.*,evidence.artifact_id AS evidence_artifact_id,
+                               configuration.configuration_fingerprint,
+                               configuration.semantic_identity_document,
+                               configuration.display_document,
+                               result.outcome,result.quality_status,result.effective_start,
+                               result.effective_end,result.metric_document,result.result_document,
+                               cohort.cohort_key,cohort.frequency,cohort.warmup_start,
+                               cohort.evaluation_start,cohort.evaluation_end,
+                               cohort.benchmark_key,cohort.cost_bps_per_side,
+                               cohort.execution_delay_sessions,cohort.price_semantics,
+                               promotion.product_definition_id,promotion.product_key,
+                               promotion.product_name,promotion.execution_version_id,
+                               promotion.qualification_version_id,
+                               promotion.monitoring_policy_version_id,
+                               promotion.product_enrollment_id
+                          FROM experiment.v022_result_evidence_snapshot evidence
+                          JOIN lineage.artifact artifact
+                            ON artifact.artifact_id=evidence.artifact_id
+                           AND artifact.status='published'
+                          JOIN experiment.v022_research_configuration_snapshot configuration
+                            ON configuration.configuration_snapshot_id=
+                               evidence.configuration_snapshot_id
+                          JOIN experiment.v022_portfolio_cell_runtime_result result
+                            ON result.artifact_id=evidence.result_artifact_id
+                           AND result.configuration_snapshot_id=
+                               evidence.configuration_snapshot_id
+                          LEFT JOIN experiment.v022_evaluation_cohort_version cohort
+                            ON cohort.evaluation_cohort_version_id=
+                               evidence.evaluation_cohort_version_id
+                          LEFT JOIN LATERAL (
+                            SELECT qualification.product_definition_id,
+                                   definition.product_key,definition.name AS product_name,
+                                   qualification.execution_version_id,
+                                   qualification.qualification_version_id,
+                                   policy.monitoring_policy_version_id,
+                                   enrollment.product_enrollment_id
+                              FROM product.v022_qualification_version qualification
+                              JOIN lineage.artifact qualification_artifact
+                                ON qualification_artifact.artifact_id=qualification.artifact_id
+                               AND qualification_artifact.status='published'
+                              JOIN product.v022_product_definition definition
+                                ON definition.product_definition_id=
+                                   qualification.product_definition_id
+                              LEFT JOIN product.v022_monitoring_policy_version policy
+                                ON policy.product_definition_id=
+                                   qualification.product_definition_id
+                               AND policy.version_number=qualification.version_number
+                              LEFT JOIN product.v022_product_enrollment enrollment
+                                ON enrollment.execution_version_id=
+                                   qualification.execution_version_id
+                             WHERE qualification.result_evidence_snapshot_id=
+                                   evidence.result_evidence_snapshot_id
+                             ORDER BY qualification.version_number DESC
+                             LIMIT 1
+                          ) promotion ON true
+                         WHERE evidence.result_evidence_snapshot_id=:evidence
+                        """
+                    ),
+                    {"evidence": evidence_id},
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if row is None:
+                raise LookupError(f"v0.22 Result Evidence not found: {evidence_id}")
+            comparisons = [
+                dict(item)
+                for item in connection.execute(
+                    text(
+                        "SELECT result_comparison_id,comparison_scope,classification,"
+                        "changed_dimensions,comparison_fingerprint,comparison_document "
+                        "FROM experiment.v022_result_comparison WHERE "
+                        "left_result_evidence_snapshot_id=:evidence OR "
+                        "right_result_evidence_snapshot_id=:evidence ORDER BY created_at DESC"
+                    ),
+                    {"evidence": evidence_id},
+                ).mappings()
+            ]
+            baselines = [
+                dict(item)
+                for item in connection.execute(
+                    text(
+                        "SELECT matched_baseline_assessment_id,baseline_kind,assessment_version,"
+                        "status,baseline_result_evidence_snapshot_id,result_comparison_id,reason_codes,"
+                        "assessment_fingerprint FROM experiment.v022_matched_baseline_assessment "
+                        "WHERE subject_result_evidence_snapshot_id=:evidence "
+                        "ORDER BY baseline_kind,assessment_version DESC"
+                    ),
+                    {"evidence": evidence_id},
+                ).mappings()
+            ]
+        return {
+            **_v022_experiment_item(row),
+            "comparison_context": _v022_comparison_context(row),
+            "outcome": row["outcome"],
+            "quality_status": row["quality_status"],
+            "effective_start": row["effective_start"],
+            "effective_end": row["effective_end"],
+            "core_metrics": _v022_core_metrics(row["metric_document"]),
+            "metrics": dict(row["metric_document"]),
+            "product": {
+                "is_candidate": row["product_definition_id"] is not None,
+                "is_enrolled": row["product_enrollment_id"] is not None,
+                "product_definition_id": row["product_definition_id"],
+                "product_key": row["product_key"],
+                "name": row["product_name"],
+                "execution_version_id": row["execution_version_id"],
+                "qualification_version_id": row["qualification_version_id"],
+                "monitoring_policy_version_id": row["monitoring_policy_version_id"],
+                "product_enrollment_id": row["product_enrollment_id"],
+            },
+            "evidence": dict(row["evidence_document"]),
+            "evidence_quality": dict(row["quality_document"]),
+            "comparisons": comparisons,
+            "matched_baselines": baselines,
+        }
+
+    def v022_experiment_result_series(
+        self, evidence_id: uuid.UUID, *, max_points: int
+    ) -> dict[str, Any]:
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            row = (
+                connection.execute(
+                    text(
+                        """
+                        SELECT evidence.result_evidence_snapshot_id,
+                               evidence.evaluation_cohort_version_id,
+                               result.effective_start,result.effective_end,
+                               result.result_document
+                          FROM experiment.v022_result_evidence_snapshot evidence
+                          JOIN lineage.artifact evidence_artifact
+                            ON evidence_artifact.artifact_id=evidence.artifact_id
+                           AND evidence_artifact.status='published'
+                          JOIN experiment.v022_portfolio_cell_runtime_result result
+                            ON result.artifact_id=evidence.result_artifact_id
+                           AND result.configuration_snapshot_id=
+                               evidence.configuration_snapshot_id
+                         WHERE evidence.result_evidence_snapshot_id=:evidence
+                        """
+                    ),
+                    {"evidence": evidence_id},
+                )
+                .mappings()
+                .one_or_none()
+            )
+        if row is None:
+            raise LookupError(f"v0.22 Result Evidence not found: {evidence_id}")
+        series = _v022_result_series(row["result_document"], maximum=max_points)
+        points = series["points"]
+        if row["evaluation_cohort_version_id"] is not None and (
+            points[0]["session_date"] != row["effective_start"]
+            or points[-1]["session_date"] != row["effective_end"]
+        ):
+            raise ValueError("v0.22 Result series does not cover its exact effective range")
+        return {
+            "result_evidence_snapshot_id": row["result_evidence_snapshot_id"],
+            "effective_start": points[0]["session_date"],
+            "effective_end": points[-1]["session_date"],
+            "total_points": series["total_points"],
+            "returned_points": len(points),
+            "points": points,
+        }
+
+    def v022_product_identity_catalog(self) -> dict[str, Any]:
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            rows = tuple(
+                connection.execute(
+                    text(_V022_PRODUCT_IDENTITY_SQL + " ORDER BY enrollment.created_at DESC")
+                ).mappings()
+            )
+        return {"items": [_v022_product_item(row) for row in rows]}
+
+    def v022_product_identity_detail(self, enrollment_id: uuid.UUID) -> dict[str, Any]:
+        with self._engine.connect() as connection:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            row = (
+                connection.execute(
+                    text(
+                        _V022_PRODUCT_IDENTITY_SQL
+                        + " AND enrollment.product_enrollment_id=:enrollment"
+                    ),
+                    {"enrollment": enrollment_id},
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if row is None:
+                raise LookupError(f"v0.22 Product Enrollment not found: {enrollment_id}")
+            lifecycle_events = [
+                dict(item)
+                for item in connection.execute(
+                    text(
+                        "SELECT sequence_number,from_lifecycle,to_lifecycle,reason_code,reason,"
+                        "requested_by,requested_at,effective_at,event_fingerprint "
+                        "FROM product.v022_enrollment_lifecycle_event "
+                        "WHERE product_enrollment_id=:enrollment ORDER BY sequence_number"
+                    ),
+                    {"enrollment": enrollment_id},
+                ).mappings()
+            ]
+            snapshots = [
+                dict(item)
+                for item in connection.execute(
+                    text(
+                        "SELECT snapshot.oos_monitoring_snapshot_id,snapshot.artifact_id,"
+                        "snapshot.monitoring_policy_version_id,snapshot.monitoring_engine_artifact_id,"
+                        "snapshot.as_of_decision_session_id,snapshot.known_at,snapshot.health,"
+                        "snapshot.eligible_decision_count,snapshot.completed_decision_count,"
+                        "snapshot.missing_decision_count,snapshot.metrics_document,"
+                        "snapshot.health_document,snapshot.snapshot_fingerprint "
+                        "FROM product.v022_oos_monitoring_snapshot snapshot "
+                        "WHERE snapshot.product_enrollment_id=:enrollment "
+                        "ORDER BY snapshot.known_at DESC,snapshot.created_at DESC"
+                    ),
+                    {"enrollment": enrollment_id},
+                ).mappings()
+            ]
+            latest_decision_row = (
+                connection.execute(
+                    text(
+                        "SELECT decision.*,session.ordinal,session.session_date,"
+                        "session.decision_cutoff_at FROM product.v022_product_decision decision "
+                        "JOIN product.v022_decision_schedule_session session "
+                        "ON session.decision_session_id=decision.decision_session_id "
+                        "WHERE decision.product_enrollment_id=:enrollment "
+                        "ORDER BY session.ordinal DESC LIMIT 1"
+                    ),
+                    {"enrollment": enrollment_id},
+                )
+                .mappings()
+                .one_or_none()
+            )
+            decisions = [
+                dict(item)
+                for item in connection.execute(
+                    text(
+                        "SELECT decision.product_decision_id,decision.artifact_id,"
+                        "decision.decision_status,decision.evidence_class,"
+                        "decision.oos_eligible,decision.input_manifest_artifact_id,"
+                        "decision.aggregation_run_artifact_id,"
+                        "decision.strategy_target_artifact_id,"
+                        "decision.defense_decision_artifact_id,"
+                        "decision.merged_target_artifact_id,decision.decision_document,"
+                        "decision.quality_document,decision.reason_codes,"
+                        "decision.decision_fingerprint,session.ordinal,"
+                        "session.session_date,session.decision_cutoff_at "
+                        "FROM product.v022_product_decision decision "
+                        "JOIN product.v022_decision_schedule_session session "
+                        "ON session.decision_session_id=decision.decision_session_id "
+                        "WHERE decision.product_enrollment_id=:enrollment "
+                        "ORDER BY session.ordinal DESC"
+                    ),
+                    {"enrollment": enrollment_id},
+                ).mappings()
+            ]
+            active_ensemble_state_row = (
+                connection.execute(
+                    text(
+                        "SELECT state.product_ensemble_state_id,state.artifact_id,"
+                        "state.state_version_number,state.member_count,state.state_document,"
+                        "state.state_fingerprint,session.session_date AS activated_session "
+                        "FROM product.v022_product_ensemble_state state "
+                        "JOIN lineage.artifact artifact ON artifact.artifact_id=state.artifact_id "
+                        "AND artifact.status='published' "
+                        "JOIN product.v022_decision_schedule_session session "
+                        "ON session.decision_session_id=state.activated_decision_session_id "
+                        "WHERE state.execution_version_id=:execution "
+                        "ORDER BY state.state_version_number DESC LIMIT 1"
+                    ),
+                    {"execution": row["execution_version_id"]},
+                )
+                .mappings()
+                .one_or_none()
+            )
+        return {
+            **_v022_product_item(row),
+            "qualification": dict(row["qualification_document"]),
+            "monitoring_policy": dict(row["monitoring_policy_document"]),
+            "data_disclosure": dict(row["disclosure_document"] or {}),
+            "lifecycle_events": lifecycle_events,
+            "monitoring_snapshots": snapshots,
+            "decisions": decisions,
+            "latest_decision": dict(latest_decision_row) if latest_decision_row else None,
+            "active_ensemble_state": (
+                {
+                    **dict(active_ensemble_state_row),
+                    "state_document": dict(active_ensemble_state_row["state_document"]),
+                }
+                if active_ensemble_state_row is not None
+                else None
+            ),
+        }
+
     def product_detail(self, enrollment_id: uuid.UUID) -> dict[str, Any]:
         with self._engine.connect() as connection:
             connection.execute(text("SET TRANSACTION READ ONLY"))
@@ -1097,9 +2016,7 @@ class ArtifactQueryService:
                 else frozen_anchor_value
             )
             legacy_asset_ids = tuple(
-                row["legacy_asset_id"]
-                for row in asset_rows
-                if row["legacy_asset_id"] is not None
+                row["legacy_asset_id"] for row in asset_rows if row["legacy_asset_id"] is not None
             )
             latest_bundle = None
             if legacy_asset_ids and len(legacy_asset_ids) == len(selected_asset_ids):
@@ -1141,8 +2058,9 @@ class ArtifactQueryService:
             post_freeze_session_count = 0
             prospective_oos_session_count = 0
             if frozen_anchor_session is not None and latest_bundle is not None:
-                counts = connection.execute(
-                    text("""
+                counts = (
+                    connection.execute(
+                        text("""
                         SELECT
                             count(*) FILTER (
                                 WHERE session_date > :frozen_anchor
@@ -1155,13 +2073,16 @@ class ArtifactQueryService:
                         FROM catalog.calendar_session
                         WHERE calendar_version_id = :calendar_version_id
                     """),
-                    {
-                        "frozen_anchor": frozen_anchor_session,
-                        "activation_session": candidate["activated_at"].date(),
-                        "latest_data": latest_published_data_session,
-                        "calendar_version_id": latest_bundle["calendar_version_id"],
-                    },
-                ).mappings().one()
+                        {
+                            "frozen_anchor": frozen_anchor_session,
+                            "activation_session": candidate["activated_at"].date(),
+                            "latest_data": latest_published_data_session,
+                            "calendar_version_id": latest_bundle["calendar_version_id"],
+                        },
+                    )
+                    .mappings()
+                    .one()
+                )
                 post_freeze_session_count = int(counts["post_freeze_count"] or 0)
                 prospective_oos_session_count = int(counts["prospective_count"] or 0)
             if frozen_anchor_session is None:
@@ -1210,9 +2131,7 @@ class ArtifactQueryService:
                 "latest_published_data_known_at": (
                     latest_bundle["known_at"] if latest_bundle is not None else None
                 ),
-                "latest_snapshot_session": (
-                    snapshots[0]["as_of_session"] if snapshots else None
-                ),
+                "latest_snapshot_session": (snapshots[0]["as_of_session"] if snapshots else None),
                 "post_freeze_session_count": post_freeze_session_count,
                 "prospective_oos_session_count": prospective_oos_session_count,
                 "status": oos_status,
@@ -2442,8 +3361,9 @@ class ArtifactQueryService:
         with self._engine.connect() as connection:
             connection.execute(text("SET TRANSACTION READ ONLY"))
             v021_suite_count = int(
-                connection.execute(text("SELECT count(*) FROM experiment.research_suite"))
-                .scalar_one()
+                connection.execute(
+                    text("SELECT count(*) FROM experiment.research_suite")
+                ).scalar_one()
             )
             visible_suite_id = research_suite_id
             if visible_suite_id is not None:
@@ -3566,9 +4486,7 @@ class ArtifactQueryService:
                         "factor_variant_key": factor["variant_key"],
                         # Ad-hoc Workspace Factor values are computed on demand rather
                         # than published as a canonical Factor Dataset snapshot.
-                        "factor_dataset_artifact_id": source[
-                            "factor_variant_artifact_id"
-                        ],
+                        "factor_dataset_artifact_id": source["factor_variant_artifact_id"],
                         "factor_value": None,
                         "data_bundle_artifact_id": row["data_bundle_artifact_id"],
                     }
@@ -3608,9 +4526,7 @@ class ArtifactQueryService:
         }
 
     @staticmethod
-    def _v021_experiment_specifications(
-        connection: Any, research_suite_id: uuid.UUID
-    ) -> list[Any]:
+    def _v021_experiment_specifications(connection: Any, research_suite_id: uuid.UUID) -> list[Any]:
         return list(
             connection.execute(
                 text("""

@@ -1,0 +1,130 @@
+{
+  "evidence_schema_version": "1.0.0",
+  "evidence_id": "v022-m2-evidence-v0.22.0",
+  "contract_id": "bird-migration-v0.22.0",
+  "milestone": "M2",
+  "status": "passed",
+  "generated_at": "2026-08-10T18:53:14+08:00",
+  "prerequisites": {
+    "contract_tag": "v0.22.0-contract",
+    "contract_commit": "c9b6aec36df52630dbb4e07e39b18b591005954f",
+    "m0_commit": "c2629ee09c001b7e8dcdb21717fa2d1545399dda",
+    "m1_commit": "a33af5454d910b1e44be7423397004251298db82",
+    "m0_oracle_payload_sha256": "5949ca9b71b68bbde935402d792e89bef58c8d28143fe1f4e7446d78c34c8329",
+    "m0_oracle_byte_equivalent_after_m2": true
+  },
+  "database": {
+    "previous_revision": "20260810_50_v022_release",
+    "head_revision": "20260810_54_v022_deterministic",
+    "migrations": [
+      {
+        "revision": "20260810_51_v022_workspace",
+        "path": "migrations/versions/20260810_51_v022_workspace_compilation.py",
+        "sha256": "f76a6e02c33baf4dcec79519264a5446ea61a7105a8c945fd9ccc0fe016b39c0"
+      },
+      {
+        "revision": "20260810_52_v022_graph_dag",
+        "path": "migrations/versions/20260810_52_v022_graph_dag.py",
+        "sha256": "15efad69711af22418d5ba5cac7c0ca97909e14446ab5235a986f068f282c769"
+      },
+      {
+        "revision": "20260810_53_v022_processing",
+        "path": "migrations/versions/20260810_53_v022_processing_runtime.py",
+        "sha256": "3112ef7982e5d3536c6eb46778fba7dde04c78c86ed600c0e16f050f06b08ff4"
+      },
+      {
+        "revision": "20260810_54_v022_deterministic",
+        "path": "migrations/versions/20260810_54_v022_deterministic_runtime.py",
+        "sha256": "ae8c90286f7a1af0f735a50bcc753a6267fcb0fe623b270aa319033e1c56a628"
+      }
+    ],
+    "empty_upgrade_passed": true,
+    "m1_additive_upgrade_passed": true,
+    "m1_marker_preserved": true,
+    "destructive_database_name_guard": "style_rotation_test",
+    "production_database_writes": 0
+  },
+  "compiler": {
+    "contract_version": "v0.22.0",
+    "pure_solver": true,
+    "semantic_fingerprint_stable": true,
+    "adjacent_projection_only": true,
+    "catalog_declared_producers_only": true,
+    "stage3_explicit_aggregation_inputs_only": true,
+    "payload_contract_compatibility_enforced": true,
+    "deterministic_target_axis_count": 0,
+    "deterministic_training_axis_count": 0,
+    "rejected_attempt_audited": true
+  },
+  "dag_runtime": {
+    "atomic_ready_gate": true,
+    "cycle_detection": true,
+    "dangling_dependency_detection": true,
+    "skip_locked_claim": true,
+    "lease_generation": true,
+    "fencing_token": true,
+    "stale_fence_rejected": true,
+    "required_failure_propagation": true,
+    "last_consumer_cancellation": true,
+    "three_work_two_worker_race_passed": true,
+    "graph_run_and_reusable_run_separated": true
+  },
+  "runtime": {
+    "single_signal_identity": "enabled",
+    "flat_equal_weight_mean": "enabled",
+    "processing_node_run": "schema_enabled",
+    "processing_partition_checkpoint_cache_export": "schema_enabled",
+    "deterministic_aggregation_run": "schema_enabled",
+    "strategy_target_runtime": "schema_disabled_until_m5",
+    "defense_runtime": "schema_disabled_until_m5",
+    "sleeve_merge_runtime": "schema_disabled_until_m5"
+  },
+  "verification": {
+    "full_pytest": {
+      "command": ".venv/Scripts/python.exe -m pytest -q",
+      "passed": 379,
+      "failed": 0,
+      "warnings": 1,
+      "warning_scope": "upstream Starlette TestClient deprecation"
+    },
+    "m2_unit": {
+      "passed": 5,
+      "failed": 0
+    },
+    "m2_postgresql_integration": {
+      "passed": 5,
+      "failed": 0
+    },
+    "ruff": {
+      "command": ".venv/Scripts/python.exe -m ruff check src migrations tests",
+      "result": "passed"
+    },
+    "mypy": {
+      "command": ".venv/Scripts/python.exe -m mypy src/style_rotation",
+      "source_files": 201,
+      "result": "passed"
+    },
+    "m0_oracle_verify": "passed"
+  },
+  "feature_gates": {
+    "v022_workspace": "hidden",
+    "v022_processing_runtime": "hidden",
+    "v022_default_route": "disabled",
+    "v022_strategy_defense_runtime": "disabled_until_m5",
+    "v022_lightgbm": "planned_disabled",
+    "v022_rv20_defense": "planned_disabled"
+  },
+  "gate_conditions": {
+    "db4_workspace_compilation_complete": true,
+    "db5_graph_dag_complete": true,
+    "db6_processing_runtime_complete": true,
+    "db7a_deterministic_path_enabled": true,
+    "same_semantic_intent_same_fingerprint": true,
+    "deterministic_axes_conditional": true,
+    "three_work_dag_no_race": true,
+    "legacy_regression_green": true,
+    "unrelated_v01_documents_excluded": true
+  },
+  "next_milestone": "M3",
+  "m3_entry_allowed": true
+}

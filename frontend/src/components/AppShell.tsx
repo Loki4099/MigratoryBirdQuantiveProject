@@ -1,39 +1,76 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { setLanguage, type SupportedLanguage } from "../i18n";
 import fledglingLogo from "../assets/fledgling-logo.svg";
-import { useWorkspaceSelection } from "../workspace/WorkspaceSelectionContext";
+import { useV022ReleaseControl } from "../release/useV022ReleaseControl";
 
-const navigation = [
-  { label: "nav.overview", items: [["nav.workspace", "/"]] },
-  {
-    label: "nav.research",
-    items: [
-      ["nav.assets", "/assets"],
-      ["nav.factors", "/factors"], ["nav.signals", "/signals"],
-      ["nav.models", "/models"],
-    ],
-  },
-  {
-    label: "nav.products",
-    items: [
-      ["nav.strategies", "/strategies"], ["nav.experiments", "/experiments"],
-      ["nav.products", "/products"],
-    ],
-  },
+function v022Navigation(prefix: "" | "/workspace-v022") {
+  return [
+    {
+      label: "nav.research",
+      items: [
+        ["nav.assets", prefix ? `${prefix}/context` : "/research-context"],
+        ["nav.processing1", `${prefix}/processing-1`],
+        ["nav.processing2", `${prefix}/processing-2`],
+        ["nav.processing3", `${prefix}/processing-3`],
+        ["nav.aggregation", `${prefix}/aggregation`],
+      ],
+    },
+    {
+      label: "nav.products",
+      items: [
+        ["nav.strategies", prefix ? `${prefix}/strategy` : "/strategy-configuration"],
+        ["nav.experiments", "/experiments"],
+        ["nav.products", "/products"],
+      ],
+    },
+    {
+      label: "nav.system",
+      items: [["nav.artifacts", "/artifacts"], ["nav.runs", "/runs"], ["nav.api", "/api"]],
+    },
+  ] as const;
+}
+
+const neutralNavigation = [
   {
     label: "nav.system",
     items: [["nav.artifacts", "/artifacts"], ["nav.runs", "/runs"], ["nav.api", "/api"]],
   },
 ] as const;
 
+function buildNavigationSearch(
+  locationSearch: string,
+  language: SupportedLanguage,
+  frequency: "weekly" | "monthly",
+) {
+  const current = new URLSearchParams(locationSearch);
+  const params = new URLSearchParams({
+    lang: language,
+    frequency,
+    contract: "v0.22",
+  });
+  const launchBatchId = current.get("launch_batch");
+  const graphSuiteId = current.get("graph_suite");
+  if (launchBatchId) params.set("launch_batch", launchBatchId);
+  else if (graphSuiteId) params.set("graph_suite", graphSuiteId);
+  return `?${params.toString()}`;
+}
+
 export function AppShell() {
   const { t, i18n } = useTranslation();
-  const workspace = useWorkspaceSelection();
+  const location = useLocation();
+  const release = useV022ReleaseControl();
+  const previewMode = location.pathname === "/workspace-v022" || location.pathname.startsWith("/workspace-v022/");
+  const neutralMode = release.isLoading || release.isError || release.data?.maintenance_read_only === true;
   const language = (i18n.resolvedLanguage ?? "zh-CN") as SupportedLanguage;
-  const navigationSearch = `?lang=${language}&frequency=${workspace.frequency}`;
+  const requestedFrequency = new URLSearchParams(location.search).get("frequency");
+  const frequency = requestedFrequency === "monthly" ? "monthly" : "weekly";
+  const navigationSearch = buildNavigationSearch(location.search, language, frequency);
+  const navigation = neutralMode
+    ? neutralNavigation
+    : v022Navigation(previewMode ? "/workspace-v022" : "");
   const [navigationOpen, setNavigationOpen] = useState(false);
 
   return (
@@ -42,7 +79,7 @@ export function AppShell() {
       <aside className={`sidebar${navigationOpen ? " nav-open" : ""}`}>
         <div className="brand-lockup">
           <img className="brand-mark" src={fledglingLogo} alt="" aria-hidden="true" />
-          <div><strong>{t("brand.name")}</strong><small>{t("brand.stage")}</small></div>
+          <div><strong>{t("brand.name")}</strong><small>{language === "zh-CN" ? "研究与产品工作台 · v0.22" : "Research and product workspace · v0.22"}</small></div>
         </div>
         <button
           className="mobile-nav-toggle"
@@ -69,7 +106,7 @@ export function AppShell() {
       </aside>
       <div className="workspace">
         <header className="topbar">
-          <span className="topbar-context">MIGRATORY BIRD LAB · v0.21</span>
+          <span className="topbar-context">MIGRATORY BIRD LAB · v0.22</span>
           <div className="language-switch" aria-label={t("common.language")}>
             {(["zh-CN", "en"] as const).map((item) => (
               <button

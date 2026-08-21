@@ -1,0 +1,15 @@
+{
+  "assessment": {
+    "artifact_id": "1770cf4f-622e-406c-b708-10ae0bcd1114",
+    "assessment_fingerprint": "8b5003000bb0ad234441dc74d153dab8bfe137073f4318d827dbb06f662f9406",
+    "blocker_count": 0,
+    "dataset_gate_assessment_id": "526f32c6-6569-598e-a758-55a1fc82de8c",
+    "product_eligibility": "eligible_with_warnings",
+    "ranking_eligibility": "rankable_research",
+    "reused": false,
+    "uniform_exclusion_count": 353,
+    "warning_count": 446
+  },
+  "monthly_post_repair_review_artifact_id": "6d141ac5-41f5-4b04-8e26-6e45ce68a6c5",
+  "weekly_post_repair_review_artifact_id": "44639750-39b2-4bdb-aa38-e2acca9fec53"
+}

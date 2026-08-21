@@ -1,0 +1,23 @@
+{
+  "benchmark_dataset_publication_id": "528886d4-42ed-4564-a079-80379a82812b",
+  "monthly": {
+    "artifact_id": "a51a673e-2e17-4ddb-8ff2-52973d6a6125",
+    "cohort_fingerprint": "cbb20daffe2fd0081895130f19680a6098649343900be06b543955b965327ec4",
+    "decision_session_count": 233,
+    "eligibility_interval_count": 4880,
+    "evaluation_cohort_version_id": "64c0f45c-72e2-587e-b704-385b34c0ffa4",
+    "reused": false,
+    "session_count": 5407
+  },
+  "risk_dataset_publication_id": "7b8940ed-85ea-5109-81c2-f8e5d7fffc78",
+  "universe_history_id": "66a0f811-3faf-5986-91f1-27d10f7a7be4",
+  "weekly": {
+    "artifact_id": "6dd6194e-25e9-4cba-9138-9c37865223a7",
+    "cohort_fingerprint": "9f652e5f18c9dcfe73164bd5a05e192aea8699d6303cab40dc815c70a18542ef",
+    "decision_session_count": 1017,
+    "eligibility_interval_count": 4880,
+    "evaluation_cohort_version_id": "b39dbaaf-48cd-5e23-b3b2-df77562b5065",
+    "reused": false,
+    "session_count": 5407
+  }
+}

@@ -1,0 +1,195 @@
+{
+  "catalog_type": "v022_defense",
+  "catalog_version": "0.22.2",
+  "timing_policies": [
+    {
+      "family_key": "fixed_defense_budget",
+      "variant_key": "fixed20_budget",
+      "name": "Fixed defensive budget",
+      "formula_identity": "defense_budget_equals_published_constant",
+      "research_hypothesis": "A fixed defensive budget provides a transparent parity baseline without making a market-timing claim.",
+      "version_number": 1,
+      "implementation_key": "style_rotation.v022.defense_timing.fixed_budget_v1",
+      "research_status": "parity",
+      "supported_frequencies": ["weekly", "monthly"],
+      "input_policy": {
+        "market_timing_signal_required": false,
+        "known_at_required": false,
+        "missing_input_policy": "fail",
+        "stale_input_policy": "fail",
+        "decision_cutoff": "scheduled_session_close",
+        "execution_policy": "next_common_session_raw_open"
+      },
+      "rule": {
+        "rule_type": "fixed_budget",
+        "budget": {
+          "risk_budget": "0.800000000000000000",
+          "defense_budget": "0.200000000000000000"
+        }
+      }
+    },
+    {
+      "family_key": "market_trend_tiered_budget",
+      "variant_key": "spy_ma200_tiered_budget",
+      "name": "Market moving-average tiered budget",
+      "formula_identity": "market_adjusted_close_div_session_sma_minus_one_to_published_budget_tiers",
+      "research_hypothesis": "The frozen v0.21 SPY MA200 tiers provide an explicit market-regime parity baseline.",
+      "version_number": 1,
+      "implementation_key": "style_rotation.v022.defense_timing.spy_ma200_tiered_v1",
+      "research_status": "parity",
+      "supported_frequencies": ["weekly", "monthly"],
+      "input_policy": {
+        "market_timing_signal_required": true,
+        "known_at_required": true,
+        "missing_input_policy": "fail",
+        "stale_input_policy": "fail",
+        "decision_cutoff": "scheduled_session_close",
+        "execution_policy": "next_common_session_raw_open"
+      },
+      "rule": {
+        "rule_type": "moving_average_tiered_budget",
+        "reference_asset_key": "spy",
+        "price_field": "adjusted_close",
+        "moving_average_window_sessions": 200,
+        "indicator_key": "spy_close_div_sma200_minus_one",
+        "upper_threshold": "0.020000000000000000",
+        "lower_threshold": "-0.020000000000000000",
+        "above_upper": {
+          "risk_budget": "1.000000000000000000",
+          "defense_budget": "0.000000000000000000"
+        },
+        "middle": {
+          "risk_budget": "0.800000000000000000",
+          "defense_budget": "0.200000000000000000"
+        },
+        "below_lower": {
+          "risk_budget": "0.600000000000000000",
+          "defense_budget": "0.400000000000000000"
+        },
+        "boundary_policy": "strict_outer_inclusive_middle"
+      }
+    }
+  ],
+  "allocation_policies": [
+    {
+      "family_key": "standard_fixed_defensive_basket",
+      "variant_key": "standard_defensive_basket_long_history_v1",
+      "name": "Standard fixed defensive basket",
+      "formula_identity": "published_fixed_defense_sleeve_weights_with_frozen_reserve_accrual_model",
+      "research_hypothesis": "The frozen v0.21 long-history defensive basket provides a parity allocation for researching a defensive sleeve.",
+      "version_number": 1,
+      "implementation_key": "style_rotation.v022.defense_allocation.standard_long_history_v1",
+      "asset_registry_catalog_version": "0.21.1",
+      "asset_set_key": "standard_defensive_basket_long_history_v1",
+      "research_status": "exploratory",
+      "formal_eligible": false,
+      "missing_member_policy": "fail",
+      "reserve_fallback_policy": "forbidden",
+      "rebalance_policy": "with_strategy",
+      "reserve_return_model_ref": {
+        "model_key": "dgs3mo_cash_accrual_proxy",
+        "version_number": 1
+      },
+      "members": [
+        {
+          "ordinal": 0,
+          "asset_key": "synthetic_reserve",
+          "component_role": "reserve",
+          "sleeve_weight": "0.400000000000000000"
+        },
+        {
+          "ordinal": 1,
+          "asset_key": "ief",
+          "component_role": "defensive_asset",
+          "sleeve_weight": "0.250000000000000000"
+        },
+        {
+          "ordinal": 2,
+          "asset_key": "tlt",
+          "component_role": "defensive_asset",
+          "sleeve_weight": "0.100000000000000000"
+        },
+        {
+          "ordinal": 3,
+          "asset_key": "tip",
+          "component_role": "defensive_asset",
+          "sleeve_weight": "0.150000000000000000"
+        },
+        {
+          "ordinal": 4,
+          "asset_key": "iau",
+          "component_role": "defensive_asset",
+          "sleeve_weight": "0.100000000000000000"
+        }
+      ]
+    }
+  ],
+  "defenses": [
+    {
+      "family_key": "fixed_defensive_allocation",
+      "variant_key": "fixed20_defense",
+      "name": "Fixed 20% defense",
+      "allocation_semantics": {
+        "risk_sleeve": 0.8,
+        "defense_sleeve": 0.2,
+        "rebalance_with_strategy": true
+      },
+      "research_hypothesis": "A fixed defensive sleeve provides a transparent parity baseline.",
+      "parameters": {"defense_budget": 0.2},
+      "version_number": 3,
+      "implementation_key": "style_rotation.v022.defense_package.fixed20_standard_basket_v1",
+      "input_policy": {"market_timing_signal_required": false},
+      "allocation_policy": {"capital_conservation": true, "long_only": true},
+      "supported_asset_context_keys": [
+        "us_style_rotation_4_etf_sample_v1",
+        "us_liquid_large_cap_300_pit_v1"
+      ],
+      "timing_policy_ref": {"variant_key": "fixed20_budget", "version_number": 1},
+      "defensive_allocation_policy_ref": {
+        "variant_key": "standard_defensive_basket_long_history_v1",
+        "version_number": 1
+      },
+      "research_status": "parity"
+    },
+    {
+      "family_key": "ma200_tiered_regime_defense",
+      "variant_key": "ma200_tiered_defense",
+      "name": "SPY MA200 tiered regime defense",
+      "allocation_semantics": {
+        "indicator": "spy_close_div_sma200_minus_one",
+        "above_upper_budget": 0.0,
+        "middle_budget": 0.2,
+        "below_lower_budget": 0.4,
+        "rebalance_with_strategy": true
+      },
+      "research_hypothesis": "The frozen v0.21 SPY MA200 tiers provide an explicit defensive parity baseline.",
+      "parameters": {
+        "reference_asset": "spy",
+        "window": 200,
+        "upper_threshold": 0.02,
+        "lower_threshold": -0.02
+      },
+      "version_number": 2,
+      "implementation_key": "style_rotation.v022.defense_package.spy_ma200_tiered_standard_basket_v1",
+      "input_policy": {
+        "market_timing_signal_required": true,
+        "known_at_required": true,
+        "missing_input": "fail"
+      },
+      "allocation_policy": {"capital_conservation": true, "long_only": true},
+      "supported_asset_context_keys": [
+        "us_style_rotation_4_etf_sample_v1",
+        "us_liquid_large_cap_300_pit_v1"
+      ],
+      "timing_policy_ref": {
+        "variant_key": "spy_ma200_tiered_budget",
+        "version_number": 1
+      },
+      "defensive_allocation_policy_ref": {
+        "variant_key": "standard_defensive_basket_long_history_v1",
+        "version_number": 1
+      },
+      "research_status": "parity"
+    }
+  ]
+}

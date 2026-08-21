@@ -16,11 +16,18 @@ from typing import NoReturn
 from sqlalchemy import Engine, text
 
 from style_rotation import __version__
+from style_rotation.api.actor_context import TrustedLocalActorContext, require_actor_role
 from style_rotation.architecture import DOMAIN_BOUNDARIES
 from style_rotation.catalog.asset_registry import publish_asset_identities, publish_asset_registry
 from style_rotation.catalog.bootstrap import publish_catalogs
 from style_rotation.catalog.eligibility import EligibilityPublicationService
 from style_rotation.catalog.scope import publish_research_scope
+from style_rotation.cli.v022_shadow_worker import (
+    configure_parser as _configure_v022_shadow_worker,
+)
+from style_rotation.cli.v022_shadow_worker import (
+    run_parsed as _run_v022_shadow_worker,
+)
 from style_rotation.config.settings import get_settings
 from style_rotation.data.acquisition import SourceAcquisitionService
 from style_rotation.data.bundle import (
@@ -135,6 +142,12 @@ from style_rotation.strategy.grid import publish_strategy_target_grid
 from style_rotation.strategy.product_service import publish_strategy_product
 from style_rotation.strategy.service import publish_strategy_catalog
 from style_rotation.strategy.target_publication import StrategyTargetPublicationService
+from style_rotation.v022.object_backup import StrongObjectBackupService
+from style_rotation.v022.operations_probes import OperationsSLOProbeService
+from style_rotation.v022.operations_slo import OperationsReadinessService
+from style_rotation.v022.payload_runtime import LocalPayloadObjectStore
+from style_rotation.v022.recovery_drill import RestoreDrillService, RollbackDrillService
+from style_rotation.v022.release_control import ReleaseControlService, TransitionTarget
 from style_rotation.workspace.catalog import publish_component_catalog
 from style_rotation.workspace.release_gates import ReleaseGateEvidenceService
 
@@ -197,19 +210,33 @@ def _db_status(as_json: bool) -> int:
     return 0
 
 
+def _require_cli_operator() -> str:
+    settings = get_settings()
+    return require_actor_role(
+        TrustedLocalActorContext(
+            actor_key=settings.api_actor_key,
+            operator_enabled=settings.api_operator_enabled,
+        ),
+        required_role="operator",
+    )
+
+
 def _db_upgrade() -> int:
+    _require_cli_operator()
     settings = get_settings()
     upgrade_database(settings.database_url)
     return _db_status(as_json=False)
 
 
 def _db_reset(confirmation: str) -> int:
+    _require_cli_operator()
     settings = get_settings()
     reset_database(settings.database_url, confirmation, settings.environment)
     return _db_status(as_json=False)
 
 
 def _backup_create(output: str, git_commit: str, docker_service: str | None) -> int:
+    _require_cli_operator()
     settings = get_settings()
     result = BackupService(
         create_postgres_engine(settings.database_url), settings.database_url
@@ -219,11 +246,213 @@ def _backup_create(output: str, git_commit: str, docker_service: str | None) -> 
 
 
 def _backup_restore_test(backup_record_id: str, docker_service: str) -> int:
+    _require_cli_operator()
     settings = get_settings()
     result = BackupService(
         create_postgres_engine(settings.database_url), settings.database_url
     ).restore_test(uuid.UUID(backup_record_id), docker_service=docker_service)
     print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _backup_object_create(
+    backup_record_id: str,
+    bundle_root: str,
+    object_root: str | None,
+) -> int:
+    _require_cli_operator()
+    settings = get_settings()
+    service = StrongObjectBackupService(
+        create_postgres_engine(settings.database_url),
+        Path(object_root or settings.v022_payload_directory),
+    )
+    result = service.create(
+        Path(bundle_root),
+        backup_record_id=uuid.UUID(backup_record_id),
+    )
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _backup_object_restore(
+    bundle_root: str,
+    restored_object_root: str,
+    object_root: str | None,
+) -> int:
+    _require_cli_operator()
+    settings = get_settings()
+    service = StrongObjectBackupService(
+        create_postgres_engine(settings.database_url),
+        Path(object_root or settings.v022_payload_directory),
+    )
+    result = service.restore(Path(bundle_root), Path(restored_object_root))
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _backup_restore_joint(
+    backup_record_id: str,
+    docker_service: str,
+    bundle_root: str,
+    restored_object_root: str,
+    object_root: str | None,
+) -> int:
+    _require_cli_operator()
+    settings = get_settings()
+    backup_id = uuid.UUID(backup_record_id)
+    engine = create_postgres_engine(settings.database_url)
+    object_service = StrongObjectBackupService(
+        engine,
+        Path(object_root or settings.v022_payload_directory),
+    )
+    started_at = datetime.now(UTC)
+    object_restore = object_service.restore(
+        Path(bundle_root),
+        Path(restored_object_root),
+    )
+    database_restore = BackupService(engine, settings.database_url).restore_test(
+        backup_id,
+        docker_service=docker_service,
+        restored_database_verifier=lambda restored_database_url: (
+            object_service.verify_against_database(
+                bundle_root=Path(bundle_root),
+                restored_database_url=restored_database_url,
+                restored_object_root=Path(restored_object_root),
+            )
+        ),
+    )
+    completed_at = datetime.now(UTC)
+    evidence = RestoreDrillService(engine).publish_restored_store(
+        backup_record_id=backup_id,
+        restored_object_store=LocalPayloadObjectStore(Path(restored_object_root)),
+        started_at=started_at,
+        completed_at=completed_at,
+    )
+    print(
+        json.dumps(
+            {
+                "database_restore": database_restore.to_dict(),
+                "object_restore": object_restore.to_dict(),
+                "restore_evidence": asdict(evidence),
+            },
+            indent=2,
+            ensure_ascii=False,
+            default=str,
+        )
+    )
+    return 0
+
+
+def _recovery_publish_restore_evidence(
+    backup_record_id: str,
+    restored_object_root: str,
+    started_at: datetime,
+    completed_at: datetime,
+) -> int:
+    _require_cli_operator()
+    result = RestoreDrillService(
+        create_postgres_engine(get_settings().database_url)
+    ).publish_restored_store(
+        backup_record_id=uuid.UUID(backup_record_id),
+        restored_object_store=LocalPayloadObjectStore(Path(restored_object_root)),
+        started_at=started_at,
+        completed_at=completed_at,
+    )
+    print(json.dumps(asdict(result), indent=2, ensure_ascii=False, default=str))
+    return 0
+
+
+def _recovery_publish_rollback_evidence(
+    rollback_transition_artifact_id: str,
+    v021_artifact_id: str,
+    replay_command_name: str,
+    replay_idempotency_key: str,
+    replay_request_file: str,
+    completed_at: datetime,
+) -> int:
+    _require_cli_operator()
+    replay_request = json.loads(Path(replay_request_file).read_text(encoding="utf-8"))
+    if not isinstance(replay_request, dict):
+        raise ValueError("Pinned replay request must be a JSON object")
+    result = RollbackDrillService(
+        create_postgres_engine(get_settings().database_url)
+    ).publish_verified(
+        rollback_transition_artifact_id=uuid.UUID(rollback_transition_artifact_id),
+        v021_artifact_id=uuid.UUID(v021_artifact_id),
+        replay_command_name=replay_command_name,
+        replay_idempotency_key=uuid.UUID(replay_idempotency_key),
+        replay_request=replay_request,
+        completed_at=completed_at,
+    )
+    print(json.dumps(asdict(result), indent=2, ensure_ascii=False, default=str))
+    return 0
+
+
+def _recovery_release_preflight(
+    target: TransitionTarget,
+    evidence_items: tuple[str, ...],
+    incident_file: str | None,
+) -> int:
+    _require_cli_operator()
+    evidence = _parse_release_evidence(evidence_items)
+    incident = _load_incident_document(incident_file)
+    report = ReleaseControlService(
+        create_postgres_engine(get_settings().database_url)
+    ).preflight(target=target, gate_evidence=evidence, incident=incident)
+    print(json.dumps(report.to_dict(), indent=2, ensure_ascii=False))
+    return 0 if report.ready else 2
+
+
+def _parse_release_evidence(evidence_items: tuple[str, ...]) -> dict[str, uuid.UUID]:
+    evidence: dict[str, uuid.UUID] = {}
+    for item in evidence_items:
+        key, separator, value = item.partition("=")
+        if not separator or not key or key in evidence:
+            raise ValueError("Evidence must use unique KEY=ARTIFACT_UUID entries")
+        evidence[key] = uuid.UUID(value)
+    return evidence
+
+
+def _load_incident_document(incident_file: str | None) -> dict[str, object]:
+    incident: dict[str, object] = {}
+    if incident_file:
+        loaded = json.loads(Path(incident_file).read_text(encoding="utf-8"))
+        if not isinstance(loaded, dict):
+            raise ValueError("Release incident document must be a JSON object")
+        incident = loaded
+    return incident
+
+
+def _recovery_release_transition(
+    target: TransitionTarget,
+    reason_code: str,
+    reason: str,
+    evidence_items: tuple[str, ...],
+    incident_file: str | None,
+) -> int:
+    actor_key = _require_cli_operator()
+    evidence = _parse_release_evidence(evidence_items)
+    incident = _load_incident_document(incident_file)
+    service = ReleaseControlService(create_postgres_engine(get_settings().database_url))
+    preflight = service.preflight(
+        target=target,
+        gate_evidence=evidence,
+        incident=incident,
+    )
+    if not preflight.ready:
+        raise ValueError(
+            "Release preflight blocked transition: "
+            + "; ".join(preflight.blocker_details)
+        )
+    result = service.transition(
+        target=target,
+        reason_code=reason_code,
+        reason=reason,
+        requested_by=actor_key,
+        gate_evidence=evidence,
+        incident=incident,
+    )
+    print(json.dumps(asdict(result), indent=2, ensure_ascii=False, default=str))
     return 0
 
 
@@ -274,6 +503,7 @@ def _idempotency_repair_response(
     response_file: str,
     confirmation: str,
 ) -> int:
+    _require_cli_operator()
     if confirmation != "OUTCOME_AUDITED":
         raise ValueError("Repair requires --confirm-outcome-audited OUTCOME_AUDITED")
     payload = json.loads(Path(response_file).read_text(encoding="utf-8"))
@@ -1440,6 +1670,7 @@ def _artifact_show(artifact_id: str) -> int:
 
 
 def _artifact_invalidate(artifact_id: str, reason: str, replacement_artifact_id: str | None) -> int:
+    _require_cli_operator()
     tainted = _artifact_service().invalidate(
         uuid.UUID(artifact_id),
         reason,
@@ -1460,6 +1691,49 @@ def _run_api(host: str, port: int) -> int:
     import uvicorn
 
     uvicorn.run("style_rotation.api.app:app", host=host, port=port, reload=False)
+    return 0
+
+
+def _operations_collect_v022_probes(
+    window_start_at: datetime,
+    window_end_at: datetime,
+    publish: bool,
+) -> int:
+    service = OperationsSLOProbeService(
+        create_postgres_engine(get_settings().database_url)
+    )
+    if publish:
+        publication = service.publish_window(
+            window_start_at=window_start_at,
+            window_end_at=window_end_at,
+        )
+        print(json.dumps(asdict(publication), indent=2, ensure_ascii=False, default=str))
+        return 0
+    observation = service.observe(
+        window_start_at=window_start_at,
+        window_end_at=window_end_at,
+    )
+    print(json.dumps(asdict(observation), indent=2, ensure_ascii=False, default=str))
+    return 0
+
+
+def _operations_publish_v022_readiness(
+    slo_policy_version_id: str,
+    window_start_at: datetime,
+    window_end_at: datetime,
+    measurement_ids: tuple[str, ...],
+) -> int:
+    if not measurement_ids:
+        raise ValueError("Operations Readiness requires explicit Measurement IDs")
+    result = OperationsReadinessService(
+        create_postgres_engine(get_settings().database_url)
+    ).publish(
+        slo_policy_version_id=uuid.UUID(slo_policy_version_id),
+        window_start_at=window_start_at,
+        window_end_at=window_end_at,
+        measurement_ids=tuple(uuid.UUID(value) for value in measurement_ids),
+    )
+    print(json.dumps(asdict(result), indent=2, ensure_ascii=False, default=str))
     return 0
 
 
@@ -1504,6 +1778,196 @@ def build_parser() -> argparse.ArgumentParser:
     backup_restore_parser.add_argument("--docker-service", required=True)
     backup_restore_parser.set_defaults(
         handler=lambda args: _backup_restore_test(args.backup_record_id, args.docker_service)
+    )
+    object_create_parser = backup_subparsers.add_parser(
+        "object-create",
+        help="Create a portable strong-root Payload Object bundle for a DB backup",
+    )
+    object_create_parser.add_argument("--backup-record-id", required=True)
+    object_create_parser.add_argument("--bundle-root", required=True)
+    object_create_parser.add_argument("--object-root")
+    object_create_parser.set_defaults(
+        handler=lambda args: _backup_object_create(
+            args.backup_record_id,
+            args.bundle_root,
+            args.object_root,
+        )
+    )
+    object_restore_parser = backup_subparsers.add_parser(
+        "object-restore",
+        help="Restore a strong-root Payload Object bundle to an independent directory",
+    )
+    object_restore_parser.add_argument("--bundle-root", required=True)
+    object_restore_parser.add_argument("--restored-object-root", required=True)
+    object_restore_parser.add_argument("--object-root")
+    object_restore_parser.set_defaults(
+        handler=lambda args: _backup_object_restore(
+            args.bundle_root,
+            args.restored_object_root,
+            args.object_root,
+        )
+    )
+    joint_restore_parser = backup_subparsers.add_parser(
+        "restore-joint",
+        help="Restore DB and Object Store together, verify their closure, and publish evidence",
+    )
+    joint_restore_parser.add_argument("--backup-record-id", required=True)
+    joint_restore_parser.add_argument("--docker-service", required=True)
+    joint_restore_parser.add_argument("--bundle-root", required=True)
+    joint_restore_parser.add_argument("--restored-object-root", required=True)
+    joint_restore_parser.add_argument("--object-root")
+    joint_restore_parser.set_defaults(
+        handler=lambda args: _backup_restore_joint(
+            args.backup_record_id,
+            args.docker_service,
+            args.bundle_root,
+            args.restored_object_root,
+            args.object_root,
+        )
+    )
+
+    recovery_parser = subparsers.add_parser(
+        "recovery", help="Publish operator-verified v0.22 recovery evidence"
+    )
+    recovery_subparsers = recovery_parser.add_subparsers(
+        dest="recovery_command", required=True
+    )
+    restore_evidence_parser = recovery_subparsers.add_parser(
+        "publish-restore-evidence",
+        help="Read every restored strong-root Payload Object and publish restore evidence",
+    )
+    restore_evidence_parser.add_argument("--backup-record-id", required=True)
+    restore_evidence_parser.add_argument("--restored-object-root", required=True)
+    restore_evidence_parser.add_argument("--started-at", required=True, type=_parse_datetime)
+    restore_evidence_parser.add_argument("--completed-at", required=True, type=_parse_datetime)
+    restore_evidence_parser.set_defaults(
+        handler=lambda args: _recovery_publish_restore_evidence(
+            args.backup_record_id,
+            args.restored_object_root,
+            args.started_at,
+            args.completed_at,
+        )
+    )
+    rollback_evidence_parser = recovery_subparsers.add_parser(
+        "publish-rollback-evidence",
+        help="Run maintenance, historical-read and exact-replay probes and publish evidence",
+    )
+    rollback_evidence_parser.add_argument(
+        "--rollback-transition-artifact-id", required=True
+    )
+    rollback_evidence_parser.add_argument("--v021-artifact-id", required=True)
+    rollback_evidence_parser.add_argument("--replay-command-name", required=True)
+    rollback_evidence_parser.add_argument("--replay-idempotency-key", required=True)
+    rollback_evidence_parser.add_argument("--replay-request-file", required=True)
+    rollback_evidence_parser.add_argument("--completed-at", required=True, type=_parse_datetime)
+    rollback_evidence_parser.set_defaults(
+        handler=lambda args: _recovery_publish_rollback_evidence(
+            args.rollback_transition_artifact_id,
+            args.v021_artifact_id,
+            args.replay_command_name,
+            args.replay_idempotency_key,
+            args.replay_request_file,
+            args.completed_at,
+        )
+    )
+    release_preflight_parser = recovery_subparsers.add_parser(
+        "release-preflight",
+        help="Read-only validation of a proposed v0.22 release transition",
+    )
+    release_preflight_parser.add_argument(
+        "--target",
+        required=True,
+        choices=("shadow", "explicit_eligible", "default", "maintenance_read_only"),
+    )
+    release_preflight_parser.add_argument(
+        "--evidence",
+        action="append",
+        default=[],
+        metavar="KEY=ARTIFACT_UUID",
+    )
+    release_preflight_parser.add_argument("--incident-file")
+    release_preflight_parser.set_defaults(
+        handler=lambda args: _recovery_release_preflight(
+            args.target,
+            tuple(args.evidence),
+            args.incident_file,
+        )
+    )
+    release_transition_parser = recovery_subparsers.add_parser(
+        "release-transition",
+        help="Preflight and explicitly publish one operator-authorized release transition",
+    )
+    release_transition_parser.add_argument(
+        "--target",
+        required=True,
+        choices=("shadow", "explicit_eligible", "default", "maintenance_read_only"),
+    )
+    release_transition_parser.add_argument("--reason-code", required=True)
+    release_transition_parser.add_argument("--reason", required=True)
+    release_transition_parser.add_argument(
+        "--evidence",
+        action="append",
+        default=[],
+        metavar="KEY=ARTIFACT_UUID",
+    )
+    release_transition_parser.add_argument("--incident-file")
+    release_transition_parser.set_defaults(
+        handler=lambda args: _recovery_release_transition(
+            args.target,
+            args.reason_code,
+            args.reason,
+            tuple(args.evidence),
+            args.incident_file,
+        )
+    )
+
+    operations_parser = subparsers.add_parser(
+        "operations", help="Observe and publish v0.22 operational evidence"
+    )
+    operations_subparsers = operations_parser.add_subparsers(
+        dest="operations_command", required=True
+    )
+    operations_probe_parser = operations_subparsers.add_parser(
+        "collect-v022-probes",
+        help="Observe six frozen SLO domains, optionally publishing immutable Measurements",
+    )
+    operations_probe_parser.add_argument(
+        "--window-start-at", required=True, type=_parse_datetime
+    )
+    operations_probe_parser.add_argument(
+        "--window-end-at", required=True, type=_parse_datetime
+    )
+    operations_probe_parser.add_argument(
+        "--publish", action="store_true", help="Publish observed nonempty domain Measurements"
+    )
+    operations_probe_parser.set_defaults(
+        handler=lambda args: _operations_collect_v022_probes(
+            args.window_start_at, args.window_end_at, args.publish
+        )
+    )
+    operations_readiness_parser = operations_subparsers.add_parser(
+        "publish-v022-readiness",
+        help="Publish readiness from one explicit SLO Policy and exact-window Measurements",
+    )
+    operations_readiness_parser.add_argument(
+        "--slo-policy-version-id", required=True
+    )
+    operations_readiness_parser.add_argument(
+        "--window-start-at", required=True, type=_parse_datetime
+    )
+    operations_readiness_parser.add_argument(
+        "--window-end-at", required=True, type=_parse_datetime
+    )
+    operations_readiness_parser.add_argument(
+        "--measurement-id", action="append", required=True
+    )
+    operations_readiness_parser.set_defaults(
+        handler=lambda args: _operations_publish_v022_readiness(
+            args.slo_policy_version_id,
+            args.window_start_at,
+            args.window_end_at,
+            tuple(args.measurement_id),
+        )
     )
 
     storage_parser = subparsers.add_parser(
@@ -2164,6 +2628,12 @@ def build_parser() -> argparse.ArgumentParser:
             args.worker_id, args.max_items, args.forever, args.poll_seconds
         )
     )
+    v022_shadow_parser = experiment_subparsers.add_parser(
+        "run-v022-shadow-worker",
+        help="Advance exact v0.21/v0.22 Shadow Product decisions and comparisons",
+    )
+    _configure_v022_shadow_worker(v022_shadow_parser)
+    v022_shadow_parser.set_defaults(handler=_run_v022_shadow_worker)
     v021_schedule_parser = experiment_subparsers.add_parser(
         "schedule-v021-monitoring",
         help="Schedule every active Product candidate for one newly published Data Bundle",

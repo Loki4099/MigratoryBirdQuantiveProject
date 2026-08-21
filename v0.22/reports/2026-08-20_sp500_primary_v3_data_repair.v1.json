@@ -1,0 +1,567 @@
+{
+  "primary_dataset_artifact_id": "b7c172c9-5180-470e-b01c-329a7259a593",
+  "cleaning_version_id": "5dcf0088-2328-4332-8f03-d07243b787bc",
+  "calendar_version_id": "71662bd1-3204-46ee-a5d5-f603ad0c09b0",
+  "universe_membership_ledger_id": "3e433d96-1264-547f-ba8b-84a0343d11f2",
+  "prior_gate_assessment_id": "237fcc83-f3c2-50d3-b6b9-c7e5b9289159",
+  "lifecycle_evidence_artifact_ids": [
+    "ace9eade-aa0a-4807-9fe8-34fd411cce6b",
+    "90865f4e-32e6-4ff2-9b7a-9bbac4dbefc9",
+    "7371f130-7e66-4ace-84fd-635ccc336a81",
+    "c8876d2b-93a7-4d22-abc4-64c6b334a55b",
+    "b7b41f62-77dc-46b1-8a41-d2a4b3b0389f",
+    "168e99be-1a9c-40e4-8860-5b0e9896adf7",
+    "b97404e1-d0da-45cc-978d-63fad4ea1208"
+  ],
+  "additional_reviewed_resolution_ids": [
+    "9066f490-679f-5fa7-98c4-d9d3ea54bffd"
+  ],
+  "exclusion_policy": {
+    "policy_key": "sp500_primary_v3_full_range_repair_exclusions",
+    "version_number": 1,
+    "primary_dataset_publication_id": "22753730-d9cd-539d-bb04-b9ce72da6e93",
+    "coverage_start": "2004-12-31",
+    "coverage_end": "2026-06-30",
+    "decisions": [
+      {
+        "security_id": "021d59be-7ea1-5c9c-b69b-a4af43337a73",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "PWER has 647 primary-v3 bars from 2023-11-29 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "05dd1d7b-d0bb-5c24-9ae7-cacd84b1baab",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "STI has 1044 primary-v3 bars from 2022-05-02 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "0e9baa8a-6a5b-5ead-a16f-9cd3321fdffd",
+        "reason_code": "strict_warmup_discontinuity",
+        "basis_rule_codes": [
+          "strict_consecutive_warmup_incomplete"
+        ],
+        "reviewer_note": "FISV cannot satisfy the exact 504-consecutive-session admission rule in the reference closure audit. No published reviewed replacement is bound; exclude the full range conservatively."
+      },
+      {
+        "security_id": "1344dc4b-e2cf-5efc-abeb-30adcdeccf05",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "ASO has 1441 primary-v3 bars from 2020-10-02 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "15ca5f4d-333a-50a6-8c0e-f5036d2bb318",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "MI has 2662 primary-v3 bars from 2015-11-25 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "174008da-cd86-5ead-ab7f-f2969b59bd1c",
+        "reason_code": "unresolved_primary_zero_volume_path",
+        "basis_rule_codes": [
+          "potential_held_path_zero_volume",
+          "selectable_zero_volume"
+        ],
+        "reviewer_note": "PARA contains zero-volume sessions on a selectable or potential held path in primary v3. No published reviewed positive-volume replacement is bound; exclude the full range rather than synthesize tradability."
+      },
+      {
+        "security_id": "18436f66-a713-53e0-9969-2ee039ecc322",
+        "reason_code": "unresolved_pre_lifecycle_market_gap",
+        "basis_rule_codes": [
+          "potential_held_path_market_gap",
+          "strict_consecutive_warmup_incomplete"
+        ],
+        "reviewer_note": "ESRX has a published terminal lifecycle event, but strict primary-v3 closure still identifies a pre-event daily-bar gap and consecutive-warmup break. No published reviewed replacement resolves that earlier gap; exclude the full range rather than fabricate market observations."
+      },
+      {
+        "security_id": "190c61ad-a2f4-5a76-bd40-a43bc1a54a0a",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "EQ has 1937 primary-v3 bars from 2018-10-12 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "1bc7f696-48e5-5afa-b9c2-909e5e3a54d1",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "G has 4757 primary-v3 bars from 2007-08-02 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "230a8fb4-9220-52df-a0d5-3bb6f871ced3",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "H has 4186 primary-v3 bars from 2009-11-05 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "292a2d11-8cb2-5593-85c9-dfd036d3e844",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "CHIR has 1318 primary-v3 bars from 2018-12-07 through 2024-03-05, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "2f11ea0a-3dae-59c8-9271-d5db9ce71249",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "UCL has 1521 primary-v3 bars from 2020-06-10 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "35c0f240-1faa-56e0-88f8-e28d03dca7e9",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "ADT has 2122 primary-v3 bars from 2018-01-19 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "39963fac-99c7-5d43-b797-5d68e9f09377",
+        "reason_code": "unresolved_primary_zero_volume_path",
+        "basis_rule_codes": [
+          "potential_held_path_zero_volume",
+          "selectable_zero_volume"
+        ],
+        "reviewer_note": "AMCR contains zero-volume sessions on a selectable or potential held path in primary v3. No published reviewed positive-volume replacement is bound; exclude the full range rather than synthesize tradability."
+      },
+      {
+        "security_id": "3e43396c-b112-51b3-bf5d-564eb889374a",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "NSM has 1610 primary-v3 bars from 2012-03-08 through 2018-07-31, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "414fdf4b-f790-5e15-b72e-d5b86a1549d1",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "LIFE has 105 primary-v3 bars from 2026-01-29 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "4212b744-4f58-567d-b6aa-f7aae6c7c4e1",
+        "reason_code": "unresolved_primary_zero_volume_path",
+        "basis_rule_codes": [
+          "potential_held_path_zero_volume",
+          "selectable_zero_volume"
+        ],
+        "reviewer_note": "GHC contains zero-volume sessions on a selectable or potential held path in primary v3. No published reviewed positive-volume replacement is bound; exclude the full range rather than synthesize tradability."
+      },
+      {
+        "security_id": "4557c67e-51ea-57eb-9621-22fefdeba206",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "SGP has 99 primary-v3 bars from 2026-02-06 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "492e1fdf-1010-4c92-93e8-e7bb3d0ecfdb",
+        "reason_code": "unresolved_primary_zero_volume_path",
+        "basis_rule_codes": [
+          "selectable_zero_volume"
+        ],
+        "reviewer_note": "BKR contains zero-volume sessions on a selectable or potential held path in primary v3. No published reviewed positive-volume replacement is bound; exclude the full range rather than synthesize tradability."
+      },
+      {
+        "security_id": "4ab91ed4-2ee7-5274-b7f6-70799f5b70fe",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "SHLD has 700 primary-v3 bars from 2023-09-14 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "544d3ece-72ae-53d4-a02e-97bf14e57ad5",
+        "reason_code": "unresolved_primary_zero_volume_path",
+        "basis_rule_codes": [
+          "potential_held_path_zero_volume",
+          "selectable_zero_volume"
+        ],
+        "reviewer_note": "CHD contains zero-volume sessions on a selectable or potential held path in primary v3. No published reviewed positive-volume replacement is bound; exclude the full range rather than synthesize tradability."
+      },
+      {
+        "security_id": "5b9cf4a8-9c57-573e-abce-7b95a3c17e69",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "SAF has 756 primary-v3 bars from 2018-08-29 through 2021-08-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "5bc56718-4e8f-5b70-93a4-b9d6de1212a2",
+        "reason_code": "unresolved_primary_zero_volume_path",
+        "basis_rule_codes": [
+          "potential_held_path_zero_volume",
+          "selectable_zero_volume"
+        ],
+        "reviewer_note": "EP contains zero-volume sessions on a selectable or potential held path in primary v3. No published reviewed positive-volume replacement is bound; exclude the full range rather than synthesize tradability."
+      },
+      {
+        "security_id": "5f58be97-0d7f-541d-b629-3108454e3bfe",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "POM has 182 primary-v3 bars from 2025-10-08 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "5fd328b7-54aa-5b19-9543-70382303091b",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "JAVA has 1188 primary-v3 bars from 2021-10-05 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "62296c13-ccbd-5f6f-87b4-88376bc4a892",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "TE has 1625 primary-v3 bars from 2020-01-10 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "65a7507f-7a02-5c46-8df8-509a0603b56e",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "EMC has 784 primary-v3 bars from 2023-05-15 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "67ab6f6a-d57b-5281-b397-a228fdd87960",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "PCL has 227 primary-v3 bars from 2025-08-05 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "6c7cb392-6b7f-5f01-a31c-0b65fdf4f79f",
+        "reason_code": "unresolved_pre_lifecycle_market_gap",
+        "basis_rule_codes": [
+          "potential_held_path_market_gap",
+          "strict_consecutive_warmup_incomplete"
+        ],
+        "reviewer_note": "TWX has a published terminal lifecycle event, but strict primary-v3 closure still identifies a pre-event daily-bar gap and consecutive-warmup break. No published reviewed replacement resolves that earlier gap; exclude the full range rather than fabricate market observations."
+      },
+      {
+        "security_id": "6d39898d-6bb3-5a3f-ace2-7a6f797cbd98",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "SE has 2183 primary-v3 bars from 2017-10-20 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "6eaad7c0-7a59-5abc-a077-37449bbbcd63",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "LU has 1421 primary-v3 bars from 2020-10-30 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "74565aba-595d-5f4f-8ea8-c41cd702d15e",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "WB has 3068 primary-v3 bars from 2014-04-17 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "77a69b5a-678e-43aa-ac20-f9b75540df33",
+        "reason_code": "unresolved_primary_zero_volume_path",
+        "basis_rule_codes": [
+          "potential_held_path_zero_volume",
+          "selectable_zero_volume"
+        ],
+        "reviewer_note": "XEL contains zero-volume sessions on a selectable or potential held path in primary v3. No published reviewed positive-volume replacement is bound; exclude the full range rather than synthesize tradability."
+      },
+      {
+        "security_id": "7ba6dc79-f0f5-5e89-a65d-9401b4014c96",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "GP has 1465 primary-v3 bars from 2020-08-28 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "869868e4-0986-51d7-bf5f-964d38a53a17",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "DYN has 1452 primary-v3 bars from 2020-09-17 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "8c3abb81-c6c9-5676-8c3a-2284ff3a45ee",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "ABI has 254 primary-v3 bars from 2025-06-26 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "93916e58-0cf1-52e2-a5fe-8a64cc581c70",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "MMI has 3183 primary-v3 bars from 2013-10-31 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "93b51215-4451-546b-a748-9c11d342d625",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "AV has 38 primary-v3 bars from 2026-05-06 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "94231a7c-541b-56bf-9494-b65f0a51db4e",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "VRTS has 4399 primary-v3 bars from 2009-01-02 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "a29f8571-0658-5efa-956c-d94b610a9f27",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "SBNY has 469 primary-v3 bars from 2024-08-15 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "a731113e-1856-5db8-bc17-860fb3cb29dd",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "PD has 1814 primary-v3 bars from 2019-04-11 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "aa823896-e110-5751-8fcc-f09dcb68079e",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "BUD has 4275 primary-v3 bars from 2009-07-01 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "ac6ffa8b-1e0c-539c-ba59-204120094082",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "INFO has 430 primary-v3 bars from 2024-10-10 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "b0de96e9-b270-57cd-be59-3c5241d8b178",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "SPLS has 113 primary-v3 bars from 2026-01-16 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "b2d60c17-ca2f-5813-8d60-8137cf082463",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "TEK has 422 primary-v3 bars from 2024-10-22 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "b2f41a7a-8037-5abd-90af-e525a2277906",
+        "reason_code": "unresolved_primary_zero_volume_path",
+        "basis_rule_codes": [
+          "potential_held_path_zero_volume",
+          "selectable_zero_volume"
+        ],
+        "reviewer_note": "CPWR contains zero-volume sessions on a selectable or potential held path in primary v3. No published reviewed positive-volume replacement is bound; exclude the full range rather than synthesize tradability."
+      },
+      {
+        "security_id": "b4ca5a4d-d119-519c-a8c7-f92af6dc874a",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "UST has 4127 primary-v3 bars from 2010-02-02 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "b8346485-73f4-5498-aec2-a53b06a94fe1",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "MHS has 1525 primary-v3 bars from 2020-02-12 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "bbcfeabe-02e0-5050-8650-c0db30cc30b2",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap",
+          "adjusted_ohlc_envelope_violation"
+        ],
+        "reviewer_note": "SDS has 5022 primary-v3 bars from 2006-07-13 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "cafe26ec-f137-56cb-a94c-cedbb47c50df",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "EC has 4472 primary-v3 bars from 2008-09-18 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "cb9ed765-00af-5a60-a359-5f540e2f8725",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "ADCT has 1537 primary-v3 bars from 2020-05-18 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "cddb984b-7cfa-5955-9069-9e0fe9535c9e",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "APC has 95 primary-v3 bars from 2026-02-12 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "d03656d9-1289-58db-8d14-472f4e88f01c",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "ACV has 2793 primary-v3 bars from 2015-05-21 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "d07295bd-5dfc-55c7-98a0-f9649c746d38",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "MEDI has 905 primary-v3 bars from 2022-11-17 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "d210439a-1141-5b38-bc35-0b9e82078566",
+        "reason_code": "unresolved_primary_zero_volume_path",
+        "basis_rule_codes": [
+          "potential_held_path_zero_volume",
+          "selectable_zero_volume"
+        ],
+        "reviewer_note": "CNC contains zero-volume sessions on a selectable or potential held path in primary v3. No published reviewed positive-volume replacement is bound; exclude the full range rather than synthesize tradability."
+      },
+      {
+        "security_id": "d71780f6-f6dc-5598-a092-ebab77bfc3df",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "NE has 1270 primary-v3 bars from 2021-06-09 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "ddff5b84-92d9-5217-959e-c99fe572c1d5",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "S has 1255 primary-v3 bars from 2021-06-30 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "de2bc657-6623-571d-b727-7a87fefdfe07",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "BEAM has 1607 primary-v3 bars from 2020-02-06 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "e015208d-c96d-5f92-940b-66b8b6141e0d",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "FB has 254 primary-v3 bars from 2025-06-26 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "e7f80f97-d18e-57fb-8a89-6a86f38d12f5",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "LB has 502 primary-v3 bars from 2024-06-28 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "e8f64aad-4c99-555c-9002-b6b78214f0b1",
+        "reason_code": "unresolved_primary_zero_volume_path",
+        "basis_rule_codes": [
+          "potential_held_path_zero_volume",
+          "selectable_zero_volume"
+        ],
+        "reviewer_note": "CCI contains zero-volume sessions on a selectable or potential held path in primary v3. No published reviewed positive-volume replacement is bound; exclude the full range rather than synthesize tradability."
+      },
+      {
+        "security_id": "ea368470-f3bf-5126-ad5f-79bf25db4d70",
+        "reason_code": "unresolved_primary_zero_volume_path",
+        "basis_rule_codes": [
+          "potential_held_path_zero_volume",
+          "selectable_zero_volume"
+        ],
+        "reviewer_note": "PFG contains zero-volume sessions on a selectable or potential held path in primary v3. No published reviewed positive-volume replacement is bound; exclude the full range rather than synthesize tradability."
+      },
+      {
+        "security_id": "ed2fca95-f75f-5d3d-ba25-232f239b6c31",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "CAM has 184 primary-v3 bars from 2025-10-06 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      },
+      {
+        "security_id": "f2894b7c-385b-5206-a424-23d8d058bb00",
+        "reason_code": "unresolved_primary_market_path",
+        "basis_rule_codes": [
+          "next_execution_session_market_gap",
+          "potential_held_path_market_gap",
+          "potential_held_path_zero_volume",
+          "selectable_zero_volume",
+          "strict_consecutive_warmup_incomplete"
+        ],
+        "reviewer_note": "COL fails strict execution, held-path, zero-volume and warm-up closure checks in primary v3. No published reviewed replacement resolves all cited sessions; exclude the full range rather than fabricate market observations."
+      },
+      {
+        "security_id": "ffa2d72f-a323-54f2-88f7-068f5aa59a80",
+        "reason_code": "primary_dataset_security_without_membership_overlap",
+        "basis_rule_codes": [
+          "primary_v3_bar_range_has_zero_membership_interval_overlap"
+        ],
+        "reviewer_note": "GDT has 110 primary-v3 bars from 2026-01-22 through 2026-06-30, but that entire bar date range has zero overlap with every effective membership interval in the frozen S&P 500 history. Preserve the Security identity and exclude its full data range from the repaired experiment dataset."
+      }
+    ],
+    "approved_by": "user-approved-unrepairable-security-exclusion"
+  },
+  "created_by": "codex-data-review-2026-08-20"
+}

@@ -37,8 +37,28 @@ class XNYSCalendarGenerator:
     def generate(self, start: date, end_inclusive: date) -> GeneratedCalendar:
         if start > end_inclusive:
             raise ValueError("Calendar start must not be after end")
-        calendar = xcals.get_calendar("XNYS")
-        labels = calendar.sessions_in_range(pd.Timestamp(start), pd.Timestamp(end_inclusive))
+        # exchange-calendars otherwise builds a moving default window around
+        # ``today``.  A frozen historical research calendar must instead be
+        # constructed for the exact requested interval; relying on the moving
+        # default made valid pre-2006 sessions disappear as wall-clock time
+        # advanced.
+        # ``exchange_calendars`` requires the constructor's start to be
+        # strictly earlier than its end, even though ``sessions_in_range``
+        # accepts a one-session inclusive interval. Widen only the calendar
+        # construction window; the returned labels stay clipped to the exact
+        # caller-requested range below.
+        construction_end = max(end_inclusive, start + timedelta(days=1))
+        calendar = xcals.get_calendar("XNYS", start=str(start), end=str(construction_end))
+        requested_start = pd.Timestamp(start)
+        requested_end = pd.Timestamp(end_inclusive)
+        # The constructor's first/last labels are trading sessions rather than
+        # the requested civil-date boundaries. ``sessions_in_range`` therefore
+        # rejects an otherwise valid interval that begins or ends on a holiday.
+        # Filter the generated public session index directly so civil-date
+        # coverage remains exact without extending the published result.
+        labels = calendar.sessions[
+            (calendar.sessions >= requested_start) & (calendar.sessions <= requested_end)
+        ]
         sessions: list[TradingSession] = []
         regular_duration = timedelta(hours=6, minutes=30)
         for label in labels:

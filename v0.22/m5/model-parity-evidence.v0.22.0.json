@@ -1,0 +1,3293 @@
+{
+  "comparison_policy": {
+    "confidence": "exact_decimal_1e-18",
+    "direction": "exact",
+    "input_source": "frozen_v021_signal_dataset_points_already_m4_parity_passed",
+    "score": "exact_decimal_1e-18",
+    "unexplained_mismatch_allowed": false
+  },
+  "evidence_fingerprint": "6034518b9539682a8334b4e5736f9cfa4aefaf897ebcdc59cc069f92e151396f",
+  "evidence_type": "v022_legacy_model_point_parity",
+  "evidence_version": "0.22.0",
+  "model_registry_fingerprint": "8ca8e816c7084eddb9b6d48883ed720a87e5e9f97c03fe47823a821943081003",
+  "oracle_baseline_id": "v021-oracle-v0.22.0-m0",
+  "records": [
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "e40e68f5-d3b8-46ec-9adc-e684d2e6f7c6",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "41f80623-21af-4b3a-b11f-5949ade94e0f",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "defensive_tilt_v1",
+      "parameter_preset_key": "legacy_defensive_tilt_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "11af2a81-38e9-431c-a9cb-69ca86761e6a",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "ca175e08-7445-4af9-9a70-290862d00375",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "5fc7d6c6-5c84-43c9-b97f-bd2e809879d8",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "117b9753-8051-4807-a93a-3c06b6f3f02c",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend+reversal",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "5f5e13a3-2368-4550-8856-e4b96ffe4ee7",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "1a20e95c-d9bd-490e-95f0-8ee55c9a41c3",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend+reversal+tail_distribution",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "fc13d9aa-e928-4ede-8a47-769ff9c586ba",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "a9808e8c-1a35-45da-8083-393eaf305e93",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend+reversal+tail_distribution+volatility_risk",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "27a41c52-5522-48af-8e1a-b6a3153cc695",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "ef18df60-208a-45e2-8477-72f4cefcc8c8",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend+reversal+tail_distribution+volatility_risk+volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "a67a1aa1-f714-460d-a602-9c9b5a7149f0",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "7ecabf77-1c86-442e-8a92-558a1577f846",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend+reversal+tail_distribution+volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "35dc18b8-c975-45d5-b753-c4b1302acb88",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "c0c0bad0-2ae6-40f6-b8d4-31e278a9abc1",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend+reversal+volatility_risk",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "b053015f-9dcd-40f5-a1c2-1d3827d76d3f",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "f38261e9-3487-44be-8504-6a818bd8bafc",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend+reversal+volatility_risk+volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "8ba00847-4b2b-4bd1-b26a-da51d0a8c9da",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "68b0b9cf-4d8b-40a3-a7a1-37f5a95eb3f8",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend+reversal+volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "ef9c161d-1448-4e75-99d2-777ec8f0f842",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "2c8da38f-af01-41fa-8def-f818a95c04d0",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend+tail_distribution",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "ffc70f7c-e617-433b-abde-5d68448ef074",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "0433589f-03bf-49e7-a310-f516ac3fd4ac",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend+tail_distribution+volatility_risk",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "fae93219-bc8d-44b6-8c79-cbd1aa9a4307",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "7dfc8096-92a2-422a-913c-b0561a94a5cf",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend+tail_distribution+volatility_risk+volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "4000b0e5-605d-4e8c-927f-5dd061df9884",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "ff4bb77b-78bd-4459-a9e8-719f90e04444",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend+tail_distribution+volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "a502ff00-b66d-49bb-b208-a9b098eaad41",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "6dcae554-b903-46cd-917c-ca2f0815ede5",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend+volatility_risk",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "a4d31cd0-0287-4213-a539-a5f61c5f2f94",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "6566dfa9-c6d0-40a1-bbbb-c199357e1406",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend+volatility_risk+volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "8b2f06b1-61d8-4c62-95b2-337fb50ce210",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "5778062f-c5d9-43f3-929a-5f8057f64d48",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__momentum_trend+volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "545d4dc8-7089-4bed-92ce-565c0914fc14",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "5ffbe41f-9785-4ed7-bfc4-3049f63a1104",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__reversal",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "cfdaa275-6145-47f5-b07a-a22f0658a057",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "7448d6a9-71aa-4d40-a324-1c492a5a1240",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__reversal+tail_distribution",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "42cb9d55-0518-4048-8f86-92322f619312",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "d9743cce-2b89-4c08-a506-a261162093ef",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__reversal+tail_distribution+volatility_risk",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "dfac4e03-07f6-4da4-b349-50bb15dd1679",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "8c099758-4fed-4bba-8aae-991e2c8dbdb6",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__reversal+tail_distribution+volatility_risk+volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "2575b941-34f7-462a-b950-9643c0d7f4e3",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "36ac82dd-c35e-4dd2-a989-7a756b24c05c",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__reversal+tail_distribution+volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "4a53987f-8829-4ea6-97df-dac587b0cd48",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "a6c9c159-c74b-4ed2-a32b-d52345e2cdb7",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__reversal+volatility_risk",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "dac282e2-9f2c-45c5-a33e-6979dd898a9b",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "8e8b41da-7c09-480c-a9c8-2540c28b7895",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__reversal+volatility_risk+volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "39ca3ddc-f810-47a1-b6be-cf9e80cef7b4",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "2fe166e7-c203-49c1-8603-adcd0107222d",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__reversal+volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "bf367367-b7b1-4002-a036-61d3d96df6e9",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "9f52356a-485b-4530-bd62-09f6034791ae",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__tail_distribution",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "1d19717d-bd99-4d38-98bd-96d9fb000f5c",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "4c6ce814-ddb8-44c7-917a-9902b10df0ba",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__tail_distribution+volatility_risk",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "b4487446-1c1d-4a71-953f-f36c85352519",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "3845e631-7538-4ba7-8507-b465bc4acd43",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__tail_distribution+volatility_risk+volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "c8cdb93d-491d-40db-aedf-81afb117af05",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "6bad7eb2-50f5-43da-9e86-db218a7d1307",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__tail_distribution+volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "dcc4caa5-8822-4460-b4a5-3d6b923f7e2b",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "5b104a6f-e29c-4058-8e81-b4a8850f937b",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__volatility_risk",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "336a25a5-9fee-4581-bb43-1148fc3147d6",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "2b249b70-6bd3-4872-ac17-2fd8bca2d176",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__volatility_risk+volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "9958c6d5-1a55-4994-abec-81e8e6ee11d6",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "4bf16d84-0ab2-40d2-a29a-3d6bddd1e965",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "dimension_equal_weight__volume_liquidity",
+      "parameter_preset_key": "legacy_dimension_equal_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "3eeb8642-999d-4558-8d06-f7a9804e3fd2",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "634f5695-25ac-4c73-b89d-b55432373bdf",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "directional_weighted_vote",
+      "legacy_key": "five_dimension_majority_vote_v1",
+      "parameter_preset_key": "legacy_equal_vote_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "2721670b-f836-4c7f-af27-40f897711a37",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "869d7da0-2b9e-4b85-a33e-b50d7de89452",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "directional_weighted_vote",
+      "legacy_key": "five_dimension_weighted_vote_v1",
+      "parameter_preset_key": "legacy_weighted_vote_v1",
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2572,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2572,
+          "extra_row_count": 0,
+          "matched_row_count": 2572,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "6889b4d7-e9d3-484c-a687-4b3638801e28",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19100,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19100,
+          "extra_row_count": 0,
+          "matched_row_count": 19100,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "2b1a3e54-8c03-4b21-a762-88883fa9d0f3",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__death_cross_event__moving_average_ratio__s50_l200",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "14d85bda-d9f1-4439-803e-41704d0901c2",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "74c94a6d-a864-4b28-af3a-810dd2d3032c",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__deep_drawdown_reversal__maximum_drawdown__w120",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "664edf09-c6d4-4065-b393-4c3514e598bb",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "5181f96d-674e-4d2c-9380-79509ea702b7",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__deep_drawdown_reversal__maximum_drawdown__w60",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "29db245b-b75d-4e2f-8164-897bdf59760b",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "6be08c28-1ef6-47cc-a0ce-34a92805e38d",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__dollar_volume_attention__relative_dollar_volume__w20",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "1e1a6ca2-77d8-4574-8715-8fd26e39f93a",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "cc00ce71-a3dc-45b8-b3db-54ecaa2576cc",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__dollar_volume_attention__relative_dollar_volume__w60",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "651197ba-33d4-4d02-bda1-40dadf1dbef0",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "3d22bbd5-51b5-4b55-afa3-03fa8db55496",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__drawdown_resilience__maximum_drawdown__w120",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "17b78d9d-4166-411d-ad81-8b0fd29c8224",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "388d390f-7719-43b3-aae8-a3feb1110467",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__drawdown_resilience__maximum_drawdown__w60",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2572,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2572,
+          "extra_row_count": 0,
+          "matched_row_count": 2572,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "6c9c5aa1-14d7-47a7-b7aa-2009626e881c",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19100,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19100,
+          "extra_row_count": 0,
+          "matched_row_count": 19100,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "a14617f0-e28d-4852-b144-50e230c9409b",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__golden_cross_event__moving_average_ratio__s50_l200",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "f4639d60-5073-456f-8092-9508e03676a2",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "dbfc8c22-8bfd-4a8c-9581-3ec31e3e61aa",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__high_kurtosis_tail_regime__return_excess_kurtosis__w120",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "9af37053-3f6b-44f7-b5cf-3ddd723aa3cc",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "196e8a4f-cb37-4a16-a3f5-f498be59ea2d",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__high_kurtosis_tail_regime__return_excess_kurtosis__w252",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "ae264610-0d1f-4696-9659-eb722d6b7725",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "ee9cd036-3664-4246-8fb6-39bc0ff84064",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__high_skew_regime__return_skewness__w120",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "5da7c0c7-abf7-4167-9a0b-2ed0b3713c3f",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "9455d2df-88e7-42b6-ae83-9903e2f01601",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__high_skew_regime__return_skewness__w60",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "f2e2e21d-6bb1-41b6-b933-ad983836e18a",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "1b46b869-35df-4472-a093-1ae80e700a67",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__illiquidity_premium__amihud_illiquidity__w20",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "6ec35761-37e5-43b1-bb05-49aab339409f",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "5250b5cf-48ec-4a07-b6dd-7fdde14bc8b6",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__illiquidity_premium__amihud_illiquidity__w60",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "cdf7c782-5fdb-4f19-92ca-7b88a9adcfb3",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "7bde7950-b008-4099-9ebd-cbe3f05aac88",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__lagged_return_continuation__lagged_return__l120_s20",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "70a99e68-ce07-4d79-a799-0b4ad6d6ec2e",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "5c16bbcc-7a0e-4b61-9b1d-1f28324ae90f",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__lagged_return_continuation__lagged_return__l252_s20",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "91859a2a-e2d3-417f-9692-23caeefd47d1",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "fffba1c0-5a1b-4771-946f-3bbf242ec3a6",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__low_downside_risk__downside_deviation__w20",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "59e9472c-843f-425c-90fa-cd65bb6eb9b6",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "a8f86c72-563a-438d-b245-762b3ca6dc46",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__low_downside_risk__downside_deviation__w60",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "22c2292d-f9b7-4135-ab4b-6361950d93d2",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "411dc635-fc33-4164-b061-10a32ace861a",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__low_illiquidity_quality__amihud_illiquidity__w20",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "a6cabab3-311c-43a1-bde3-775b06908f4c",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "4ddf8fe0-fe1d-4316-9548-7eafabe00063",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__low_illiquidity_quality__amihud_illiquidity__w60",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "5a9c091e-1cfd-4cf8-a810-28f202ddd861",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "98bb4a6c-a258-4293-8e34-dcd6ce3932d1",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__low_kurtosis_quality__return_excess_kurtosis__w120",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "70478329-6575-4108-b588-1e80b24fbc94",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "da70d4cf-a88b-488a-9371-620f46d71e59",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__low_kurtosis_quality__return_excess_kurtosis__w252",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "5aa11f75-d0fd-4c0b-9330-b5e19d3464f8",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "2b35682d-c028-4989-8c0a-c59696ff2160",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__low_skew_premium__return_skewness__w120",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "171ae28a-fd97-420c-b694-3f21c638ba6f",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "50dc062d-2084-4959-b47a-10521b9eb010",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__low_skew_premium__return_skewness__w60",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "366c76aa-be2a-4b71-8a88-bbc9f573b913",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "5c205d67-0c80-484b-880d-dc75e8d12c04",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__low_volatility__realized_volatility__w20",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "2c4b012b-6292-4f9a-be07-d4579f3a7404",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "bb02f651-2caa-4726-b84d-8a5b2ca963de",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__low_volatility__realized_volatility__w60",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "3f1e5a90-e3e8-4093-a92a-fd60d2132f62",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "fcd41cfb-9095-481b-ac0c-d2a5144564fb",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__ma_trend_strength__moving_average_ratio__s1_l200",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "71b0f22f-a147-46cc-a391-c440bcfe176f",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "9bfeea59-d7cd-4a28-800c-e97b1af7c20c",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__ma_trend_strength__moving_average_ratio__s1_l50",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "93774c42-0795-4f7e-ba86-3c0405dcca29",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "e7fb2bfe-c159-48ed-88dc-079f13422721",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__ma_trend_strength__moving_average_ratio__s20_l60",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "cda9bf7d-f492-40b3-bfde-1e201c686302",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "e3540a24-462d-4c52-bc53-158961a52a5a",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__ma_trend_strength__moving_average_ratio__s50_l200",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "c99f1df6-dfac-43ae-aa0e-8e222e02a703",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "957a176e-ff8b-4fdc-8b79-9940df2a1944",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__ma_trend_strength__moving_average_ratio__s60_l120",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2572,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2572,
+          "extra_row_count": 0,
+          "matched_row_count": 2572,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "cf6f0c1f-dbac-47c8-a222-1e1c8751dd16",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19100,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19100,
+          "extra_row_count": 0,
+          "matched_row_count": 19100,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "ba682d07-abfc-42fa-b336-ae8ef6552a93",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__ppo_cross_above_zero__ppo_histogram__f12_s26_g9",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2572,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2572,
+          "extra_row_count": 0,
+          "matched_row_count": 2572,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "a587606b-6e91-4e00-8bdf-c5d9b605d73b",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19100,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19100,
+          "extra_row_count": 0,
+          "matched_row_count": 19100,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "230d9bb4-8bf7-46c9-aaaf-47ef23c9e969",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__ppo_cross_below_zero__ppo_histogram__f12_s26_g9",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "ebe2ecb4-304d-4de3-80bf-e37b3d3b1c62",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "8d770a6c-fc83-4224-b63f-95a6d6b9e463",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__ppo_trend_acceleration__ppo_histogram__f12_s26_g9",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "bf3a10bd-ec94-499e-a7a5-ed46d685c5c8",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "812f2917-1a8f-4fdc-875c-7ce5d8b70689",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__price_above_ma_state__moving_average_ratio__s1_l200",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "1865ccf3-7388-48ef-9cc6-dfc5d34777db",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "2bf2c2a6-e302-40cf-aed9-fac68fb79ba9",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__price_above_ma_state__moving_average_ratio__s1_l50",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2572,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2572,
+          "extra_row_count": 0,
+          "matched_row_count": 2572,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "75d8eb3c-5b14-40d6-a20c-6c65f6815483",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19100,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19100,
+          "extra_row_count": 0,
+          "matched_row_count": 19100,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "893571a5-32e9-4383-b4df-a73540638575",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__price_cross_above_ma__moving_average_ratio__s1_l200",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2572,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2572,
+          "extra_row_count": 0,
+          "matched_row_count": 2572,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "f0afca94-b4af-495f-a7a0-de68b34c4e74",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19100,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19100,
+          "extra_row_count": 0,
+          "matched_row_count": 19100,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "0d07dc56-1967-4ebf-a894-64cfeceb0d80",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__price_cross_above_ma__moving_average_ratio__s1_l50",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2572,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2572,
+          "extra_row_count": 0,
+          "matched_row_count": 2572,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "9420588b-f687-49b7-8914-cddaeab93edf",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19100,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19100,
+          "extra_row_count": 0,
+          "matched_row_count": 19100,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "4caaad04-adfd-47c2-b482-f50726a46463",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__price_cross_below_ma__moving_average_ratio__s1_l200",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2572,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2572,
+          "extra_row_count": 0,
+          "matched_row_count": 2572,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "af32fd69-f9cd-4bf4-b004-fb483483c9f5",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19100,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19100,
+          "extra_row_count": 0,
+          "matched_row_count": 19100,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "50c32e4e-bbc1-4d57-9a7f-3285a9d66865",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__price_cross_below_ma__moving_average_ratio__s1_l50",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "e7bce727-8c01-4c56-9c20-a249e53dc52f",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "d1948080-d880-4daa-92bb-a7e712accc2c",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__return_continuation__total_return__w120",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "31404ef1-5dfd-41d0-a5a1-c88aaec20efe",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "923b4bfb-a056-4e86-b72f-f9105d3e8f40",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__return_continuation__total_return__w20",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "dab95ade-bd63-4782-9f20-45e7ee4dfdf9",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "b78a4f52-62c0-48ef-9067-67a3f36a07a4",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__return_continuation__total_return__w252",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "e3ef1363-17b8-418b-9f3f-c2baa8c951ef",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "7529d934-8768-4527-b6fc-b251d86c9e19",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__return_continuation__total_return__w5",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "08d4de67-9150-46e7-b144-e0e6b96e5fd1",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "9b14e9e2-d95d-4446-a956-94f22a3a478b",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__return_continuation__total_return__w60",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "37999ac1-f23c-4919-aaba-4e99008301e4",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "126bdeab-afab-4747-833b-92fa0f05775f",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__rsi_mean_reversion__rsi__w14",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "ef9df98e-1b18-4118-832d-f6902b0b1353",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "2bf318b2-8490-4159-b7c8-3115a9e1ea37",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__rsi_overbought_state__rsi__w14",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "7247e919-e427-45f7-989a-1b5126937ea6",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "35c3bab9-2eb1-42e9-a9a7-528edb3bf218",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__rsi_oversold_state__rsi__w14",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "7414165f-d1bb-4f3f-a3e2-2d7c044290f1",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "2da6d61f-c589-4aa6-88c2-d2935079f634",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__rsi_relative_strength__rsi__w14",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "e06f53d7-5eb4-44ce-bdc1-0d8a8f950ded",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "cc5dae94-adf0-4b03-b585-106031596218",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__short_return_reversal__total_return__w20",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "7dd2d6ac-c673-4415-bfc1-033514fae2ea",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "bbde0b85-459a-4859-8237-c73f45882a0c",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "single_signal_identity",
+      "legacy_key": "single_signal__short_return_reversal__total_return__w5",
+      "parameter_preset_key": null,
+      "passed": true
+    },
+    {
+      "comparisons": [
+        {
+          "actual_row_count": 2576,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 1,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 2576,
+          "extra_row_count": 0,
+          "matched_row_count": 2576,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "d297b69d-45fb-41e3-8bbd-2866be0c4ec9",
+          "passed": true,
+          "score_mismatch_count": 0
+        },
+        {
+          "actual_row_count": 19104,
+          "bundle_key": "us_style_daily_research_bundle",
+          "bundle_version": 5,
+          "confidence_mismatch_count": 0,
+          "direction_mismatch_count": 0,
+          "expected_row_count": 19104,
+          "extra_row_count": 0,
+          "matched_row_count": 19104,
+          "max_abs_score_error": "0",
+          "missing_row_count": 0,
+          "oracle_artifact_id": "46efe3cf-3b78-4446-95e6-3d541b10018a",
+          "passed": true,
+          "score_mismatch_count": 0
+        }
+      ],
+      "family_key": "hierarchical_weighted_mean",
+      "legacy_key": "trend_tilt_v1",
+      "parameter_preset_key": "legacy_trend_tilt_v1",
+      "passed": true
+    }
+  ],
+  "runtime_contract_fingerprint": "cc1f48a4c8906b411afb0406d6ef4d9c6f4597d4d693b695217fc70739053620",
+  "signal_registry_fingerprint": "3bf4781b0762fbaad704308c073cd5f6742915a6212514e1d6b9c6e622e48cac",
+  "summary": {
+    "comparison_count": 172,
+    "failed_record_count": 0,
+    "model_specification_count": 86,
+    "passed": true,
+    "passed_record_count": 86
+  }
+}

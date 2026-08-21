@@ -362,8 +362,9 @@ def _security_id(
         connection.execute(
             text("""
             INSERT INTO catalog.security_identifier (
-                security_identifier_id, security_id, identifier_type, identifier_value
-            ) VALUES (:id, :security_id, :type, :value)
+                security_identifier_id, security_id, provider_scope,
+                identifier_type, identifier_value
+            ) VALUES (:id, :security_id, 'catalog', :type, :value)
         """),
             {
                 "id": uuid.uuid4(),

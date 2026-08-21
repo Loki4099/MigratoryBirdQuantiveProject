@@ -17,6 +17,10 @@ services:
 
   postgres-test:
     image: postgres:16-alpine
+    # Alembic deliberately keeps the full head-to-base downgrade atomic. The
+    # v0.22 migration chain touches enough relations to exceed PostgreSQL's
+    # small default lock table during that integration test.
+    command: ["postgres", "-c", "max_locks_per_transaction=1024"]
     environment:
       POSTGRES_DB: style_rotation_test
       POSTGRES_USER: style_rotation

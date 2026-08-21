@@ -9,9 +9,12 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
+from style_rotation.api.actor_context import TrustedLocalActorContext
 from style_rotation.api.app import create_app
 from style_rotation.api.query import _v021_nav_series
 from style_rotation.signal.export_jobs import SignalExportJob, ValidatedSignalExport
+from style_rotation.v022.product_monitoring import LifecyclePublication
+from style_rotation.v022.suite_launch_batch import SuiteLaunchBatchRequest
 from style_rotation.workspace.catalog import build_component_document
 from style_rotation.workspace.options import build_workspace_options
 from style_rotation.workspace.preview import build_compile_preview
@@ -125,6 +128,10 @@ class FakeArtifactReader:
             "missing_requirements": ["pit_master_data"],
             "canonical_data_available": True,
             "selectable": True,
+            "v022_candidate_selectable": True,
+            "v022_candidate_reason_codes": [],
+            "v022_candidate_dataset_key": "us_sp500_historical_daily_free_research_v1",
+            "v022_candidate_dataset_version": 4,
         }
         matches = category in (None, "stocks") and (
             search is None or search.casefold() in "aapl apple appl technology"
@@ -794,6 +801,136 @@ class FakeArtifactReader:
             "qualification_bundle_artifact_id": None,
         }
 
+    def v022_experiment_leaderboard(
+        self,
+        *,
+        frequency: str,
+        ranking_cohort_release_id: uuid.UUID | None,
+        sort: str,
+        limit: int,
+        offset: int,
+    ) -> dict[str, Any]:
+        release_id = ranking_cohort_release_id or uuid.UUID(int=101)
+        return {
+            "comparison_context": {
+                "ranking_cohort_release_id": release_id,
+                "ranking_cohort_artifact_id": uuid.UUID(int=102),
+                "ranking_version_number": 1,
+                "evaluation_cohort_version_id": uuid.UUID(int=103),
+                "evaluation_cohort_fingerprint": "c" * 64,
+                "cohort_key": f"sp500_{frequency}_v1",
+                "frequency": frequency,
+                "warmup_start": date(2004, 12, 31),
+                "evaluation_start": date(2007, 1, 3),
+                "evaluation_end": date(2026, 6, 30),
+                "benchmark_key": "spy",
+                "cost_bps_per_side": "5.000000",
+                "execution_delay_sessions": 1,
+                "price_semantics": (
+                    "historical_constituent_pit__frozen_retrospective_yahoo_prices"
+                ),
+                "member_count": 1,
+            },
+            "available_frequencies": ["weekly", "monthly"],
+            "sort": sort,
+            "total": 1,
+            "limit": limit,
+            "offset": offset,
+            "rows": [
+                {
+                    "rank": 1,
+                    "result_evidence_snapshot_id": uuid.UUID(int=104),
+                    "result_artifact_id": uuid.UUID(int=105),
+                    "configuration_snapshot_id": uuid.UUID(int=106),
+                    "configuration_fingerprint": "d" * 64,
+                    "configuration": {"frequency": frequency},
+                    "display": {"name": "K2 weekly"},
+                    "cagr": "0.12",
+                    "benchmark_cagr": "0.08",
+                    "cagr_spread": "0.04",
+                    "sharpe_ratio": "1.50",
+                    "maximum_drawdown": "-0.20",
+                    "product_candidate": False,
+                    "product_definition_id": None,
+                    "execution_version_id": None,
+                    "product_enrollment_id": None,
+                }
+            ],
+        }
+
+    def v022_experiment_identity_detail(self, evidence_id: uuid.UUID) -> dict[str, Any]:
+        return {
+            "result_evidence_snapshot_id": evidence_id,
+            "evidence_artifact_id": uuid.UUID(int=201),
+            "result_artifact_id": uuid.UUID(int=202),
+            "evidence_class": "locked_historical_test",
+            "configuration_snapshot_id": uuid.UUID(int=203),
+            "configuration_fingerprint": "d" * 64,
+            "configuration": {"frequency": "weekly"},
+            "display": {"name": "K2 weekly"},
+            "created_at": datetime(2026, 8, 16, tzinfo=UTC),
+            "comparison_context": {
+                "evaluation_cohort_version_id": uuid.UUID(int=204),
+                "evaluation_cohort_fingerprint": "c" * 64,
+                "cohort_key": "sp500_weekly_v1",
+                "frequency": "weekly",
+                "warmup_start": date(2004, 12, 31),
+                "evaluation_start": date(2007, 1, 3),
+                "evaluation_end": date(2026, 6, 30),
+                "benchmark_key": "spy",
+                "cost_bps_per_side": "5.000000",
+                "execution_delay_sessions": 1,
+                "price_semantics": (
+                    "historical_constituent_pit__frozen_retrospective_yahoo_prices"
+                ),
+            },
+            "outcome": "accepted",
+            "quality_status": "passed",
+            "effective_start": date(2007, 1, 3),
+            "effective_end": date(2026, 6, 30),
+            "core_metrics": {
+                "cagr": "0.12",
+                "benchmark_cagr": "0.08",
+                "cagr_spread": "0.04",
+                "sharpe_ratio": "1.50",
+                "maximum_drawdown": "-0.20",
+            },
+            "metrics": {"absolute_metrics": [], "relative_metrics": []},
+            "product": {"is_candidate": False, "is_enrolled": False},
+            "evidence": {"evidence_class": "locked_historical_test"},
+            "evidence_quality": {"state": "passed", "outcome": "accepted"},
+            "comparisons": [],
+            "matched_baselines": [],
+        }
+
+    def v022_experiment_result_series(
+        self, evidence_id: uuid.UUID, *, max_points: int
+    ) -> dict[str, Any]:
+        points = [
+            {
+                "session_date": date(2007, 1, 3),
+                "strategy_nav": "1",
+                "benchmark_nav": "1",
+                "excess_nav": "1",
+                "drawdown": "0",
+            },
+            {
+                "session_date": date(2026, 6, 30),
+                "strategy_nav": "2",
+                "benchmark_nav": "1.5",
+                "excess_nav": "1.333333333333333333333333333",
+                "drawdown": "0",
+            },
+        ][:max_points]
+        return {
+            "result_evidence_snapshot_id": evidence_id,
+            "effective_start": date(2007, 1, 3),
+            "effective_end": date(2026, 6, 30),
+            "total_points": 2,
+            "returned_points": len(points),
+            "points": points,
+        }
+
     def product_ranking(
         self, *, cohort_artifact_id: uuid.UUID | None, metric_key: str
     ) -> dict[str, Any]:
@@ -1019,6 +1156,146 @@ class FakeProductCommands:
         }
 
 
+class FakeV022ProductPromotion:
+    def __init__(self) -> None:
+        self.request: dict[str, Any] | None = None
+
+    def promote_and_enroll(self, **request: Any) -> dict[str, Any]:
+        self.request = request
+        identifiers = [uuid.uuid4() for _ in range(14)]
+        return {
+            "result_evidence_snapshot_id": request["result_evidence_snapshot_id"],
+            "product_definition_id": identifiers[0],
+            "product_definition_artifact_id": identifiers[1],
+            "execution_version_id": identifiers[2],
+            "execution_version_artifact_id": identifiers[3],
+            "qualification_version_id": identifiers[4],
+            "qualification_version_artifact_id": identifiers[5],
+            "monitoring_policy_version_id": identifiers[6],
+            "monitoring_policy_version_artifact_id": identifiers[7],
+            "product_data_disclosure_id": identifiers[8],
+            "product_data_disclosure_artifact_id": identifiers[9],
+            "product_data_disclosure_fingerprint": "d" * 64,
+            "product_eligibility": "eligible_with_warnings",
+            "warning_codes": ["free_data_research_product"],
+            "product_enrollment_id": identifiers[10],
+            "enrollment_artifact_id": identifiers[11],
+            "decision_schedule_version_id": identifiers[12],
+            "decision_schedule_artifact_id": identifiers[13],
+            "first_eligible_decision_session_id": uuid.uuid4(),
+            "product_ensemble_state_id": uuid.uuid4(),
+            "product_ensemble_state_artifact_id": uuid.uuid4(),
+            "product_ensemble_state_fingerprint": "e" * 64,
+            "version_number": request["version_number"],
+            "lifecycle": "active",
+            "reused": False,
+        }
+
+
+class FakeV022ProductLifecycle:
+    def __init__(self) -> None:
+        self.request: dict[str, Any] | None = None
+
+    def publish(self, **request: Any) -> LifecyclePublication:
+        self.request = request
+        return LifecyclePublication(
+            uuid.uuid4(),
+            uuid.uuid4(),
+            request["expected_sequence"],
+            "active",
+            request["target"],
+            "c" * 64,
+            False,
+        )
+
+
+class FakeCommandIdempotency:
+    def execute(self, **command: Any) -> dict[str, Any]:
+        return command["operation"]()
+
+
+class FakeSuiteLaunchBatches:
+    def __init__(self) -> None:
+        self.request: SuiteLaunchBatchRequest | None = None
+        self.batch_id = uuid.uuid4()
+
+    def submit(self, request: SuiteLaunchBatchRequest) -> dict[str, Any]:
+        self.request = request
+        return self._document(reused=False)
+
+    def status(self, suite_launch_batch_id: uuid.UUID) -> dict[str, Any]:
+        assert suite_launch_batch_id == self.batch_id
+        return self._document(reused=True)
+
+    def _document(self, *, reused: bool) -> dict[str, Any]:
+        assert self.request is not None
+        return {
+            "suite_launch_batch_id": self.batch_id,
+            "source_graph_draft_id": self.request.source_graph_draft_id,
+            "source_graph_draft_revision": self.request.source_graph_draft_revision,
+            "batch_fingerprint": "a" * 64,
+            "status": "submitted",
+            "children": [
+                {
+                    "frequency": frequency,
+                    "graph_draft_id": uuid.uuid4(),
+                    "graph_draft_revision": 1,
+                    "compiled_research_graph_id": uuid.uuid4(),
+                    "research_suite_id": uuid.uuid4(),
+                    "status": "not_started",
+                    "total": 0,
+                    "terminal": 0,
+                    "status_counts": {},
+                    "complete": False,
+                }
+                for frequency in self.request.frequencies
+            ],
+            "reused": reused,
+        }
+
+
+def test_graph_suite_launch_batch_submits_both_frequencies_and_is_readable() -> None:
+    batches = FakeSuiteLaunchBatches()
+    draft_id = uuid.uuid4()
+    graph_id = uuid.uuid4()
+    command_id = uuid.uuid4()
+    client = TestClient(
+        create_app(
+            FakeArtifactReader(),
+            graph_suite_batches=batches,
+            actor_context=TrustedLocalActorContext(
+                actor_key="local", operator_enabled=False
+            ),
+        )
+    )
+
+    submitted = client.post(
+        "/api/v2/workspace/graph-suite-launch-batches",
+        json={
+            "source_graph_draft_id": str(draft_id),
+            "source_graph_draft_revision": 7,
+            "source_compiled_research_graph_id": str(graph_id),
+            "actor_key": "local",
+            "idempotency_key": str(command_id),
+            "frequencies": ["weekly", "monthly"],
+        },
+    )
+
+    assert submitted.status_code == 200
+    assert [item["frequency"] for item in submitted.json()["children"]] == [
+        "weekly",
+        "monthly",
+    ]
+    assert batches.request is not None
+    assert batches.request.source_graph_draft_id == draft_id
+    assert batches.request.source_compiled_research_graph_id == graph_id
+    replay = client.get(
+        f"/api/v2/workspace/graph-suite-launch-batches/{batches.batch_id}"
+    )
+    assert replay.status_code == 200
+    assert replay.json()["reused"] is True
+
+
 def test_promotion_qualification_response_includes_predictive_evidence_ids() -> None:
     commands = FakeProductCommands()
     result_artifact_id = uuid.uuid4()
@@ -1040,13 +1317,49 @@ def test_promotion_qualification_response_includes_predictive_evidence_ids() -> 
     ]
 
 
+def test_v022_product_lifecycle_uses_operator_identity_and_sequence() -> None:
+    lifecycle = FakeV022ProductLifecycle()
+    enrollment_id = uuid.uuid4()
+    client = TestClient(
+        create_app(
+            FakeArtifactReader(),
+            v022_product_lifecycle=lifecycle,  # type: ignore[arg-type]
+            v022_command_idempotency=FakeCommandIdempotency(),  # type: ignore[arg-type]
+            actor_context=TrustedLocalActorContext(
+                actor_key="local_operator", operator_enabled=True
+            ),
+        )
+    )
+
+    response = client.post(
+        f"/api/v2/v022/products/{enrollment_id}/lifecycle",
+        json={
+            "idempotency_key": str(uuid.uuid4()),
+            "researcher_id": "local_operator",
+            "expected_sequence": 1,
+            "target": "suspended",
+            "reason_code": "operator_review",
+            "reason": "Pause scheduled decisions for review.",
+            "requested_at": "2026-08-13T12:00:00+00:00",
+            "effective_at": "2026-08-13T12:05:00+00:00",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["product_enrollment_id"] == str(enrollment_id)
+    assert response.json()["to_lifecycle"] == "suspended"
+    assert response.json()["sequence_number"] == 1
+    assert lifecycle.request is not None
+    assert lifecycle.request["requested_by"] == "local_operator"
+
+
 def test_health_capabilities_and_openapi_expose_only_controlled_commands() -> None:
     client, _reader = _client()
     health = client.get("/api/v2/health")
     assert health.status_code == 200
     assert health.json()["context"] == {
         "api_version": "v2",
-        "system_version": "0.21.0",
+        "system_version": "0.22.0",
         "read_only": False,
     }
     capabilities = client.get("/api/v2/capabilities").json()
@@ -1054,18 +1367,39 @@ def test_health_capabilities_and_openapi_expose_only_controlled_commands() -> No
     assert "tainted" in capabilities["interface_states"]
 
     openapi = client.get("/api/v2/openapi.json").json()
-    assert openapi["info"]["version"] == "0.21.0"
+    assert openapi["info"]["version"] == "0.22.0"
     for path, methods in openapi["paths"].items():
-        if path == "/api/v2/workspace/compile-preview":
+        if path in {
+            "/api/v2/workspace/compile-preview",
+            "/api/v2/workspace/graph-preview",
+        }:
             allowed = {"get", "parameters", "post"}
         elif path == "/api/v2/workspace/drafts/{researcher_id}/{draft_key}":
             allowed = {"get", "parameters", "put"}
         elif path in {
+            "/api/v2/workspace/graph-drafts",
+            "/api/v2/workspace/graph-drafts/{graph_draft_id}/clones",
+            "/api/v2/workspace/graph-drafts/{graph_draft_id}/events",
+            "/api/v2/workspace/graph-drafts/{graph_draft_id}/change-previews",
+            "/api/v2/workspace/graph-drafts/{graph_draft_id}/rebase-previews",
+            "/api/v2/workspace/graph-drafts/{graph_draft_id}/change-previews/"
+            "{impact_token}/confirm",
+            "/api/v2/workspace/graph-drafts/{graph_draft_id}/compile",
+            "/api/v2/workspace/graph-drafts/{graph_draft_id}/reset",
+            "/api/v2/workspace/graph-suites",
+            "/api/v2/workspace/graph-suite-launch-batches",
             "/api/v2/workspace/suites",
             "/api/v2/signals/research-export.zip",
             "/api/v2/workspace/suites/{research_suite_id}/cancel",
             "/api/v2/experiments/results/{artifact_id}/promote",
-            "/api/v2/products/{enrollment_id}/lifecycle",
+            "/api/v2/v022/experiments/{evidence_id}/promote",
+            "/api/v2/v022/experiment-results/{evidence_id}/promote-and-enroll",
+            "/api/v2/v022/product-candidates/{execution_version_id}/enroll",
+                "/api/v2/v022/products/{enrollment_id}/lifecycle",
+                "/api/v2/v022/asset-data-exports/preview",
+                "/api/v2/v022/asset-data-exports",
+                "/api/v2/v022/asset-data-exports/{export_job_id}/cancel",
+                "/api/v2/products/{enrollment_id}/lifecycle",
             "/api/v2/products/{enrollment_id}/reviews",
             "/api/v2/products/alerts/{alert_id}/status",
         }:
@@ -1073,6 +1407,89 @@ def test_health_capabilities_and_openapi_expose_only_controlled_commands() -> No
         else:
             allowed = {"get", "parameters"}
         assert set(methods).issubset(allowed)
+
+
+def test_v022_leaderboard_keeps_frequency_and_sort_in_one_frozen_context() -> None:
+    client, _reader = _client()
+
+    response = client.get(
+        "/api/v2/v022/experiments/leaderboard",
+        params={"frequency": "monthly", "sort": "cagr_spread"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["comparison_context"]["frequency"] == "monthly"
+    assert payload["comparison_context"]["evaluation_start"] == "2007-01-03"
+    assert payload["sort"] == "cagr_spread"
+    assert payload["rows"][0]["cagr_spread"] == "0.04"
+    assert payload["rows"][0]["rank"] == 1
+
+
+def test_v022_experiment_detail_projects_frozen_metrics_and_product_state() -> None:
+    client, _reader = _client()
+    evidence_id = uuid.UUID(int=104)
+
+    response = client.get(f"/api/v2/v022/experiments/{evidence_id}")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["comparison_context"]["frequency"] == "weekly"
+    assert payload["comparison_context"]["evaluation_start"] == "2007-01-03"
+    assert payload["core_metrics"]["cagr"] == "0.12"
+    assert payload["core_metrics"]["cagr_spread"] == "0.04"
+    assert payload["product"]["is_candidate"] is False
+
+
+def test_v022_experiment_series_returns_strategy_benchmark_excess_and_drawdown() -> None:
+    client, _reader = _client()
+    evidence_id = uuid.UUID(int=104)
+
+    response = client.get(
+        f"/api/v2/v022/experiments/{evidence_id}/series",
+        params={"max_points": 600},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["effective_start"] == "2007-01-03"
+    assert payload["effective_end"] == "2026-06-30"
+    assert payload["returned_points"] == 2
+    assert payload["points"][-1]["strategy_nav"] == "2"
+    assert payload["points"][-1]["benchmark_nav"] == "1.5"
+    assert payload["points"][-1]["excess_nav"].startswith("1.3333")
+
+
+def test_v022_promote_and_enroll_is_one_evidence_scoped_command() -> None:
+    promotion = FakeV022ProductPromotion()
+    client = TestClient(
+        create_app(
+            FakeArtifactReader(),
+            v022_product_promotions=promotion,  # type: ignore[arg-type]
+        )
+    )
+    evidence_id = uuid.UUID(int=104)
+
+    response = client.post(
+        f"/api/v2/v022/experiment-results/{evidence_id}/promote-and-enroll",
+        json={
+            "idempotency_key": str(uuid.uuid4()),
+            "researcher_id": "local",
+            "product_key": "weekly_k2_candidate",
+            "name": "Weekly K2 Candidate",
+            "description": "Promoted from one exact v0.22 result.",
+            "version_number": 1,
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["result_evidence_snapshot_id"] == str(evidence_id)
+    assert payload["lifecycle"] == "active"
+    assert len(payload["product_ensemble_state_fingerprint"]) == 64
+    assert payload["quality"]["codes"] == ["free_data_research_product"]
+    assert promotion.request is not None
+    assert promotion.request["result_evidence_snapshot_id"] == evidence_id
 
 
 def test_signal_research_export_enqueues_and_exposes_persistent_status() -> None:
@@ -1201,6 +1618,8 @@ def test_asset_catalog_search_series_and_canonical_csv_download() -> None:
     assert payload["items"][0]["symbol"] == "AAPL"
     assert payload["items"][0]["aliases"] == ["Apple", "APPL"]
     assert payload["items"][0]["canonical_data_available"] is True
+    assert payload["items"][0]["v022_candidate_selectable"] is True
+    assert payload["items"][0]["v022_candidate_dataset_version"] == 4
     security_id = payload["items"][0]["security_id"]
 
     series = client.get(f"/api/v2/catalog/assets/{security_id}/series")

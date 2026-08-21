@@ -9,27 +9,34 @@ LOCAL_TEST_URL = (
 
 
 class DatabaseFoundationUnitTests(unittest.TestCase):
-    def test_schema_boundary_contains_exactly_eleven_domains(self) -> None:
-        self.assertEqual(len(SCHEMA_NAMES), 11)
+    def test_schema_boundary_contains_v022_m1_domains(self) -> None:
+        self.assertEqual(len(SCHEMA_NAMES), 15)
         self.assertEqual(
             set(SCHEMA_NAMES),
             {
                 "catalog",
                 "data",
+                "processing",
                 "factor",
                 "signal",
                 "model",
+                "aggregation",
                 "strategy",
+                "defense",
                 "experiment",
                 "workspace",
                 "product",
                 "lineage",
                 "ops",
+                "compatibility",
             },
         )
 
-    def test_clean_v02_migration_has_one_head(self) -> None:
-        self.assertEqual(head_revisions(LOCAL_TEST_URL), ("20260809_47_signal_export_job",))
+    def test_clean_database_migration_has_one_v022_m1_head(self) -> None:
+        self.assertEqual(
+            head_revisions(LOCAL_TEST_URL),
+            ("20260821_142_asset_export",),
+        )
 
     def test_reset_requires_exact_local_project_database_confirmation(self) -> None:
         self.assertEqual(

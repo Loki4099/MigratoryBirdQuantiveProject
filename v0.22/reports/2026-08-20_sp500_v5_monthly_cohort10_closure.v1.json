@@ -1,0 +1,1013 @@
+{
+  "bar_count": 3034078,
+  "blockers": [],
+  "coverage_end": "2026-06-30",
+  "coverage_start": "2004-12-31",
+  "dataset_publication_id": "7b8940ed-85ea-5109-81c2-f8e5d7fffc78",
+  "evaluation_cohort_runtime_contract_id": null,
+  "evaluation_cohort_version_id": "64c0f45c-72e2-587e-b704-385b34c0ffa4",
+  "exclude_candidates": [],
+  "passed": true,
+  "passes": [
+    {
+      "details": {
+        "security_count": 974
+      },
+      "message": "All canonical prices are positive",
+      "rule_code": "positive_prices"
+    },
+    {
+      "details": {
+        "security_count": 974
+      },
+      "message": "All raw OHLC envelopes are valid",
+      "rule_code": "raw_ohlc_envelope"
+    },
+    {
+      "details": {
+        "security_count": 974
+      },
+      "message": "All adjusted OHLC envelopes are valid",
+      "rule_code": "adjusted_ohlc_envelope"
+    },
+    {
+      "details": {
+        "security_count": 974
+      },
+      "message": "Selectable sessions contain positive volume",
+      "rule_code": "selectable_volume"
+    },
+    {
+      "details": {
+        "security_count": 974
+      },
+      "message": "Selectable paths have complete daily bars",
+      "rule_code": "selectable_path"
+    },
+    {
+      "details": {
+        "security_count": 974
+      },
+      "message": "Decision paths have complete daily bars",
+      "rule_code": "decision_path"
+    },
+    {
+      "details": {
+        "security_count": 974
+      },
+      "message": "Execution paths have complete daily bars",
+      "rule_code": "execution_path"
+    },
+    {
+      "details": {
+        "security_count": 974
+      },
+      "message": "Potential held paths have complete positive-volume daily bars",
+      "rule_code": "potential_held_path"
+    },
+    {
+      "details": {
+        "security_count": 974
+      },
+      "message": "Every selection start has strict consecutive warm-up coverage",
+      "rule_code": "strict_consecutive_warmup"
+    },
+    {
+      "details": {
+        "security_count": 974
+      },
+      "message": "Lifecycle evidence and runtime settlement instructions are complete",
+      "rule_code": "lifecycle_settlement_closure"
+    }
+  ],
+  "review_findings": [
+    {
+      "details": {
+        "count": 4,
+        "samples": [
+          {
+            "prior_session": "2022-03-11",
+            "return": "-0.6086547336456100102833027870",
+            "session": "2022-03-14"
+          },
+          {
+            "prior_session": "2023-08-04",
+            "return": "0.924528372038686861355671001",
+            "session": "2023-08-07"
+          },
+          {
+            "prior_session": "2025-06-23",
+            "return": "1.562893171965013611306815366",
+            "session": "2025-06-24"
+          },
+          {
+            "prior_session": "2026-02-09",
+            "return": "0.510655529027571282956966700",
+            "session": "2026-02-10"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "008744e5-a842-59e0-8d6b-01a868c05a74"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2021-01-25",
+            "return": "0.810092926254633748020621374",
+            "session": "2021-01-26"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "00f7f534-7f46-5356-b2d4-a43135955df5"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2024-08-05",
+            "return": "0.930501994454467615518656916",
+            "session": "2024-08-06"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "09b80ee3-170a-5c2e-9f91-6c123b7bfe72"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2009-04-15",
+            "return": "0.690140867780202645948074989",
+            "session": "2009-04-16"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "0de4009e-8d18-53cf-980a-b8bcad4d0575"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2008-10-10",
+            "return": "0.869834691193173227386971375",
+            "session": "2008-10-13"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "0f4d0e98-c459-539e-a6e9-b3adc5afde90"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2020-06-04",
+            "return": "0.510937192849688435235438397",
+            "session": "2020-06-05"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "148e4672-a017-59b1-b639-cc9f74c05f9b"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2008-07-21",
+            "return": "0.587360553952447978991063127",
+            "session": "2008-07-22"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "20ac721a-58f1-5b32-8a50-ecbacc832410"
+    },
+    {
+      "details": {
+        "count": 10,
+        "samples": [
+          {
+            "prior_session": "2021-01-12",
+            "return": "0.573934757784589812627312828",
+            "session": "2021-01-13"
+          },
+          {
+            "prior_session": "2021-01-21",
+            "return": "0.510806506641705398749568924",
+            "session": "2021-01-22"
+          },
+          {
+            "prior_session": "2021-01-25",
+            "return": "0.927073759124511865419936659",
+            "session": "2021-01-26"
+          },
+          {
+            "prior_session": "2021-01-26",
+            "return": "1.348358019994085718493930421",
+            "session": "2021-01-27"
+          },
+          {
+            "prior_session": "2021-01-28",
+            "return": "0.678718955339726157998178833",
+            "session": "2021-01-29"
+          },
+          {
+            "prior_session": "2021-02-01",
+            "return": "-0.6",
+            "session": "2021-02-02"
+          },
+          {
+            "prior_session": "2021-02-23",
+            "return": "1.039359497325993454846057156",
+            "session": "2021-02-24"
+          },
+          {
+            "prior_session": "2021-03-24",
+            "return": "0.526923762602582837382901367",
+            "session": "2021-03-25"
+          },
+          {
+            "prior_session": "2024-05-10",
+            "return": "0.743986389434108793065670106",
+            "session": "2024-05-13"
+          },
+          {
+            "prior_session": "2024-05-13",
+            "return": "0.600985181563494416591465011",
+            "session": "2024-05-14"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "22427e47-4c8d-56d6-a974-a8ddb0e5d2d9"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2024-04-10",
+            "return": "-0.5314019057858577081423977427",
+            "session": "2024-04-11"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "2832a8b3-6a43-54e2-9b00-53f134ccc93e"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2009-03-24",
+            "return": "0.640000025433333333333333333",
+            "session": "2009-03-25"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "288188b0-a2f8-5980-af7c-afbb332fd65f"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2008-12-03",
+            "return": "0.502512560389889155908072414",
+            "session": "2008-12-04"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "41efe32d-3c58-47d4-9fcd-bd5f343ed814"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2015-04-10",
+            "return": "0.676811526787272513694811912",
+            "session": "2015-04-13"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "4a9c05f4-38a4-5bd8-a28e-4fd09848aa2b"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2008-02-22",
+            "return": "0.548963044011750812393907990",
+            "session": "2008-02-25"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "54992af2-f8f7-4f29-b771-65b6b812d798"
+    },
+    {
+      "details": {
+        "count": 7,
+        "samples": [
+          {
+            "prior_session": "2008-09-05",
+            "return": "-0.8963068149075695522696590826",
+            "session": "2008-09-08"
+          },
+          {
+            "prior_session": "2008-09-22",
+            "return": "0.658227730567219990892114172",
+            "session": "2008-09-23"
+          },
+          {
+            "prior_session": "2008-11-25",
+            "return": "0.510638255984608313152191438",
+            "session": "2008-11-26"
+          },
+          {
+            "prior_session": "2008-11-26",
+            "return": "0.633802819333465655872551551",
+            "session": "2008-11-28"
+          },
+          {
+            "prior_session": "2009-08-07",
+            "return": "0.515151455004593755878247873",
+            "session": "2009-08-10"
+          },
+          {
+            "prior_session": "2025-05-21",
+            "return": "0.506040342845891728954570834",
+            "session": "2025-05-22"
+          },
+          {
+            "prior_session": "2026-03-27",
+            "return": "0.512345617839888892669718689",
+            "session": "2026-03-30"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "5b058715-d337-5133-b9b9-29d10f0c4d82"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2023-06-07",
+            "return": "0.560206142245656148074062559",
+            "session": "2023-06-08"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "5bfdf4d8-932a-5c15-bb74-5d6fd263cf9e"
+    },
+    {
+      "details": {
+        "count": 3,
+        "samples": [
+          {
+            "prior_session": "2008-09-12",
+            "return": "-0.6079077604958293608343790927",
+            "session": "2008-09-15"
+          },
+          {
+            "prior_session": "2009-03-13",
+            "return": "0.660000038152223827310616902",
+            "session": "2009-03-16"
+          },
+          {
+            "prior_session": "2009-08-04",
+            "return": "0.627218879811564083705889042",
+            "session": "2009-08-05"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "5c5985d6-b2d5-5569-859f-e4e8d2a3d81d"
+    },
+    {
+      "details": {
+        "count": 3,
+        "samples": [
+          {
+            "prior_session": "2008-09-17",
+            "return": "0.746323511045152901038949686",
+            "session": "2008-09-18"
+          },
+          {
+            "prior_session": "2008-10-30",
+            "return": "0.609958496343431891518262118",
+            "session": "2008-10-31"
+          },
+          {
+            "prior_session": "2012-08-01",
+            "return": "-0.6408163354817143738344013098",
+            "session": "2012-08-02"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "62ba6b44-ed7a-564f-9bbe-d11745d76aad"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2008-10-13",
+            "return": "0.542525762103311172366431403",
+            "session": "2008-10-14"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "62db7b2d-11dd-5a93-86ac-3af5f191c96e"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2016-04-21",
+            "return": "0.522900833480860820691022094",
+            "session": "2016-04-22"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "6309e486-03cc-48a9-90d9-a8dd5df31359"
+    },
+    {
+      "details": {
+        "count": 6,
+        "samples": [
+          {
+            "prior_session": "2008-09-18",
+            "return": "0.666666736150683110624956549",
+            "session": "2008-09-19"
+          },
+          {
+            "prior_session": "2008-09-29",
+            "return": "0.721999931347703770424908111",
+            "session": "2008-09-30"
+          },
+          {
+            "prior_session": "2008-10-10",
+            "return": "0.805714334771428571428571429",
+            "session": "2008-10-13"
+          },
+          {
+            "prior_session": "2008-11-10",
+            "return": "-0.5441176483596453150419647021",
+            "session": "2008-11-11"
+          },
+          {
+            "prior_session": "2008-11-12",
+            "return": "0.5299999714",
+            "session": "2008-11-13"
+          },
+          {
+            "prior_session": "2008-11-21",
+            "return": "0.888888991839508895311457454",
+            "session": "2008-11-24"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "64d959e5-b3f0-5591-bff9-ae52e2b00e79"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2020-03-06",
+            "return": "-0.5290739555579237819683149609",
+            "session": "2020-03-09"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "68c68d07-734a-5c60-9ab2-f7a2762b4524"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2021-08-03",
+            "return": "0.504059840535197699664579596",
+            "session": "2021-08-04"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "6ab38294-8db1-57f9-ac1a-a68faabe7115"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2020-06-04",
+            "return": "0.506024126687473392386512835",
+            "session": "2020-06-05"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "743dfb5f-4ad5-5b35-9885-81486dbff458"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2020-03-06",
+            "return": "-0.5048399133788040032582484603",
+            "session": "2020-03-09"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "7a98eacd-93bb-592e-b1b8-6040209e1c8c"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2020-03-06",
+            "return": "-0.5386473507865401555785352098",
+            "session": "2020-03-09"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "7c31e75f-ce66-5fbd-b5ec-14fa75a6bf64"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2018-07-25",
+            "return": "0.653984416816210201075230725",
+            "session": "2018-07-26"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "7cf9b35f-f104-5765-9ac5-66c2578270d1"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2020-03-18",
+            "return": "0.761764589125781822764827679",
+            "session": "2020-03-19"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "83ec8c43-e5fb-5472-b7b3-e57916454dc9"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2009-01-16",
+            "return": "-0.5903713626316003883394508450",
+            "session": "2009-01-20"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "8ce651b1-5375-5ebc-9244-da30fd0ac7c3"
+    },
+    {
+      "details": {
+        "count": 2,
+        "samples": [
+          {
+            "prior_session": "2009-02-05",
+            "return": "0.603658620400935520117370777",
+            "session": "2009-02-06"
+          },
+          {
+            "prior_session": "2009-05-07",
+            "return": "0.586915873350353779315502246",
+            "session": "2009-05-08"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "8e4b9992-b59e-5a8d-ae90-a2c05f5dc2ee"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2025-05-21",
+            "return": "0.570424752719949299151608632",
+            "session": "2025-05-22"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "905f51cc-7315-52a9-a416-bf0b72c7c8f8"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2008-12-01",
+            "return": "0.517412918755690798919009623",
+            "session": "2008-12-02"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "96d3d99d-4733-5330-b5fb-83533e2d8578"
+    },
+    {
+      "details": {
+        "count": 2,
+        "samples": [
+          {
+            "prior_session": "2012-05-04",
+            "return": "0.553595273161685075767793172",
+            "session": "2012-05-07"
+          },
+          {
+            "prior_session": "2013-04-18",
+            "return": "0.619065636531568117635103205",
+            "session": "2013-04-19"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "9f331a6e-2bee-4a03-8a10-6e365f6931cc"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2008-10-13",
+            "return": "0.500740757688495831394548301",
+            "session": "2008-10-14"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "9f3de40c-a3a1-51d6-b4b5-76d96dfe7859"
+    },
+    {
+      "details": {
+        "count": 3,
+        "samples": [
+          {
+            "prior_session": "2008-10-29",
+            "return": "-0.5156092855003658977824534330",
+            "session": "2008-10-30"
+          },
+          {
+            "prior_session": "2008-10-31",
+            "return": "0.577519493024345378307911007",
+            "session": "2008-11-03"
+          },
+          {
+            "prior_session": "2008-12-04",
+            "return": "1.023578373871187108094307613",
+            "session": "2008-12-05"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "a79c54ee-cea5-5014-8128-bb7226b35029"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2023-12-07",
+            "return": "0.818428166406920367855671644",
+            "session": "2023-12-08"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "c636d233-5707-5f49-bfe5-b24f962034ed"
+    },
+    {
+      "details": {
+        "count": 2,
+        "samples": [
+          {
+            "prior_session": "2019-01-11",
+            "return": "-0.5235929481700815274165630326",
+            "session": "2019-01-14"
+          },
+          {
+            "prior_session": "2019-01-23",
+            "return": "0.745932441667606099634787027",
+            "session": "2019-01-24"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "caf8a0c7-5e9d-5450-ac8b-544de9d0e2ec"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2025-08-25",
+            "return": "0.702476585027387890059702722",
+            "session": "2025-08-26"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "cbf339e5-94e8-576a-ae3c-74aed9184650"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2008-11-21",
+            "return": "0.578249304930105959059022665",
+            "session": "2008-11-24"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "d605f4dd-adc0-57e1-860c-3f3bc6adb67d"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2008-07-21",
+            "return": "0.685370788212700084546502876",
+            "session": "2008-07-22"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "d9cbcbf9-dd96-55b4-88ab-35c9685cc752"
+    },
+    {
+      "details": {
+        "count": 6,
+        "samples": [
+          {
+            "prior_session": "2008-09-05",
+            "return": "-0.8274509781056516296625814647",
+            "session": "2008-09-08"
+          },
+          {
+            "prior_session": "2008-09-18",
+            "return": "0.666666636565657760575404050",
+            "session": "2008-09-19"
+          },
+          {
+            "prior_session": "2008-09-19",
+            "return": "0.545454555289255985559734131",
+            "session": "2008-09-22"
+          },
+          {
+            "prior_session": "2008-09-22",
+            "return": "0.552941194752940664564720216",
+            "session": "2008-09-23"
+          },
+          {
+            "prior_session": "2009-08-07",
+            "return": "1.283783831762234592241582937",
+            "session": "2009-08-10"
+          },
+          {
+            "prior_session": "2013-03-19",
+            "return": "0.542857230371430059171453863",
+            "session": "2013-03-20"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "e2e370ad-56b2-5d43-860b-b62ca9001fab"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2010-12-09",
+            "return": "0.550116586133321156407040120",
+            "session": "2010-12-10"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "f3fb1959-fa74-5c11-a8d9-a06a17cf0e38"
+    },
+    {
+      "details": {
+        "count": 2,
+        "samples": [
+          {
+            "prior_session": "2009-03-19",
+            "return": "0.981818199810516997815207622",
+            "session": "2009-03-20"
+          },
+          {
+            "prior_session": "2021-11-01",
+            "return": "1.083109759955191447914158114",
+            "session": "2021-11-02"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "f3ffde19-cb9e-52e2-85b6-41028063bd13"
+    },
+    {
+      "details": {
+        "count": 4,
+        "samples": [
+          {
+            "prior_session": "2018-02-13",
+            "return": "0.877212321340905911846074695",
+            "session": "2018-02-14"
+          },
+          {
+            "prior_session": "2020-06-05",
+            "return": "0.542857215523809523809523810",
+            "session": "2020-06-08"
+          },
+          {
+            "prior_session": "2021-01-26",
+            "return": "0.870355775568437026036262880",
+            "session": "2021-01-27"
+          },
+          {
+            "prior_session": "2024-11-29",
+            "return": "0.609588933749768235708102890",
+            "session": "2024-12-02"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "f4cf61dc-f35b-5426-ab55-459cb401555a"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2023-08-09",
+            "return": "0.557353382701285616848750635",
+            "session": "2023-08-10"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "f75554db-9b9d-562f-9640-132583473295"
+    },
+    {
+      "details": {
+        "count": 1,
+        "samples": [
+          {
+            "prior_session": "2008-10-28",
+            "return": "0.800000038527760110893801259",
+            "session": "2008-10-29"
+          }
+        ]
+      },
+      "disposition": "review",
+      "message": "Consecutive-session adjusted return exceeds the review threshold",
+      "rule_code": "adjusted_return_over_50_percent",
+      "security_id": "ffe54477-2fc8-54ff-818a-ac83f70ed8bc"
+    }
+  ],
+  "schema_version": "v0.22.market_data_closure_audit.v1",
+  "security_count": 974,
+  "session_count": 5407
+}

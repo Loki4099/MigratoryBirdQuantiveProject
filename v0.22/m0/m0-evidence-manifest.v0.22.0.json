@@ -1,0 +1,95 @@
+{
+  "evidence_schema_version": "1.0.0",
+  "evidence_id": "v022-m0-evidence-v0.22.0",
+  "contract_id": "bird-migration-v0.22.0",
+  "milestone": "M0",
+  "status": "passed",
+  "generated_at": "2026-08-10T16:58:11+08:00",
+  "frozen_contract": {
+    "tag": "v0.22.0-contract",
+    "tag_object": "608b9f84f54026d131418a5da8cbd77a08e0611d",
+    "commit": "c9b6aec36df52630dbb4e07e39b18b591005954f"
+  },
+  "legacy_baseline": {
+    "source_commit": "85a600811b2f58a7bb4be13b2a9c707035891d98",
+    "schema_revision": "20260809_47_signal_export_job",
+    "path": "v0.22/m0/v021-baseline-manifest.v0.22.0.json",
+    "file_sha256": "d960df0dfea4d14c73a7b9fd56563627cdddce64bff3a26ddfe0a1e00c55f427",
+    "payload_sha256": "5949ca9b71b68bbde935402d792e89bef58c8d28143fe1f4e7446d78c34c8329",
+    "repeatable_read_byte_equivalent": true,
+    "production_database_writes": 0,
+    "inventory": {
+      "factor_families": 12,
+      "factor_variants": 28,
+      "factor_datasets": 56,
+      "signal_families": 27,
+      "signal_versions": 51,
+      "signal_datasets": 102,
+      "model_specifications": 86,
+      "model_datasets": 172,
+      "compiled_model_instances": 10,
+      "compiled_strategy_versions": 14,
+      "accepted_cell_results": 26,
+      "active_products": 1,
+      "active_product_artifact_closure": 218
+    }
+  },
+  "policy": {
+    "path": "v0.22/m0/m0-policy.v0.22.0.json",
+    "file_sha256": "a9f9ae9d128e5b51a3e6ba2e2588cd0720329e741639e91b1e3921847e3f1bcb",
+    "all_non_m0_feature_gates_closed": true,
+    "admission_limits_frozen": true,
+    "performance_budgets_frozen": true
+  },
+  "verification": {
+    "baseline_verify": {
+      "command": ".venv/Scripts/python.exe scripts/v022_m0_baseline.py --verify",
+      "result": "passed"
+    },
+    "unit": {
+      "command": ".venv/Scripts/python.exe -m pytest -q tests/unit",
+      "passed": 320,
+      "failed": 0,
+      "warnings": 1,
+      "warning_scope": "upstream Starlette TestClient deprecation"
+    },
+    "ruff": {
+      "command": ".venv/Scripts/ruff.exe check src scripts tests",
+      "result": "passed"
+    },
+    "mypy": {
+      "command": ".venv/Scripts/mypy.exe src/style_rotation scripts/v022_m0_baseline.py",
+      "source_files": 193,
+      "result": "passed"
+    },
+    "postgresql_integration": {
+      "database_name": "style_rotation_test",
+      "destructive_database_name_guard": true,
+      "command_scope": [
+        "tests/integration/test_factor_catalog_publication.py",
+        "tests/integration/test_signal_catalog_publication.py",
+        "tests/integration/test_model_catalog_publication.py",
+        "tests/integration/test_strategy_catalog_publication.py",
+        "tests/integration/test_strategy_product_publication.py"
+      ],
+      "passed": 5,
+      "failed": 0
+    }
+  },
+  "gate_conditions": {
+    "contract_tag_verified": true,
+    "legacy_oracle_verified": true,
+    "inventory_exact": true,
+    "referenced_artifacts_valid": true,
+    "active_product_closure_frozen": true,
+    "policy_valid_and_future_gates_closed": true,
+    "required_m0_tests_passed": true,
+    "unrelated_v01_documents_excluded": true
+  },
+  "excluded_user_files": [
+    "v0.1/美股风格轮动因子回测系统_v0.1_学习手册.docx",
+    "v0.1/美股风格轮动因子回测系统_v0.1_学习手册.pdf"
+  ],
+  "next_milestone": "M1",
+  "m1_entry_allowed": true
+}

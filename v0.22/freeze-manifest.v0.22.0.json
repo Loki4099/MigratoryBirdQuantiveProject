@@ -1,0 +1,61 @@
+{
+  "manifest_schema_version": "1.0.0",
+  "contract_id": "bird-migration-v0.22.0",
+  "status": "frozen",
+  "frozen_at": "2026-08-10T16:29:50+08:00",
+  "base_source_commit": "85a600811b2f58a7bb4be13b2a9c707035891d98",
+  "git_attestation": {
+    "kind": "annotated_tag",
+    "tag": "v0.22.0-contract",
+    "commit_resolution": "external_to_hashed_files"
+  },
+  "files": [
+    {
+      "path": ".gitattributes",
+      "role": "frozen_line_ending_policy",
+      "sha256": "ec0108f0654e0c64fe7254959ffb6cab88774038d04b3d1f6fafd3b1a1eff718",
+      "bytes": 63
+    },
+    {
+      "path": "候鸟v0.22最终开发计划.md",
+      "role": "frozen_normative_plan",
+      "sha256": "d6ce8ae9ff9ed309f24b30e0a7d7c4285f54b2a6fc04f325f105e9d75c6cb3d7",
+      "bytes": 47334
+    },
+    {
+      "path": "contract-decisions.v0.22.0.json",
+      "role": "frozen_machine_readable_decisions",
+      "sha256": "1e735943050c2e43bf7caa12ac94dae882a158fae0c714c7518e7a483c44aab7",
+      "bytes": 9970
+    },
+    {
+      "path": "README.md",
+      "role": "normative_document_index",
+      "sha256": "c1f4463fb3b423009be55ca0ddea96567a460cd7c43f34a24e6b3be6b112c19a",
+      "bytes": 2464
+    },
+    {
+      "path": "候鸟v0.22实施基线_rc1_候选记录.md",
+      "role": "immutable_candidate_plan_evidence",
+      "sha256": "414b5586fa1eea51945d2495a8f7176d75a572490b843d149fb82ec271c303b2",
+      "bytes": 48195
+    },
+    {
+      "path": "contract-decisions.v0.22.0-rc1.json",
+      "role": "immutable_candidate_decision_evidence",
+      "sha256": "c25e03e39a54d289f59887d495a49c78e5d0c56721f489905db5756716a0191e",
+      "bytes": 9797
+    }
+  ],
+  "consistency_checks": {
+    "final_contract_id_matches": true,
+    "final_status_is_frozen": true,
+    "frozen_at_matches": true,
+    "candidate_contract_is_preserved": true,
+    "historical_non_normative_document_count": 13,
+    "local_markdown_links_resolve": true,
+    "decision_json_parses": true,
+    "core86_family_count_sum": 86,
+    "result": "passed"
+  }
+}

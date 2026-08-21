@@ -1,0 +1,65 @@
+{
+  "catalog_type": "v022_strategy",
+  "catalog_version": "0.22.1",
+  "strategies": [
+    {
+      "family_key": "cross_section_rank_top_k",
+      "variant_key": "cross_section_rank_top_k_parity",
+      "name": "Cross-section rank Top-K",
+      "selection_semantics": {
+        "ranking": "descending_higher_is_better",
+        "selection": "top_k",
+        "tie_break": "asset_key"
+      },
+      "research_hypothesis": "A directionally stable cross-sectional score can select the strongest assets at each planned rebalance.",
+      "parameters": {
+        "allowed_k": [1, 2, 3],
+        "allowed_frequency": ["weekly", "monthly"]
+      },
+      "version_number": 1,
+      "implementation_key": "style_rotation.strategy.v021_topk",
+      "input_payload_contract_key": "final_signal_numeric",
+      "schedule_policy": {
+        "decision_cutoff": "after_completed_session",
+        "frequencies": ["weekly", "monthly"]
+      },
+      "execution_policy": {
+        "long_only": true,
+        "weighting": "equal_selected_assets",
+        "missing_decision": "fail"
+      }
+    },
+    {
+      "family_key": "cross_section_rank_top_k",
+      "variant_key": "cross_section_rank_top_k_large_cap_parity",
+      "name": "Cross-section rank Top-K",
+      "selection_semantics": {
+        "ranking": "descending_higher_is_better",
+        "selection": "top_k",
+        "tie_break": "asset_key"
+      },
+      "research_hypothesis": "A directionally stable cross-sectional score can select the strongest assets at each planned rebalance.",
+      "parameters": {
+        "allowed_k": [10, 20],
+        "allowed_frequency": ["weekly"],
+        "legacy_family_key": "us_large_cap_top_k",
+        "required_instrument_type": "common_stock_or_adr",
+        "selection_buffer": ["half_k"],
+        "sector_cap": ["none"]
+      },
+      "version_number": 1,
+      "implementation_key": "style_rotation.strategy.v021_topk",
+      "input_payload_contract_key": "final_signal_numeric",
+      "schedule_policy": {
+        "decision_cutoff": "after_completed_session",
+        "frequencies": ["weekly"]
+      },
+      "execution_policy": {
+        "long_only": true,
+        "weighting": "equal_selected_assets_with_boundary_tie_sharing",
+        "missing_decision": "fail",
+        "selection_buffer": "half_k"
+      }
+    }
+  ]
+}

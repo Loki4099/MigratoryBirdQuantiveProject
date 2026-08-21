@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
 import { EmptyState, ErrorState, LoadingState, QualityBadge } from "../components/QueryState";
 import { researchLabel } from "../components/ResearchText";
+import { V022IdentityPanel } from "../components/V022IdentityPanel";
 
 const ratio = (value: unknown) => typeof value === "number"
   ? new Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 2 }).format(value)
@@ -72,6 +73,7 @@ export function ProductsPage() {
       <div><span>Active</span><strong>{catalog.data.items.filter((item) => item.lifecycle === "active").length}</strong></div>
       <div><span>Alerts</span><strong>{catalog.data.items.reduce((sum, item) => sum + item.open_alert_count, 0)}</strong></div>
     </section>
+    <V022IdentityPanel kind="product" />
     <section className="catalog-section product-toolbar">
       <label>{chinese ? "搜索" : "Search"}<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={chinese ? "名称、模型、策略、Universe" : "Name, Model, Strategy, Universe"} /></label>
       <label>Lifecycle<select value={lifecycle} onChange={(event) => setLifecycle(event.target.value)}>{["all", "active", "suspended", "retired", "invalidated"].map((value) => <option key={value}>{value}</option>)}</select></label>

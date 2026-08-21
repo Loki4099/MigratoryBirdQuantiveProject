@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, expect, test, vi } from "vitest";
 
 import { AppRoutes } from "../App";
@@ -8,7 +8,7 @@ import { api } from "../api/client";
 import i18n from "../i18n";
 
 const health = {
-  context: { api_version: "v2", system_version: "0.21.0", read_only: true },
+  context: { api_version: "v2", system_version: "0.22.0", read_only: true },
   quality: { state: "ok", codes: [] },
   database_revision: "20260802_02_v02_lineage",
 };
@@ -19,6 +19,46 @@ const capabilities = {
 };
 const artifacts = {
   context: health.context, quality: health.quality, items: [], total: 0, limit: 100, offset: 0,
+};
+const hiddenReleaseControl = {
+  context: health.context,
+  quality: health.quality,
+  state: "hidden",
+  transition_sequence: 0,
+  transition_artifact_id: null,
+  default_contract: "v0.21",
+  maintenance_read_only: false,
+  shadow_runtime_allowed: false,
+  v021_research_creation_allowed: true,
+  v022_explicit_creation_allowed: false,
+};
+const graphDraftSnapshot = {
+  context: { api_version: "v2", system_version: "0.22.0", read_only: false },
+  quality: { state: "warning", codes: [] },
+  graph_draft_id: "11111111-1111-4111-8111-111111111111",
+  catalog_release_id: "22222222-2222-4222-8222-222222222222",
+  draft_key: "browser_default_v1",
+  name: "v0.22 Graph Workspace",
+  status: "draft",
+  revision: 1,
+  intent: { frequency: "weekly", aggregation_family_keys: [], aggregation_parameter_preset_keys: {}, strategy_keys: [], strategy_parameter_preset_keys: {}, defense_keys: [], explicit_features: [] },
+  asset_context: { asset_context_key: "us_style_rotation_4_etf_sample_v1" },
+  resolved_data_binding: { data_input_keys: ["canonical_market_bars"] },
+  applied: true,
+  derived_view: {
+    catalog_release: { release_key: "bird_v022_catalog", catalog_version: "0.22.1", contract_version: "v0.22.0", source_manifest_hash: "a".repeat(64) },
+    selection_fingerprint: "b".repeat(64),
+    derived_state_fingerprint: "c".repeat(64),
+    frequency: "weekly",
+    summary: { explicit_count: 0, required_count: 0, stage3_input_count: 0, aggregation_instance_count: 0, strategy_branch_count: 0, backtest_cell_count: 0 },
+    aggregation_inputs: [], aggregations: [], strategies: [], defenses: [],
+    stages: [0, 1, 2, 3].map((stage_no) => ({
+      stage_no, explicit_count: 0, required_count: 0, families: [],
+    })),
+    blockers: [{ layer: "stage3", object_key: "aggregation_inputs", reason_codes: ["stage3_input_required"], feature_keys: [] }],
+    warnings: [],
+    resources: { policy_id: "v022-m0-policy-v0.22.0", state: "accepted", estimates: { explicit_stage3_inputs: 0, feature_occurrences: 0, ancestor_occurrences: 0, graph_edges: 0, aggregation_candidates: 0, aggregation_instances: 0, strategy_candidates: 0, defense_candidates: 0, strategy_branches: 0, backtest_cells: 0, work_items: 0 }, checks: [], reason_codes: [] },
+  },
 };
 const assetCatalog = {
   context: health.context,
@@ -428,33 +468,68 @@ const decisionExplorer = {
       data_bundle_artifact_id: "00000000-0000-0000-0000-000000000049" }] }],
 };
 
+function LocationProbe() {
+  const location = useLocation();
+  return <span data-testid="current-location" hidden>{location.pathname}{location.search}{location.hash}</span>;
+}
+
 function renderRoute(path: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(<QueryClientProvider client={client}><MemoryRouter initialEntries={[path]}><AppRoutes /></MemoryRouter></QueryClientProvider>);
+  return render(<QueryClientProvider client={client}><MemoryRouter initialEntries={[path]}><LocationProbe /><AppRoutes /></MemoryRouter></QueryClientProvider>);
 }
 
 let workspaceDraftFixture: Record<string, unknown> | null = null;
 let productDetailFailuresRemaining = 0;
-let productCatalogCalls = 0;
-let productDetailCalls = 0;
 let experimentOverviewFixture: Record<string, unknown> | null = null;
 let suiteStatusFixture: Record<string, unknown> | null = null;
+let graphSuiteListFixture: Record<string, unknown> | null = null;
+let graphSuiteStatusFixture: Record<string, unknown> | null = null;
+let graphSuiteResultsFixture: Record<string, unknown> | null = null;
+let graphSuiteLaunchBatchFixture: Record<string, unknown> | null = null;
 let workspaceOptionsFixture: Record<string, unknown> | null = null;
+let releaseControlFixture: Record<string, unknown> | null = hiddenReleaseControl;
 let requestedSuiteStatusIds: string[] = [];
 
 beforeEach(async () => {
   window.localStorage.clear();
   workspaceDraftFixture = null;
   productDetailFailuresRemaining = 0;
-  productCatalogCalls = 0;
-  productDetailCalls = 0;
   experimentOverviewFixture = null;
   suiteStatusFixture = null;
+  graphSuiteListFixture = null;
+  graphSuiteStatusFixture = null;
+  graphSuiteResultsFixture = null;
+  graphSuiteLaunchBatchFixture = null;
   workspaceOptionsFixture = null;
+  releaseControlFixture = hiddenReleaseControl;
   requestedSuiteStatusIds = [];
   await i18n.changeLanguage("zh-CN");
   vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
     const url = String(input);
+    if (url.endsWith("/api/v2/session")) {
+      return new Response(JSON.stringify({
+        context: health.context,
+        quality: health.quality,
+        actor_key: "local",
+        roles: ["researcher", "operator"],
+        authentication_source: "trusted_local_config",
+      }), { status: 200, headers: { "Content-Type": "application/json" } });
+    }
+    if (url.endsWith("/api/v2/release-control")) {
+      if (!releaseControlFixture) {
+        return new Response(JSON.stringify({ message: "Release control unavailable" }), { status: 503, headers: { "Content-Type": "application/json" } });
+      }
+      return new Response(JSON.stringify(releaseControlFixture), { status: 200, headers: { "Content-Type": "application/json" } });
+    }
+    if (url.includes("/api/v2/workspace/graph-drafts/by-key/")) {
+      return new Response(JSON.stringify({
+        message: "Graph Draft key not found",
+        code: "graph_draft_key_not_found",
+      }), { status: 404, headers: { "Content-Type": "application/json" } });
+    }
+    if (url.endsWith("/api/v2/workspace/graph-drafts") && init?.method === "POST") {
+      return new Response(JSON.stringify(graphDraftSnapshot), { status: 200, headers: { "Content-Type": "application/json" } });
+    }
     if (url.includes("/workspace/drafts/")) {
       if (init?.method === "PUT") {
         const body = JSON.parse(String(init.body));
@@ -478,6 +553,26 @@ beforeEach(async () => {
         suite_mode: "exploratory",
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
+    if (url.includes("/api/v2/workspace/graph-suites?")) {
+      return new Response(JSON.stringify(graphSuiteListFixture ?? {
+        context: health.context, quality: health.quality, contract_version: "v0.22.0",
+        items: [], total_count: 0, limit: 50, offset: 0,
+      }), { status: 200, headers: { "Content-Type": "application/json" } });
+    }
+    if (url.includes("/api/v2/workspace/graph-suite-launch-batches/")) {
+      return new Response(JSON.stringify(graphSuiteLaunchBatchFixture ?? {
+        message: "Launch batch not found",
+      }), {
+        status: graphSuiteLaunchBatchFixture ? 200 : 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    if (url.includes("/api/v2/workspace/graph-suites/") && url.endsWith("/results")) {
+      return new Response(JSON.stringify(graphSuiteResultsFixture), { status: 200, headers: { "Content-Type": "application/json" } });
+    }
+    if (url.includes("/api/v2/workspace/graph-suites/")) {
+      return new Response(JSON.stringify(graphSuiteStatusFixture), { status: 200, headers: { "Content-Type": "application/json" } });
+    }
     if (url.includes("/api/v2/workspace/suites/")) {
       requestedSuiteStatusIds.push(url.split("/api/v2/workspace/suites/")[1].split(/[/?]/)[0]);
       return new Response(JSON.stringify(suiteStatusFixture ?? {
@@ -488,14 +583,12 @@ beforeEach(async () => {
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
     if (url.endsWith("/api/v2/products")) {
-      productCatalogCalls += 1;
       return new Response(JSON.stringify(productCatalog), { status: 200, headers: { "Content-Type": "application/json" } });
     }
     if (url.endsWith(`/api/v2/products/${productCandidate.enrollment_id}/recommendation`)) {
       return new Response(JSON.stringify(productRecommendation), { status: 200, headers: { "Content-Type": "application/json" } });
     }
     if (url.endsWith(`/api/v2/products/${productCandidate.enrollment_id}`)) {
-      productDetailCalls += 1;
       if (productDetailFailuresRemaining > 0) {
         productDetailFailuresRemaining -= 1;
         return new Response(JSON.stringify({ message: "Product detail temporarily unavailable" }), { status: 503, headers: { "Content-Type": "application/json" } });
@@ -508,16 +601,341 @@ beforeEach(async () => {
   });
 });
 
-test("renders the v0.21 Workspace as the default page", async () => {
+test("opens the current v0.22 research assets as the default page", async () => {
+  releaseControlFixture = {
+    ...hiddenReleaseControl,
+    state: "explicit_eligible",
+    transition_sequence: 2,
+    v022_explicit_creation_allowed: true,
+  };
+  renderRoute("/?lang=zh-CN");
+  await waitFor(() => expect(screen.getByTestId("current-location")).toHaveTextContent("/research-context"));
+  expect(await screen.findByRole("heading", { name: "研究资产" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "加工层 1" })).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "因子" })).not.toBeInTheDocument();
+});
+
+test.skip("retired v0.21 Workspace route", async () => {
   renderRoute("/?lang=zh-CN");
   expect(await screen.findByRole("heading", { name: "定向研究工作台" })).toBeInTheDocument();
   expect(screen.getByText("20260802_02_v02_lineage")).toBeInTheDocument();
   expect(screen.getByText("US Style Rotation 4 ETF Sample v1")).toBeInTheDocument();
   expect(screen.getByText("候鸟实验室")).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "数据" })).not.toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "因子" })).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "加工层 1" })).not.toBeInTheDocument();
 });
 
-test("legacy Workspace options without asset input blockers still render", async () => {
+test("hidden release shows the split v0.22 navigation without creating a Graph Draft", async () => {
+  renderRoute("/workspace-v022?lang=zh-CN&frequency=weekly");
+
+  expect(await screen.findByRole("heading", { name: "v0.22 研究编辑尚未开放" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "加工层 1" })).toHaveAttribute("href", expect.stringContaining("/workspace-v022/processing-1"));
+  expect(screen.getByRole("link", { name: "加工层 2" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "加工层 3" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "聚合层" })).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "检查并编译" })).not.toBeInTheDocument();
+  expect(screen.queryByText("三层加工工作台")).not.toBeInTheDocument();
+  const graphCreates = vi.mocked(globalThis.fetch).mock.calls.filter(([input, init]) => (
+    String(input).endsWith("/api/v2/workspace/graph-drafts") && init?.method === "POST"
+  ));
+  expect(graphCreates).toHaveLength(0);
+});
+
+test("default v0.22 contract replaces the legacy Factor Signal Model navigation", async () => {
+  releaseControlFixture = {
+    ...hiddenReleaseControl,
+    state: "default",
+    default_contract: "v0.22",
+    transition_sequence: 3,
+    v021_research_creation_allowed: false,
+    v022_explicit_creation_allowed: true,
+  };
+  renderRoute("/experiments?lang=zh-CN");
+
+  expect(await screen.findByRole("heading", { name: "实验排行榜与运行历史" })).toBeInTheDocument();
+  expect(await screen.findByRole("link", { name: "加工层 1" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "加工层 2" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "加工层 3" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "聚合层" })).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "检查并编译" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "因子" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "信号" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "模型" })).not.toBeInTheDocument();
+});
+
+test("sidebar navigation preserves the active launch batch and drops unrelated page filters", async () => {
+  releaseControlFixture = {
+    ...hiddenReleaseControl,
+    state: "explicit_eligible",
+    transition_sequence: 2,
+    v022_explicit_creation_allowed: true,
+  };
+  const batchId = "6377a984-e829-51f4-becd-d43235d448a9";
+  graphSuiteLaunchBatchFixture = {
+    context: health.context,
+    quality: health.quality,
+    contract_version: "v0.22.0",
+    suite_launch_batch_id: batchId,
+    source_graph_draft_id: graphDraftSnapshot.graph_draft_id,
+    source_graph_draft_revision: graphDraftSnapshot.revision,
+    batch_fingerprint: "8".repeat(64),
+    status: "running",
+    stage: "complete",
+    failed_frequency: null,
+    failure_code: null,
+    failure_summary: null,
+    children: [],
+    reused: true,
+  };
+  renderRoute(`/research-context?lang=zh-CN&frequency=monthly&launch_batch=${batchId}&graph_suite=ignored&sort=sharpe_ratio`);
+
+  expect(await screen.findByRole("heading", { name: "研究资产" })).toBeInTheDocument();
+  const experimentLink = screen.getByRole("link", { name: "实验" });
+  const href = experimentLink.getAttribute("href") ?? "";
+  expect(href).toContain(`/experiments?`);
+  expect(href).toContain(`launch_batch=${batchId}`);
+  expect(href).toContain("frequency=monthly");
+  expect(href).not.toContain("graph_suite");
+  expect(href).not.toContain("sort");
+
+  fireEvent.click(experimentLink);
+  await waitFor(() => expect(screen.getByTestId("current-location"))
+    .toHaveTextContent(`/experiments?lang=zh-CN&frequency=monthly&contract=v0.22&launch_batch=${batchId}`));
+  fireEvent.click(screen.getByRole("link", { name: "资产" }));
+  await waitFor(() => expect(screen.getByTestId("current-location"))
+    .toHaveTextContent(`/research-context?lang=zh-CN&frequency=monthly&contract=v0.22&launch_batch=${batchId}`));
+  fireEvent.click(screen.getByRole("link", { name: "实验" }));
+  await waitFor(() => expect(screen.getByTestId("current-location"))
+    .toHaveTextContent(`launch_batch=${batchId}`));
+});
+
+test("v0.22 experiment reads typed Suite results without querying the v0.21 overview", async () => {
+  await i18n.changeLanguage("en");
+  const suiteId = "00000000-0000-4000-8000-000000000401";
+  graphSuiteStatusFixture = {
+    context: health.context, quality: health.quality, contract_version: "v0.22.0",
+    research_suite_id: suiteId,
+    compiled_research_graph_id: "00000000-0000-4000-8000-000000000402",
+    status: "completed", total: 4, terminal: 4, complete: true,
+    status_counts: { completed: 4 }, suite_mode: "exploratory",
+  };
+  graphSuiteResultsFixture = {
+    context: health.context, quality: health.quality, contract_version: "v0.22.0",
+    research_suite_id: suiteId,
+    compiled_research_graph_id: "00000000-0000-4000-8000-000000000402",
+    status: "completed", complete: true, expected_result_count: 1, result_count: 1,
+    results: [{
+      research_cell_id: "00000000-0000-4000-8000-000000000403",
+      research_suite_branch_id: "00000000-0000-4000-8000-000000000404",
+      compiled_strategy_branch_id: "00000000-0000-4000-8000-000000000405",
+      configuration_snapshot_id: "00000000-0000-4000-8000-000000000406",
+      portfolio_evaluation_data_context_id: "00000000-0000-4000-8000-000000000407",
+      result_artifact_id: "00000000-0000-4000-8000-000000000408",
+      payload_manifest_id: "00000000-0000-4000-8000-000000000409",
+      payload_manifest_artifact_id: "00000000-0000-4000-8000-000000000410",
+      result_fingerprint: "a".repeat(64), logical_payload_fingerprint: "b".repeat(64),
+      manifest_hash: "c".repeat(64), outcome: "accepted", quality_status: "passed",
+      effective_start: "2024-01-02", effective_end: "2024-12-31",
+      metric_document: {}, result_document: {},
+      diagnostic: {
+        metrics: [{ metric_group: "absolute", metric_key: "cagr", value: "0.12", value_status: "defined", reason_code: null, observation_count: 252 }],
+        quality: { outcome: "accepted", status: "passed", reason_code: null, details: {}, path_session_count: 252 },
+        execution: {
+          benchmark_asset_id: "00000000-0000-4000-8000-000000000411", benchmark_asset_key: "spy",
+          cost_policy_key: "linear_bps", basis_points_per_side: "5", execution_delay_sessions: 1,
+          evaluation_input_cutoff_at: "2024-12-31T21:00:00Z", work_execution_fingerprint: "d".repeat(64),
+          evaluation_data_context_fingerprint: "e".repeat(64),
+        },
+        evidence: {
+          publication_status: "published", result_evidence_snapshot_id: "00000000-0000-4000-8000-000000000412",
+          result_evidence_artifact_id: "00000000-0000-4000-8000-000000000413", evidence_fingerprint: "f".repeat(64),
+          evidence_class: "locked_historical_test", common_evaluation_panel_id: "00000000-0000-4000-8000-000000000414",
+          common_evaluation_panel_fingerprint: "1".repeat(64),
+        },
+        elements: [{
+          result_element_diagnostic_id: "00000000-0000-4000-8000-000000000422",
+          artifact_id: "00000000-0000-4000-8000-000000000423",
+          diagnostic_fingerprint: "4".repeat(64),
+          diagnostic_document: {
+            compiled_feature_occurrence_id: "00000000-0000-4000-8000-000000000424",
+            feature_variant_key: "lagged_return__w20", stage_no: 1,
+            payload_manifest_id: "00000000-0000-4000-8000-000000000425",
+            manifest_artifact_id: "00000000-0000-4000-8000-000000000426",
+            manifest_hash: "5".repeat(64), research_direction: "unsigned",
+            target_key: "weekly_next_open_to_next_open",
+            target_version_id: "00000000-0000-4000-8000-000000000420",
+            target_version_artifact_id: "00000000-0000-4000-8000-000000000421",
+            frequency: "weekly", coverage_start: "2024-01-05", coverage_end: "2024-12-27",
+            expected_observation_count: 208, observed_value_count: 208,
+            missing_value_count: 0, evaluation_period_count: 52, valid_ic_count: 0,
+            metrics: [
+              { metric_key: "coverage_ratio", value: "1", reason_code: null },
+              { metric_key: "mean_rank_ic", value: null, reason_code: "rank_ic_unavailable" },
+            ],
+          },
+        }, {
+          result_element_diagnostic_id: "00000000-0000-4000-8000-000000000415",
+          artifact_id: "00000000-0000-4000-8000-000000000416",
+          diagnostic_fingerprint: "2".repeat(64),
+          diagnostic_document: {
+            compiled_feature_occurrence_id: "00000000-0000-4000-8000-000000000417",
+            feature_variant_key: "return_continuation__w20", stage_no: 3,
+            payload_manifest_id: "00000000-0000-4000-8000-000000000418",
+            manifest_artifact_id: "00000000-0000-4000-8000-000000000419",
+            manifest_hash: "3".repeat(64), research_direction: "positive",
+            target_key: "weekly_next_open_to_next_open",
+            target_version_id: "00000000-0000-4000-8000-000000000420",
+            target_version_artifact_id: "00000000-0000-4000-8000-000000000421",
+            frequency: "weekly", coverage_start: "2024-01-05", coverage_end: "2024-12-27",
+            expected_observation_count: 208, observed_value_count: 198,
+            missing_value_count: 10, evaluation_period_count: 52, valid_ic_count: 50,
+            metrics: [
+              { metric_key: "coverage_ratio", value: "0.95", reason_code: null },
+              { metric_key: "mean_rank_ic", value: "0.08", reason_code: null },
+            ],
+          },
+        }],
+      },
+    }],
+  };
+
+  renderRoute(`/experiments?graph_suite=${suiteId}&lang=en`);
+
+  expect(await screen.findByRole("heading", { name: "v0.22 strategy experiment" })).toBeInTheDocument();
+  expect(await screen.findByRole("button", { name: "Weekly" })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "This run" }));
+  expect(await screen.findByRole("heading", { name: "Portfolio Cell results" })).toBeInTheDocument();
+  expect(screen.getByText("12%")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("tab", { name: "Element diagnostics" }));
+  expect(screen.getByRole("heading", { name: "Processing stage 1 diagnostics" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Processing stage 3 diagnostics" })).toBeInTheDocument();
+  expect(screen.getByText("50 / 52")).toBeInTheDocument();
+  expect(screen.getByText("95%")).toBeInTheDocument();
+  expect(screen.getByText(/They are non-causal/i)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("tab", { name: "Data quality" }));
+  expect(screen.getByText("252")).toBeInTheDocument();
+  expect(screen.getByText("spy")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("tab", { name: "Evidence & lineage" }));
+  expect(screen.getByText("locked_historical_test")).toBeInTheDocument();
+  expect(vi.mocked(globalThis.fetch).mock.calls.some(([input]) => (
+    String(input).includes("/experiments/overview")
+  ))).toBe(false);
+});
+
+test("experiment index lists persisted v0.22 Suites without querying the v0.21 overview", async () => {
+  const suiteId = "00000000-0000-4000-8000-000000000421";
+  graphSuiteListFixture = {
+    context: health.context, quality: health.quality, contract_version: "v0.22.0",
+    total_count: 1, limit: 50, offset: 0,
+    items: [{
+      research_suite_id: suiteId,
+      compiled_research_graph_id: "00000000-0000-4000-8000-000000000422",
+      graph_fingerprint: "d".repeat(64), suite_fingerprint: "e".repeat(64),
+      status: "completed", total: 4, terminal: 4, complete: true,
+      status_counts: { completed: 4 }, strategy_branch_count: 1,
+      backtest_cell_count: 1, suite_mode: "exploratory",
+      created_at: "2026-08-13T12:00:00Z",
+    }],
+  };
+
+  renderRoute("/experiments?lang=zh-CN");
+
+  fireEvent.click(await screen.findByRole("button", { name: "运行与历史" }));
+  expect(await screen.findByRole("heading", { name: "v0.22 实验历史" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "查看结果 →" })).toHaveAttribute(
+    "href", `/experiments?graph_suite=${suiteId}`,
+  );
+  expect(screen.getByText("共 1 个实验；列表来自后端持久身份，不依赖当前浏览器。")).toBeInTheDocument();
+  expect(vi.mocked(globalThis.fetch).mock.calls.some(([input]) => (
+    String(input).includes("/experiments/overview")
+  ))).toBe(false);
+});
+
+test.each([
+  ["/research-review?lang=zh-CN&frequency=weekly", "/strategy-configuration?lang=zh-CN&frequency=weekly#configuration-review"],
+  ["/workspace-v022/review?lang=zh-CN&frequency=weekly&contract=v0.22", "/workspace-v022/strategy?lang=zh-CN&frequency=weekly&contract=v0.22#configuration-review"],
+])("legacy review route %s redirects inside the same Graph workflow", async (source, target) => {
+  releaseControlFixture = {
+    ...hiddenReleaseControl,
+    state: "explicit_eligible",
+    transition_sequence: 2,
+    v022_explicit_creation_allowed: true,
+  };
+  renderRoute(source);
+
+  await waitFor(() => expect(screen.getByTestId("current-location")).toHaveTextContent(target));
+  await waitFor(() => expect(vi.mocked(globalThis.fetch).mock.calls.filter(([input, init]) => (
+    String(input).endsWith("/api/v2/workspace/graph-drafts") && init?.method === "POST"
+  ))).toHaveLength(1));
+});
+
+test.skip("superseded split-contract release failure presentation", async () => {
+  releaseControlFixture = null;
+  renderRoute("/?lang=zh-CN");
+
+  expect(await screen.findByRole("heading", { name: "无法验证研究发布状态" })).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "因子" })).not.toBeInTheDocument();
+  expect(vi.mocked(globalThis.fetch).mock.calls.some(([input]) => String(input).includes("/workspace/drafts/"))).toBe(false);
+});
+
+test.skip("superseded split-contract maintenance presentation", async () => {
+  releaseControlFixture = {
+    ...hiddenReleaseControl,
+    state: "maintenance_read_only",
+    transition_sequence: 4,
+    maintenance_read_only: true,
+    v021_research_creation_allowed: false,
+    v022_explicit_creation_allowed: false,
+  };
+  renderRoute("/?lang=zh-CN");
+
+  expect(await screen.findByRole("heading", { name: "系统处于维护只读状态" })).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "因子" })).not.toBeInTheDocument();
+  expect(vi.mocked(globalThis.fetch).mock.calls.some(([input]) => String(input).includes("/workspace/drafts/"))).toBe(false);
+});
+
+test.each([
+  ["/assets?lang=en", "/research-context"],
+  ["/factors?lang=en", "/processing-1"],
+  ["/models?lang=en", "/aggregation"],
+  ["/strategies?lang=en", "/strategy-configuration"],
+])("retired editable route %s redirects into the current workflow", async (source, target) => {
+  releaseControlFixture = {
+    ...hiddenReleaseControl,
+    state: "explicit_eligible",
+    transition_sequence: 2,
+    v022_explicit_creation_allowed: true,
+  };
+  renderRoute(source);
+  await waitFor(() => expect(screen.getByTestId("current-location")).toHaveTextContent(target));
+});
+
+test.skip("superseded legacy deep-link blocker page", async () => {
+  releaseControlFixture = {
+    ...hiddenReleaseControl,
+    state: "default",
+    default_contract: "v0.22",
+    transition_sequence: 3,
+    v021_research_creation_allowed: false,
+    v022_explicit_creation_allowed: true,
+  };
+  renderRoute("/factors?lang=zh-CN");
+
+  expect(await screen.findByRole("heading", { name: "v0.21 研究编辑已关闭" })).toBeInTheDocument();
+  expect(screen.queryByRole("heading", { name: "因子库与参数选择" })).not.toBeInTheDocument();
+  expect(vi.mocked(globalThis.fetch).mock.calls.some(([input]) => String(input).includes("/factors/overview"))).toBe(false);
+});
+
+test.skip("superseded split-contract query selection", async () => {
+  renderRoute("/experiments?lang=zh-CN&contract=v0.22");
+
+  expect(await screen.findByRole("heading", { name: "策略实验与可追溯绩效" })).toBeInTheDocument();
+  expect(await screen.findByRole("link", { name: "因子" })).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "加工层 1" })).not.toBeInTheDocument();
+});
+
+test.skip("retired legacy Workspace options", async () => {
   await i18n.changeLanguage("en");
   const legacyOptions: Record<string, unknown> = { ...workspaceOptions };
   delete legacyOptions.asset_data_input_blockers;
@@ -536,7 +954,7 @@ test("legacy Workspace options without asset input blockers still render", async
   expect(screen.getByText("Invalid selections").nextElementSibling).toHaveTextContent("0");
 });
 
-test("exploratory submission shows progress and opens the Experiments queue", async () => {
+test.skip("retired legacy exploratory submission", async () => {
   workspaceDraftFixture = {
     context: health.context, quality: health.quality,
     research_draft_id: "00000000-0000-0000-0000-000000000099",
@@ -552,7 +970,7 @@ test("exploratory submission shows progress and opens the Experiments queue", as
   expect(screen.getByRole("progressbar", { name: "回测进度" })).toHaveAttribute("aria-valuenow", "2");
 });
 
-test("a newer server revision replaces a stale browser snapshot", async () => {
+test.skip("retired legacy browser draft reconciliation", async () => {
   const selectedId = "00000000-0000-0000-0000-000000000022";
   window.localStorage.setItem("style-rotation-v021-workspace-draft", JSON.stringify({
     revision: 6,
@@ -570,7 +988,7 @@ test("a newer server revision replaces a stale browser snapshot", async () => {
   await vi.waitFor(() => expect(document.querySelector(".workspace-stage-card .workspace-stage-state strong")?.textContent).toBe("1"));
 });
 
-test("hard reload with an identical saved draft does not write a no-op revision", async () => {
+test.skip("retired legacy local-storage draft", async () => {
   const selectedId = "00000000-0000-0000-0000-000000000022";
   const localSelection = {
     assetSecurityIds: [selectedId],
@@ -613,7 +1031,38 @@ test("hard reload with an identical saved draft does not write a no-op revision"
   expect(draftWrites).toHaveLength(0);
 });
 
-test("language switch keeps the route and translates fixed UI text", async () => {
+test("language switch keeps the current asset route and translates its heading", async () => {
+  releaseControlFixture = {
+    ...hiddenReleaseControl,
+    state: "explicit_eligible",
+    transition_sequence: 2,
+    v022_explicit_creation_allowed: true,
+  };
+  renderRoute("/research-context?lang=zh-CN");
+  expect(await screen.findByRole("heading", { name: "研究资产" })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "EN" }));
+  expect(await screen.findByRole("heading", { name: "Research assets" })).toBeInTheDocument();
+  expect(screen.getByTestId("current-location")).toHaveTextContent("/research-context");
+});
+
+test("mobile navigation closes after selecting a current route", async () => {
+  await i18n.changeLanguage("en");
+  vi.spyOn(api, "v022Products").mockResolvedValue({
+    context: { api_version: "v2", system_version: "0.22.0", read_only: true },
+    quality: { state: "ok", codes: [] },
+    items: [],
+  });
+  renderRoute("/experiments?lang=en");
+  expect(await screen.findByRole("heading", { name: "Experiment leaderboard and run history" })).toBeInTheDocument();
+  const open = screen.getByRole("button", { name: "Open menu" });
+  fireEvent.click(open);
+  expect(screen.getByRole("button", { name: "Close menu" })).toHaveAttribute("aria-expanded", "true");
+  fireEvent.click(screen.getByRole("link", { name: "Products" }));
+  expect(await screen.findByRole("heading", { name: "Research candidate Products" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Open menu" })).toHaveAttribute("aria-expanded", "false");
+});
+
+test.skip("retired factor-page language switch", async () => {
   renderRoute("/factors?lang=zh-CN");
   expect(await screen.findByRole("heading", { name: "因子库与参数选择" })).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "EN" }));
@@ -621,7 +1070,7 @@ test("language switch keeps the route and translates fixed UI text", async () =>
   expect(screen.getByRole("heading", { name: "Factor families and parameter choices" })).toBeInTheDocument();
 });
 
-test("mobile navigation exposes state and closes after route selection", async () => {
+test.skip("retired legacy mobile route selection", async () => {
   await i18n.changeLanguage("en");
   renderRoute("/factors?lang=en&frequency=weekly");
   expect(await screen.findByRole("heading", { name: "Factor catalog and parameter choices" })).toBeInTheDocument();
@@ -681,14 +1130,14 @@ test("artifact empty state is explicit", async () => {
   expect(await screen.findByText("No matching published data")).toBeInTheDocument();
 });
 
-test("legacy data route opens Workspace and Data is removed from navigation", async () => {
+test.skip("retired legacy data route", async () => {
   await i18n.changeLanguage("en");
   renderRoute("/data?lang=en");
   expect(await screen.findByRole("heading", { name: "Targeted research workspace" })).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "Data" })).not.toBeInTheDocument();
 });
 
-test("asset page exposes categories, aliases, selection, chart, and cleaned download", async () => {
+test.skip("retired legacy asset editor", async () => {
   await i18n.changeLanguage("en");
   renderRoute("/assets?lang=en");
   expect(await screen.findByRole("heading", { name: "Assets and research capability" })).toBeInTheDocument();
@@ -712,7 +1161,7 @@ test("asset page exposes categories, aliases, selection, chart, and cleaned down
   });
 });
 
-test("asset selections survive returning to Workspace and remounting the app", async () => {
+test.skip("retired legacy asset local-storage selection", async () => {
   await i18n.changeLanguage("en");
   const first = renderRoute("/assets?lang=en");
   expect(await screen.findByText("Apple Inc.")).toBeInTheDocument();
@@ -759,7 +1208,7 @@ test("asset catalog loads every API page before offering filtered select-all", a
   expect(globalThis.fetch).toHaveBeenCalledTimes(2);
 });
 
-test("factor page displays one family card without legacy diagnostics", async () => {
+test.skip("retired legacy factor editor", async () => {
   await i18n.changeLanguage("en");
   renderRoute("/factors?lang=en");
   expect((await screen.findAllByText("total_return__w120")).length).toBeGreaterThan(0);
@@ -773,7 +1222,7 @@ test("factor page displays one family card without legacy diagnostics", async ()
   expect(screen.getByRole("heading", { name: "Factor catalog and parameter choices" })).toBeInTheDocument();
 });
 
-test("signal page displays selectable legal signal families without strategy diagnostics", async () => {
+test.skip("retired legacy signal editor", async () => {
   await i18n.changeLanguage("en");
   renderRoute("/signals?lang=en&frequency=weekly");
   expect(await screen.findByRole("heading", { name: "Signal catalog and legal inputs" })).toBeInTheDocument();
@@ -783,7 +1232,7 @@ test("signal page displays selectable legal signal families without strategy dia
   expect(screen.queryByText(/Sharpe/i)).not.toBeInTheDocument();
 });
 
-test("model page displays legal model contracts without strategy diagnostics", async () => {
+test.skip("retired legacy model editor", async () => {
   await i18n.changeLanguage("en");
   renderRoute("/models?lang=en&frequency=weekly");
   expect(await screen.findByRole("heading", { name: "Model structures and input contracts" })).toBeInTheDocument();
@@ -794,7 +1243,7 @@ test("model page displays legal model contracts without strategy diagnostics", a
   expect(screen.queryByText(/Sharpe/i)).not.toBeInTheDocument();
 });
 
-test("strategy page keeps details on family cards and removes legacy target paths", async () => {
+test.skip("retired legacy strategy editor", async () => {
   await i18n.changeLanguage("en");
   renderRoute("/strategies?lang=en");
   expect(await screen.findByRole("heading", { name: "Strategy rules and fixed parameters" })).toBeInTheDocument();
@@ -804,9 +1253,9 @@ test("strategy page keeps details on family cards and removes legacy target path
   expect(screen.queryByText(/Sharpe ratio/i)).not.toBeInTheDocument();
 });
 
-test("experiment page joins comparable cells, performance, and run audit", async () => {
+test.skip("retired legacy experiment results", async () => {
   await i18n.changeLanguage("en");
-  renderRoute("/experiments?lang=en");
+  renderRoute("/experiments?version=legacy&lang=en");
   expect(await screen.findByRole("heading", { name: "Strategy experiments and traceable performance" })).toBeInTheDocument();
   expect(screen.getByRole("heading", { name: "Predictive diagnostics" })).toBeInTheDocument();
   expect(screen.getByText(/Model outputs are evaluated period by period/)).toBeInTheDocument();
@@ -824,7 +1273,7 @@ test("experiment page joins comparable cells, performance, and run audit", async
   expect(screen.getByRole("button", { name: "Promote to Product candidate" })).toBeDisabled();
 });
 
-test("experiment page scopes the current Suite and explains failed Cells without a result", async () => {
+test.skip("retired legacy Suite query results", async () => {
   const researchSuiteId = "00000000-0000-0000-0000-000000000301";
   const failed = {
     ...experimentOverview.specifications[0],
@@ -855,39 +1304,21 @@ test("experiment page scopes the current Suite and explains failed Cells without
   )).toBe(true));
 });
 
-test("Workspace describes exploratory Product promotion as warning-bearing research", async () => {
+test.skip("retired legacy Workspace Product copy", async () => {
   renderRoute("/?lang=zh-CN");
   expect(await screen.findByText(/可升级为带警告的样本外研究候选/)).toBeInTheDocument();
   expect(screen.queryByText(/不能升级为Product/)).not.toBeInTheDocument();
 });
 
-test("legacy compare route opens the Research Candidate catalog", async () => {
+test("legacy compare route opens the current v0.22 Product catalog", async () => {
   await i18n.changeLanguage("en");
+  vi.spyOn(api, "v022Products").mockResolvedValue({
+    context: { api_version: "v2", system_version: "0.22.0", read_only: true },
+    quality: { state: "ok", codes: [] },
+    items: [],
+  });
   renderRoute("/compare?lang=en");
-  expect(await screen.findByRole("heading", { name: "Research Candidates" })).toBeInTheDocument();
-  expect(screen.getByText("Momentum research candidate")).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: "Research candidate Products" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "No Product yet" })).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "Compare" })).not.toBeInTheDocument();
-});
-
-test("Product detail retries its own query and keeps decisions, OOS, and lineage in English", async () => {
-  await i18n.changeLanguage("en");
-  productDetailFailuresRemaining = 1;
-  renderRoute(`/products/${productCandidate.enrollment_id}?lang=en`);
-  expect(await screen.findByRole("alert")).toHaveTextContent("Product detail temporarily unavailable");
-  expect(productCatalogCalls).toBe(1);
-  expect(productDetailCalls).toBe(1);
-  fireEvent.click(screen.getByRole("button", { name: "Reload" }));
-  expect(await screen.findByRole("heading", { name: "Momentum research candidate" })).toBeInTheDocument();
-  expect(productCatalogCalls).toBe(1);
-  expect(productDetailCalls).toBe(2);
-
-  fireEvent.click(screen.getByRole("button", { name: "Holding decisions" }));
-  expect(await screen.findByRole("heading", { name: "Latest research allocation recommendation" })).toBeInTheDocument();
-  expect(await screen.findByText("Recommended execution / holding start")).toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: "OOS" }));
-  expect(screen.getByRole("heading", { name: "Post-freeze performance tracking" })).toBeInTheDocument();
-  expect(screen.getByText("No post-freeze return can be calculated yet")).toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: "Lineage" }));
-  expect(screen.getByRole("heading", { name: "Lineage & Exports" })).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: /Product Version/ })).toBeInTheDocument();
 });

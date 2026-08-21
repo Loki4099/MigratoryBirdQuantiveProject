@@ -1,0 +1,128 @@
+{
+  "active_product": {
+    "actual_decisions_fingerprint": "c0151d84ea4123bc85ec9001a16c1b6275e7a3c3099f3c76db1d22573d552b35",
+    "aggregation_family_key": "flat_equal_weight_mean",
+    "aggregation_input_audit_count": 102916,
+    "aggregation_mismatch_count": 0,
+    "aggregation_parameter_preset_key": "signal_equal_v1",
+    "compiled_model_instance_id": "2ba7b78b-7838-4caa-a4e3-fe0e316ecf3f",
+    "compiled_strategy_version_id": "5bb7c5cf-344c-44c6-91b6-4694a6dcd7f3",
+    "decision_count": 1042,
+    "decision_mismatch_count": 0,
+    "defense_variant_key": "none",
+    "expected_decisions_fingerprint": "c0151d84ea4123bc85ec9001a16c1b6275e7a3c3099f3c76db1d22573d552b35",
+    "input_signal_variant_keys": [
+      "low_skew_premium__w60",
+      "return_continuation__w20",
+      "return_continuation__w60"
+    ],
+    "passed": true,
+    "portfolio_result_artifact_id": "def691aa-6902-46b5-9723-c3fa73a5f5f5",
+    "portfolio_result_content_hash": "3d5f96d6e8ec18c0def52b379cdf15596109293f94b750d37829a6168aa34ec9",
+    "predictive_result_artifact_id": "2bc649b5-5595-4d86-8491-ff15fbeeae91",
+    "predictive_result_content_hash": "5311de05775cde78d8042d96cf0de4ef8dd53c749b78531b2c698d1838c3e902",
+    "predictive_score_mismatch_count": 0,
+    "product_version_id": "c2c5ef42-2568-482f-a6b6-8f9f6d93da12",
+    "score_point_count": 102916,
+    "strategy_variant_key": "cross_section_rank_top_k_large_cap_parity"
+  },
+  "comparison_policy": {
+    "aggregation": "exact Decimal sum of three frozen input contributions",
+    "defense": "exact Decimal budget including MA200 +/-2 percent boundaries",
+    "oracle": "M0-frozen published Cell Results in repeatable-read/read-only transaction",
+    "strategy": "exact asset, competition rank, Decimal target weight and reserve",
+    "tolerance": "none"
+  },
+  "defense_fixed_regression_cases": [
+    {
+      "actual_budget": "0",
+      "expected_budget": "0",
+      "passed": true,
+      "spy_close": null,
+      "spy_sma200": null,
+      "variant_key": "none"
+    },
+    {
+      "actual_budget": "0.2",
+      "expected_budget": "0.2",
+      "passed": true,
+      "spy_close": null,
+      "spy_sma200": null,
+      "variant_key": "fixed20_defense"
+    },
+    {
+      "actual_budget": "0",
+      "expected_budget": "0",
+      "passed": true,
+      "spy_close": "103",
+      "spy_sma200": "100",
+      "variant_key": "ma200_tiered_defense"
+    },
+    {
+      "actual_budget": "0.2",
+      "expected_budget": "0.2",
+      "passed": true,
+      "spy_close": "102",
+      "spy_sma200": "100",
+      "variant_key": "ma200_tiered_defense"
+    },
+    {
+      "actual_budget": "0.2",
+      "expected_budget": "0.2",
+      "passed": true,
+      "spy_close": "98",
+      "spy_sma200": "100",
+      "variant_key": "ma200_tiered_defense"
+    },
+    {
+      "actual_budget": "0.4",
+      "expected_budget": "0.4",
+      "passed": true,
+      "spy_close": "97",
+      "spy_sma200": "100",
+      "variant_key": "ma200_tiered_defense"
+    }
+  ],
+  "evidence_fingerprint": "f6116b380aadaab952ca3b95c6840c5738dce227e2d40be0c45c35750bb894cd",
+  "evidence_type": "v022_strategy_defense_product_continuity",
+  "evidence_version": "0.22.0",
+  "model_parity_evidence_fingerprint": "6034518b9539682a8334b4e5736f9cfa4aefaf897ebcdc59cc069f92e151396f",
+  "oracle_baseline_id": "v021-oracle-v0.22.0-m0",
+  "oracle_manifest_fingerprint": "86ecfda326bdc98e61fde026fcd85edf83f7dab6f77b053d249dead33366760c",
+  "strategy_fixed_regression_cases": [
+    {
+      "actual_output_fingerprint": "578799b3b30e35cebcaf1c5ab295595b542b4dd2607fc635e5feb13abb8aa8a8",
+      "defense_budget": "0.2",
+      "eligible_count": 4,
+      "expected_output_fingerprint": "578799b3b30e35cebcaf1c5ab295595b542b4dd2607fc635e5feb13abb8aa8a8",
+      "input_fingerprint": "7af722700cb326fbc1f8430bf28ab3cb1d3a3cdf1d145302a1e75b24ab55bf62",
+      "passed": true,
+      "position_count": 2,
+      "risk_budget": "0.8",
+      "variant_key": "cross_section_rank_top_k_parity"
+    },
+    {
+      "actual_output_fingerprint": "8bbfade655b5e0d9cee3ee4dcbd61682e2a70289fe1d1d13199dfa31a7c57bc3",
+      "defense_budget": "0",
+      "eligible_count": 100,
+      "expected_output_fingerprint": "8bbfade655b5e0d9cee3ee4dcbd61682e2a70289fe1d1d13199dfa31a7c57bc3",
+      "input_fingerprint": "d6e0c3e6952a4cba3b667dfdda9187c89b7b79a5e7086fb919cd4b4c1d103f87",
+      "passed": true,
+      "position_count": 10,
+      "risk_budget": "1",
+      "variant_key": "cross_section_rank_top_k_large_cap_parity"
+    }
+  ],
+  "strategy_product_registry_fingerprint": "d7977378380fd80a610b14b38f668c0961507f8df22325720ad1cd0b6a6c22e5",
+  "summary": {
+    "active_product_count": 1,
+    "active_product_decision_count": 1042,
+    "active_product_score_point_count": 102916,
+    "defense_fixed_case_count": 6,
+    "defense_variant_count": 3,
+    "mismatch_count": 0,
+    "passed": true,
+    "strategy_fixed_case_count": 2,
+    "strategy_variant_count": 2
+  }
+}

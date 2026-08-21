@@ -1,0 +1,12 @@
+{
+  "catalog_type": "v022_defense",
+  "catalog_version": "0.22.0",
+  "defenses": [
+    {
+      "family_key":"fixed_defensive_allocation","variant_key":"fixed20_defense","name":"Fixed 20% defense","allocation_semantics":{"risk_sleeve":0.8,"defense_sleeve":0.2,"rebalance_with_strategy":true},"research_hypothesis":"A fixed defensive sleeve provides a transparent parity baseline.","parameters":{"defense_budget":0.2},"version_number":1,"implementation_key":"style_rotation.strategy.v021_topk.fixed20","input_policy":{"market_timing_signal_required":false},"allocation_policy":{"capital_conservation":true,"long_only":true},"supported_asset_context_keys":["us_style_etf"]
+    },
+    {
+      "family_key":"ma200_regime_defense","variant_key":"ma200_defense","name":"SPY MA200 regime defense","allocation_semantics":{"risk_on_above_ma":true,"defense_budget_below_ma":1.0,"rebalance_with_strategy":true},"research_hypothesis":"The legacy SPY 200-session moving-average regime supplies a frozen defensive parity path.","parameters":{"reference_asset":"spy","window":200},"version_number":1,"implementation_key":"style_rotation.strategy.v021_topk.ma200","input_policy":{"market_timing_signal_required":true,"known_at_required":true},"allocation_policy":{"capital_conservation":true,"long_only":true},"supported_asset_context_keys":["us_style_etf"]
+    }
+  ]
+}

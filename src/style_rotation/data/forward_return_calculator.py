@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date
 from decimal import ROUND_HALF_EVEN, Decimal
@@ -47,6 +48,8 @@ def calculate_forward_returns(
     *,
     requested_start: date,
     requested_end: date,
+    candidate_asset_ids_by_date: Mapping[date, frozenset[uuid.UUID]] | None = None,
+    allow_missing_eligible_opens: bool = False,
 ) -> ForwardReturnCalculation:
     if requested_start > requested_end:
         raise ValueError("Forward-return requested start must not follow end")
@@ -87,12 +90,31 @@ def calculate_forward_returns(
         raise ForwardReturnCalculationError("Forward-return target has no included assets")
     points: list[ForwardReturnPoint] = []
     for decision_date, start_date, end_date in intervals:
-        for asset_id in sorted(asset_keys, key=lambda item: (asset_keys[item], str(item))):
+        eligible_asset_ids = (
+            frozenset(asset_keys)
+            if candidate_asset_ids_by_date is None
+            else candidate_asset_ids_by_date.get(decision_date)
+        )
+        if not eligible_asset_ids:
+            raise ForwardReturnCalculationError(
+                f"Forward-return eligibility mask is empty for {decision_date.isoformat()}"
+            )
+        unknown_asset_ids = eligible_asset_ids.difference(asset_keys)
+        if unknown_asset_ids:
+            raise ForwardReturnCalculationError(
+                "Forward-return eligibility mask contains an unknown asset identity"
+            )
+        for asset_id in sorted(
+            eligible_asset_ids, key=lambda item: (asset_keys[item], str(item))
+        ):
             start = open_by_key.get((asset_id, start_date))
             end = open_by_key.get((asset_id, end_date))
             if start is None or end is None:
+                if allow_missing_eligible_opens:
+                    continue
                 raise ForwardReturnCalculationError(
-                    f"Missing adjusted open for {asset_keys[asset_id]} target interval"
+                    f"Missing adjusted open for {asset_keys[asset_id]} target interval "
+                    f"{start_date.isoformat()}..{end_date.isoformat()}"
                 )
             value = (end.open_adj / start.open_adj - 1).quantize(
                 RETURN_QUANTUM, rounding=ROUND_HALF_EVEN
@@ -107,6 +129,10 @@ def calculate_forward_returns(
                     value,
                 )
             )
+    if not points:
+        raise ForwardReturnCalculationError(
+            "Forward-return target has no complete eligible-asset observations"
+        )
     points.sort(key=lambda item: (item.asset_key, item.decision_date, str(item.asset_id)))
     decision_dates = [item.decision_date for item in points]
     return ForwardReturnCalculation(target, min(decision_dates), max(decision_dates), tuple(points))

@@ -1,0 +1,30 @@
+{
+  "catalog_type": "v022_release",
+  "catalog_version": "0.22.8",
+  "contract_version": "v0.22.0",
+  "expected_counts": {
+    "aggregation_families": 4,
+    "defenses": 2,
+    "defense_timing_policies": 2,
+    "defense_allocation_policies": 1,
+    "payload_contracts": 10,
+    "physical_encodings": 1,
+    "processing_features": 82,
+    "processing_nodes": 80,
+    "raw_inputs": 9,
+    "strategies": 2,
+    "strategy_parameter_presets": 5
+  },
+  "files": [
+    {"component_group": "payload", "path": "payload_contracts/runtime_outputs.v0.22.2.json"},
+    {"component_group": "raw_inputs", "path": "raw_inputs/market_inputs.v0.22.0.json"},
+    {"component_group": "processing", "path": "processing/legacy_parity.v0.22.2.json"},
+    {"component_group": "aggregation", "path": "aggregation/deterministic.v0.22.1.json"},
+    {"component_group": "strategy", "path": "strategies/cross_section.v0.22.3.json"},
+    {"component_group": "defense", "path": "defense/parity.v0.22.2.json"}
+  ],
+  "processing_stage_count": 3,
+  "publisher_actor": "local_researcher",
+  "release_key": "bird_v022_catalog",
+  "reviewer_actor": "local_researcher"
+}

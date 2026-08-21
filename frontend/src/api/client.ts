@@ -2,11 +2,15 @@ import type { components } from "./schema.generated";
 
 export type HealthResponse = components["schemas"]["HealthResponse"];
 export type CapabilitiesResponse = components["schemas"]["CapabilitiesResponse"];
+export type SessionContextResponse = components["schemas"]["SessionContextResponse"];
+export type V022ReleaseControlResponse = components["schemas"]["V022ReleaseControlResponse"];
 export type ArtifactListResponse = components["schemas"]["ArtifactListResponse"];
 export type ArtifactDetailResponse = components["schemas"]["ArtifactDetailResponse"];
 export type LineageManifestResponse = components["schemas"]["LineageManifestResponse"];
 export type AssetCatalogResponse = components["schemas"]["AssetCatalogResponse"];
 export type AssetSeriesResponse = components["schemas"]["AssetSeriesResponse"];
+export type AssetDataExportPreviewResponse = components["schemas"]["AssetDataExportPreviewResponse"];
+export type AssetDataExportJobResponse = components["schemas"]["AssetDataExportJobResponse"];
 export type WorkspaceOptionsResponse = components["schemas"]["WorkspaceOptionsResponse"];
 export type WorkspaceCompilePreviewResponse = components["schemas"]["WorkspaceCompilePreviewResponse"];
 export type WorkspaceDraftResponse = components["schemas"]["WorkspaceDraftResponse"];
@@ -14,6 +18,18 @@ export type ReleaseGateResponse = components["schemas"]["ReleaseGateResponse"];
 export type WorkspaceSuiteSubmitResponse = components["schemas"]["WorkspaceSuiteSubmitResponse"];
 export type WorkspaceSuiteStatusResponse = components["schemas"]["WorkspaceSuiteStatusResponse"];
 export type WorkspaceSuiteCancelResponse = components["schemas"]["WorkspaceSuiteCancelResponse"];
+export type GraphWorkspacePreviewResponse = components["schemas"]["GraphWorkspacePreviewResponse"];
+export type GraphDraftDerivedViewResponse = components["schemas"]["GraphDraftDerivedViewResponse"];
+export type GraphDraftSnapshotResponse = components["schemas"]["GraphDraftSnapshotResponse"];
+export type GraphChangePreviewResponse = components["schemas"]["GraphChangePreviewResponse"];
+export type GraphDraftCompileResponse = components["schemas"]["GraphDraftCompileResponse"];
+export type GraphSuiteSubmitResponse = components["schemas"]["GraphSuiteSubmitResponse"];
+export type GraphSuiteLaunchBatchResponse = components["schemas"]["GraphSuiteLaunchBatchResponse"];
+export type GraphSuiteStatusResponse = components["schemas"]["GraphSuiteStatusResponse"];
+export type GraphSuiteListResponse = components["schemas"]["GraphSuiteListResponse"];
+export type GraphSuiteResultsResponse = components["schemas"]["GraphSuiteResultsResponse"];
+export type GraphSuiteRuntimeReadinessResponse = components["schemas"]["GraphSuiteRuntimeReadinessResponse"];
+export type GraphStageFamilyPageResponse = components["schemas"]["GraphStageFamilyPageResponse"];
 export type PromotionQualificationResponse = components["schemas"]["PromotionQualificationResponse"];
 export type ProductPromotionResponse = components["schemas"]["ProductPromotionResponse"];
 export type ProductLifecycleChangeResponse = components["schemas"]["ProductLifecycleChangeResponse"];
@@ -35,11 +51,23 @@ export type ExperimentResultResponse = components["schemas"]["ExperimentResultRe
 export type ProductRankingResponse = components["schemas"]["ProductRankingResponse"];
 export type ProductCompareResponse = components["schemas"]["ProductCompareResponse"];
 export type DecisionExplorerResponse = components["schemas"]["DecisionExplorerResponse"];
+export type V022ExperimentIdentityCatalogResponse = components["schemas"]["V022ExperimentIdentityCatalogResponse"];
+export type V022ExperimentIdentityDetailResponse = components["schemas"]["V022ExperimentIdentityDetailResponse"];
+export type V022ExperimentLeaderboardResponse = components["schemas"]["V022ExperimentLeaderboardResponse"];
+export type V022ExperimentSeriesResponse = components["schemas"]["V022ExperimentSeriesResponse"];
+export type V022ProductCandidateResponse = components["schemas"]["V022ProductCandidateResponse"];
+export type V022ProductPromotionResponse = components["schemas"]["V022ProductPromotionResponse"];
+export type V022ProductEnrollmentResponse = components["schemas"]["V022ProductEnrollmentResponse"];
+export type V022ProductIdentityCatalogResponse = components["schemas"]["V022ProductIdentityCatalogResponse"];
+export type V022ProductIdentityDetailResponse = components["schemas"]["V022ProductIdentityDetailResponse"];
+export type V022ProductLifecycleResponse = components["schemas"]["V022ProductLifecycleResponse"];
 
 export class ApiClientError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    readonly code?: string,
+    readonly details?: Record<string, unknown>,
   ) {
     super(message);
   }
@@ -48,14 +76,17 @@ export class ApiClientError extends Error {
 async function getJson<T>(path: string): Promise<T> {
   const response = await fetch(path, { headers: { Accept: "application/json" } });
   if (!response.ok) {
-    let message = `${response.status} ${response.statusText}`;
-    try {
-      const payload = (await response.json()) as { message?: string };
-      if (payload.message) message = payload.message;
-    } catch {
-      // A non-JSON proxy error still retains the status-based message.
-    }
-    throw new ApiClientError(message, response.status);
+    const payload = await response.json().catch(() => ({})) as {
+      message?: string;
+      code?: string;
+      details?: Record<string, unknown>;
+    };
+    throw new ApiClientError(
+      payload.message ?? `${response.status} ${response.statusText}`,
+      response.status,
+      payload.code,
+      payload.details,
+    );
   }
   return (await response.json()) as T;
 }
@@ -67,8 +98,8 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
   if (!response.ok) {
-    const payload = await response.json().catch(() => ({})) as { message?: string };
-    throw new ApiClientError(payload.message ?? `${response.status} ${response.statusText}`, response.status);
+    const payload = await response.json().catch(() => ({})) as { message?: string; code?: string; details?: Record<string, unknown> };
+    throw new ApiClientError(payload.message ?? `${response.status} ${response.statusText}`, response.status, payload.code, payload.details);
   }
   return await response.json() as T;
 }
@@ -80,10 +111,24 @@ async function putJson<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
   if (!response.ok) {
-    const payload = await response.json().catch(() => ({})) as { message?: string };
-    throw new ApiClientError(payload.message ?? `${response.status} ${response.statusText}`, response.status);
+    const payload = await response.json().catch(() => ({})) as { message?: string; code?: string; details?: Record<string, unknown> };
+    throw new ApiClientError(payload.message ?? `${response.status} ${response.statusText}`, response.status, payload.code, payload.details);
   }
   return await response.json() as T;
+}
+
+let sessionPromise: Promise<SessionContextResponse> | undefined;
+
+function authenticatedSession(): Promise<SessionContextResponse> {
+  sessionPromise ??= getJson<SessionContextResponse>("/api/v2/session").catch((error: unknown) => {
+    sessionPromise = undefined;
+    throw error;
+  });
+  return sessionPromise;
+}
+
+async function authenticatedActorKey(): Promise<string> {
+  return (await authenticatedSession()).actor_key;
 }
 
 interface AssetCatalogFilters {
@@ -106,6 +151,8 @@ function assetCatalogPage(filters: AssetCatalogFilters = {}) {
 
 export const api = {
   health: () => getJson<HealthResponse>("/api/v2/health"),
+  session: authenticatedSession,
+  releaseControl: () => getJson<V022ReleaseControlResponse>("/api/v2/release-control"),
   capabilities: () => getJson<CapabilitiesResponse>("/api/v2/capabilities"),
   assets: assetCatalogPage,
   allAssets: async (filters: Omit<AssetCatalogFilters, "limit" | "offset"> = {}) => {
@@ -165,12 +212,153 @@ export const api = {
     model_target_keys: input.modelTargetKeys,
     strategy_preset_keys: input.strategyPresetKeys,
   }),
-  workspaceDraft: (researcherId = "local", draftKey = "default") =>
-    getJson<WorkspaceDraftResponse>(
-      `/api/v2/workspace/drafts/${encodeURIComponent(researcherId)}/${encodeURIComponent(draftKey)}`,
+  graphWorkspacePreview: (input: {
+    frequency: "weekly" | "monthly";
+    explicitFeatures: Array<{ featureKey: string; stageNo: 0 | 1 | 2 | 3 }>;
+    aggregationFamilyKeys: string[];
+    aggregationParameterPresetKeys?: Record<string, string[]>;
+    strategyKeys?: string[];
+    strategyParameterPresetKeys?: Record<string, string[]>;
+    defenseKeys?: string[];
+  }) => postJson<GraphWorkspacePreviewResponse>("/api/v2/workspace/graph-preview", {
+    frequency: input.frequency,
+    explicit_features: input.explicitFeatures.map((item) => ({
+      feature_key: item.featureKey,
+      stage_no: item.stageNo,
+    })),
+    aggregation_family_keys: input.aggregationFamilyKeys,
+    aggregation_parameter_preset_keys: input.aggregationParameterPresetKeys,
+    strategy_keys: input.strategyKeys,
+    strategy_parameter_preset_keys: input.strategyParameterPresetKeys,
+    defense_keys: input.defenseKeys,
+  }),
+  createGraphDraft: async (input: {
+    idempotencyKey: string;
+    frequency?: "weekly" | "monthly";
+  }) => postJson<GraphDraftSnapshotResponse>("/api/v2/workspace/graph-drafts", {
+    researcher_key: await authenticatedActorKey(),
+    draft_key: "browser_default_v1",
+    name: "v0.22 Graph Workspace",
+    idempotency_key: input.idempotencyKey,
+    frequency: input.frequency ?? "weekly",
+    asset_context_key: null,
+    data_input_keys: [],
+  }),
+  graphDraft: (graphDraftId: string) =>
+    getJson<GraphDraftSnapshotResponse>(
+      `/api/v2/workspace/graph-drafts/${encodeURIComponent(graphDraftId)}`,
     ),
+  graphDraftByKey: (draftKey: string) =>
+    getJson<GraphDraftSnapshotResponse>(
+      `/api/v2/workspace/graph-drafts/by-key/${encodeURIComponent(draftKey)}`,
+    ),
+  currentGraphDraftCompile: (graphDraftId: string) =>
+    getJson<GraphDraftCompileResponse>(
+      `/api/v2/workspace/graph-drafts/${encodeURIComponent(graphDraftId)}/current-compile`,
+    ),
+  resetGraphDraft: async (graphDraftId: string, expectedRevision: number) =>
+    postJson<GraphDraftSnapshotResponse>(
+      `/api/v2/workspace/graph-drafts/${encodeURIComponent(graphDraftId)}/reset`,
+      {
+        expected_revision: expectedRevision,
+        actor_key: await authenticatedActorKey(),
+        idempotency_key: crypto.randomUUID(),
+      },
+    ),
+  cloneGraphDraftRevision: async (graphDraftId: string, input: {
+    sourceRevision: number;
+    draftKey: string;
+    name: string;
+  }) => postJson<GraphDraftSnapshotResponse>(
+    `/api/v2/workspace/graph-drafts/${encodeURIComponent(graphDraftId)}/clones`,
+    {
+      source_revision: input.sourceRevision,
+      researcher_key: await authenticatedActorKey(),
+      draft_key: input.draftKey,
+      name: input.name,
+      idempotency_key: crypto.randomUUID(),
+    },
+  ),
+  graphStageFamilies: (graphDraftId: string, input: {
+    stageNo: 0 | 1 | 2 | 3;
+    search?: string;
+    selectionFilter?: "all" | "selected" | "locked";
+    availabilityFilter?: "all" | "ready" | "requires_ancestors" | "hard_incompatible";
+    cursor?: string;
+    limit?: number;
+  }) => {
+    const limit = input.limit ?? 12;
+    if (!Number.isInteger(limit) || limit < 1 || limit > 50) {
+      throw new RangeError("Graph Stage Family limit must be an integer between 1 and 50");
+    }
+    const search = new URLSearchParams();
+    if (input.search) search.set("search", input.search);
+    if (input.selectionFilter) search.set("selection_filter", input.selectionFilter);
+    if (input.availabilityFilter) search.set("availability_filter", input.availabilityFilter);
+    if (input.cursor) search.set("cursor", input.cursor);
+    search.set("limit", String(limit));
+    return getJson<GraphStageFamilyPageResponse>(
+      `/api/v2/workspace/graph-drafts/${encodeURIComponent(graphDraftId)}`
+      + `/stages/${input.stageNo}/families?${search.toString()}`,
+    );
+  },
+  applyGraphDraftEvent: async (graphDraftId: string, input: {
+    expectedRevision: number;
+    eventType: string;
+    event: Record<string, unknown>;
+  }) => postJson<GraphDraftSnapshotResponse>(
+    `/api/v2/workspace/graph-drafts/${encodeURIComponent(graphDraftId)}/events`,
+    {
+      expected_revision: input.expectedRevision,
+      actor_key: await authenticatedActorKey(),
+      idempotency_key: crypto.randomUUID(),
+      event_type: input.eventType,
+      event: input.event,
+    },
+  ),
+  previewGraphDraftChange: async (graphDraftId: string, input: {
+    expectedRevision: number;
+    featureKey: string;
+    stageNo: 0 | 1 | 2 | 3;
+  }) => postJson<GraphChangePreviewResponse>(
+    `/api/v2/workspace/graph-drafts/${encodeURIComponent(graphDraftId)}/change-previews`,
+    {
+      expected_revision: input.expectedRevision,
+      actor_key: await authenticatedActorKey(),
+      feature_key: input.featureKey,
+      stage_no: input.stageNo,
+    },
+  ),
+  previewGraphCatalogRebase: async (graphDraftId: string, expectedRevision: number) =>
+    postJson<GraphChangePreviewResponse>(
+      `/api/v2/workspace/graph-drafts/${encodeURIComponent(graphDraftId)}/rebase-previews`,
+      { expected_revision: expectedRevision, actor_key: await authenticatedActorKey() },
+    ),
+  confirmGraphDraftChange: async (graphDraftId: string, impactToken: string, expectedRevision: number) =>
+    postJson<GraphDraftSnapshotResponse>(
+      `/api/v2/workspace/graph-drafts/${encodeURIComponent(graphDraftId)}/change-previews/${encodeURIComponent(impactToken)}/confirm`,
+      {
+        expected_revision: expectedRevision,
+        actor_key: await authenticatedActorKey(),
+        idempotency_key: crypto.randomUUID(),
+      },
+    ),
+  compileGraphDraft: async (graphDraftId: string, expectedRevision: number) =>
+    postJson<GraphDraftCompileResponse>(
+      `/api/v2/workspace/graph-drafts/${encodeURIComponent(graphDraftId)}/compile`,
+      {
+        expected_revision: expectedRevision,
+        actor_key: await authenticatedActorKey(),
+        idempotency_key: crypto.randomUUID(),
+      },
+    ),
+  workspaceDraft: async (draftKey = "default") => {
+    const researcherId = await authenticatedActorKey();
+    return getJson<WorkspaceDraftResponse>(
+      `/api/v2/workspace/drafts/${encodeURIComponent(researcherId)}/${encodeURIComponent(draftKey)}`,
+    );
+  },
   saveWorkspaceDraft: (input: {
-    researcherId?: string;
     draftKey?: string;
     name: string;
     expectedRevision: number | null;
@@ -184,8 +372,7 @@ export const api = {
       modelTargetKeys: string[];
       strategyPresetKeys: string[];
     };
-  }) => {
-    const researcherId = input.researcherId ?? "local";
+  }) => authenticatedActorKey().then((researcherId) => {
     const draftKey = input.draftKey ?? "default";
     return putJson<WorkspaceDraftResponse>(
       `/api/v2/workspace/drafts/${encodeURIComponent(researcherId)}/${encodeURIComponent(draftKey)}`,
@@ -207,21 +394,115 @@ export const api = {
         },
       },
     );
-  },
+  }),
   releaseGates: () => getJson<ReleaseGateResponse>("/api/v2/release-gates"),
-  submitWorkspaceSuite: (
+  submitWorkspaceSuite: async (
     expectedRevision: number,
     suiteMode: "formal" | "exploratory" = "exploratory",
   ) =>
     postJson<WorkspaceSuiteSubmitResponse>("/api/v2/workspace/suites", {
       idempotency_key: crypto.randomUUID(),
-      researcher_id: "local",
+      researcher_id: await authenticatedActorKey(),
       draft_key: "default",
       expected_revision: expectedRevision,
       suite_mode: suiteMode,
     }),
   workspaceSuiteStatus: (suiteId: string) =>
     getJson<WorkspaceSuiteStatusResponse>(`/api/v2/workspace/suites/${suiteId}`),
+  submitGraphSuite: async (
+    compiledResearchGraphId: string,
+    idempotencyKey: string,
+    graphDraftId: string,
+    graphDraftRevision: number,
+  ) => postJson<GraphSuiteSubmitResponse>("/api/v2/workspace/graph-suites", {
+    actor_key: await authenticatedActorKey(),
+    idempotency_key: idempotencyKey,
+    compiled_research_graph_id: compiledResearchGraphId,
+    graph_draft_id: graphDraftId,
+    graph_draft_revision: graphDraftRevision,
+    suite_mode: "exploratory",
+  }),
+  submitGraphSuiteLaunchBatch: async (input: {
+    compiledResearchGraphId: string;
+    idempotencyKey: string;
+    graphDraftId: string;
+    graphDraftRevision: number;
+    frequencies: Array<"weekly" | "monthly">;
+  }) => postJson<GraphSuiteLaunchBatchResponse>(
+    "/api/v2/workspace/graph-suite-launch-batches",
+    {
+      actor_key: await authenticatedActorKey(),
+      idempotency_key: input.idempotencyKey,
+      source_compiled_research_graph_id: input.compiledResearchGraphId,
+      source_graph_draft_id: input.graphDraftId,
+      source_graph_draft_revision: input.graphDraftRevision,
+      frequencies: input.frequencies,
+      suite_mode: "exploratory",
+    },
+  ),
+  graphSuiteLaunchBatchStatus: (batchId: string) =>
+    getJson<GraphSuiteLaunchBatchResponse>(
+      `/api/v2/workspace/graph-suite-launch-batches/${encodeURIComponent(batchId)}`,
+    ),
+  graphSuiteStatus: (suiteId: string) =>
+    getJson<GraphSuiteStatusResponse>(`/api/v2/workspace/graph-suites/${suiteId}`),
+  graphSuiteRuntimeReadiness: () =>
+    getJson<GraphSuiteRuntimeReadinessResponse>(
+      "/api/v2/workspace/graph-suite-runtime/readiness",
+    ),
+  graphSuites: (limit = 50, offset = 0) =>
+    getJson<GraphSuiteListResponse>(
+      `/api/v2/workspace/graph-suites?${new URLSearchParams({
+        limit: String(limit), offset: String(offset),
+      })}`,
+    ),
+  graphSuiteResults: (suiteId: string) =>
+    getJson<GraphSuiteResultsResponse>(
+      `/api/v2/workspace/graph-suites/${encodeURIComponent(suiteId)}/results`,
+    ),
+  previewAssetDataExport: async (input: {
+    graphDraftId: string;
+    graphDraftRevision: number;
+    exportFormat: "parquet" | "csv";
+    startDate?: string;
+    endDate?: string;
+  }) => postJson<AssetDataExportPreviewResponse>(
+    "/api/v2/v022/asset-data-exports/preview",
+    {
+      researcher_key: await authenticatedActorKey(),
+      graph_draft_id: input.graphDraftId,
+      graph_draft_revision: input.graphDraftRevision,
+      export_format: input.exportFormat,
+      start_date: input.startDate ?? null,
+      end_date: input.endDate ?? null,
+    },
+  ),
+  createAssetDataExport: async (input: {
+    graphDraftId: string;
+    graphDraftRevision: number;
+    exportFormat: "parquet" | "csv";
+    startDate?: string;
+    endDate?: string;
+  }) => postJson<AssetDataExportJobResponse>(
+    "/api/v2/v022/asset-data-exports",
+    {
+      researcher_key: await authenticatedActorKey(),
+      graph_draft_id: input.graphDraftId,
+      graph_draft_revision: input.graphDraftRevision,
+      export_format: input.exportFormat,
+      start_date: input.startDate ?? null,
+      end_date: input.endDate ?? null,
+    },
+  ),
+  assetDataExportStatus: (exportJobId: string) =>
+    getJson<AssetDataExportJobResponse>(
+      `/api/v2/v022/asset-data-exports/${encodeURIComponent(exportJobId)}`,
+    ),
+  cancelAssetDataExport: (exportJobId: string) =>
+    postJson<AssetDataExportJobResponse>(
+      `/api/v2/v022/asset-data-exports/${encodeURIComponent(exportJobId)}/cancel`,
+      {},
+    ),
   exportSelectedSignals: (input: {
     frequency: "weekly" | "monthly";
     assetSecurityIds: string[];
@@ -244,11 +525,120 @@ export const api = {
       idempotency_key: crypto.randomUUID(),
     }),
   products: () => getJson<ProductCatalogResponse>("/api/v2/products"),
+  v022Experiments: () =>
+    getJson<V022ExperimentIdentityCatalogResponse>("/api/v2/v022/experiments"),
+  v022Experiment: (evidenceId: string) =>
+    getJson<V022ExperimentIdentityDetailResponse>(`/api/v2/v022/experiments/${evidenceId}`),
+  v022ExperimentLeaderboard: (input: {
+    frequency: "weekly" | "monthly";
+    sort: "sharpe_ratio" | "cagr" | "cagr_spread" | "maximum_drawdown";
+    limit?: number;
+    offset?: number;
+  }) => getJson<V022ExperimentLeaderboardResponse>(
+    `/api/v2/v022/experiments/leaderboard?${new URLSearchParams({
+      frequency: input.frequency,
+      sort: input.sort,
+      limit: String(input.limit ?? 200),
+      offset: String(input.offset ?? 0),
+    })}`,
+  ),
+  v022ExperimentSeries: (evidenceId: string, maxPoints = 600) =>
+    getJson<V022ExperimentSeriesResponse>(
+      `/api/v2/v022/experiments/${encodeURIComponent(evidenceId)}/series?${new URLSearchParams({
+        max_points: String(maxPoints),
+      })}`,
+    ),
+  promoteAndEnrollV022Product: async (evidenceId: string, input: {
+    idempotencyKey: string;
+    productKey: string;
+    name: string;
+    description?: string;
+    versionNumber?: number;
+  }) => postJson<V022ProductPromotionResponse>(
+    `/api/v2/v022/experiment-results/${encodeURIComponent(evidenceId)}/promote-and-enroll`,
+    {
+      idempotency_key: input.idempotencyKey,
+      researcher_id: await authenticatedActorKey(),
+      product_key: input.productKey,
+      name: input.name,
+      description: input.description ?? "",
+      version_number: input.versionNumber ?? 1,
+    },
+  ),
+  promoteV022ProductCandidate: async (evidenceId: string, input: {
+    idempotencyKey: string;
+    productKey: string;
+    name: string;
+    description?: string;
+    versionNumber?: number;
+  }) => postJson<V022ProductCandidateResponse>(
+    `/api/v2/v022/experiments/${encodeURIComponent(evidenceId)}/promote`,
+    {
+      idempotency_key: input.idempotencyKey,
+      researcher_id: await authenticatedActorKey(),
+      product_key: input.productKey,
+      name: input.name,
+      description: input.description ?? "",
+      version_number: input.versionNumber ?? 1,
+    },
+  ),
+  enrollV022ProductCandidate: async (executionVersionId: string, input: {
+    idempotencyKey: string;
+    qualificationVersionId: string;
+    monitoringPolicyVersionId: string;
+    scheduleKey: string;
+    scheduleVersionNumber?: number;
+    frequency: "weekly" | "monthly";
+    sessions: Array<{ sessionDate: string; decisionCutoffAt: string }>;
+    oosAnchorCutoffAt: string;
+    activationEffectiveAt: string;
+  }) => postJson<V022ProductEnrollmentResponse>(
+    `/api/v2/v022/product-candidates/${encodeURIComponent(executionVersionId)}/enroll`,
+    {
+      idempotency_key: input.idempotencyKey,
+      researcher_id: await authenticatedActorKey(),
+      qualification_version_id: input.qualificationVersionId,
+      monitoring_policy_version_id: input.monitoringPolicyVersionId,
+      schedule_key: input.scheduleKey,
+      schedule_version_number: input.scheduleVersionNumber ?? 1,
+      frequency: input.frequency,
+      sessions: input.sessions.map((item) => ({
+        session_date: item.sessionDate,
+        decision_cutoff_at: item.decisionCutoffAt,
+      })),
+      oos_anchor_cutoff_at: input.oosAnchorCutoffAt,
+      activation_effective_at: input.activationEffectiveAt,
+    },
+  ),
+  v022Products: () =>
+    getJson<V022ProductIdentityCatalogResponse>("/api/v2/v022/products"),
+  v022Product: (enrollmentId: string) =>
+    getJson<V022ProductIdentityDetailResponse>(`/api/v2/v022/products/${enrollmentId}`),
+  changeV022ProductLifecycle: async (enrollmentId: string, input: {
+    idempotencyKey: string;
+    expectedSequence: number;
+    target: "active" | "suspended" | "retired" | "invalidated";
+    reasonCode: string;
+    reason: string;
+    effectiveAt: string;
+  }) => postJson<V022ProductLifecycleResponse>(
+    `/api/v2/v022/products/${encodeURIComponent(enrollmentId)}/lifecycle`,
+    {
+      idempotency_key: input.idempotencyKey,
+      researcher_id: await authenticatedActorKey(),
+      expected_sequence: input.expectedSequence,
+      target: input.target,
+      reason_code: input.reasonCode,
+      reason: input.reason,
+      requested_at: new Date().toISOString(),
+      effective_at: input.effectiveAt,
+    },
+  ),
   productDetail: (enrollmentId: string) =>
     getJson<ProductDetailResponse>(`/api/v2/products/${enrollmentId}`),
   productRecommendation: (enrollmentId: string) =>
     getJson<ProductRecommendationResponse>(`/api/v2/products/${enrollmentId}/recommendation`),
-  changeProductLifecycle: (enrollmentId: string, input: {
+  changeProductLifecycle: async (enrollmentId: string, input: {
     target: "active" | "suspended" | "retired" | "invalidated";
     expectedRevision: number;
     reason: string;
@@ -261,12 +651,12 @@ export const api = {
       expected_revision: input.expectedRevision,
       reason_code: `manual_${input.target}`,
       reason: input.reason,
-      researcher_id: "local",
+      researcher_id: await authenticatedActorKey(),
       requested_at: new Date().toISOString(),
       effective_at: input.effectiveAt,
     },
   ),
-  changeProductAlert: (
+  changeProductAlert: async (
     alertId: string,
     target: "acknowledged" | "resolved" | "superseded",
   ) => postJson<ProductAlertChangeResponse>(
@@ -274,12 +664,12 @@ export const api = {
     {
       idempotency_key: crypto.randomUUID(),
       target,
-      researcher_id: "local",
+      researcher_id: await authenticatedActorKey(),
       note: null,
       occurred_at: new Date().toISOString(),
     },
   ),
-  recordProductReview: (
+  recordProductReview: async (
     enrollmentId: string,
     input: { decision: "continue" | "suspend" | "retire" | "replace"; reason: string },
   ) => postJson<ProductReviewResponse>(
@@ -287,7 +677,7 @@ export const api = {
     {
       idempotency_key: crypto.randomUUID(),
       decision: input.decision,
-      researcher_id: "local",
+      researcher_id: await authenticatedActorKey(),
       reason: input.reason,
       evidence: {},
       reviewed_at: new Date().toISOString(),
@@ -333,7 +723,7 @@ export const api = {
     getJson<PromotionQualificationResponse>(
       `/api/v2/experiments/results/${artifactId}/qualification`,
     ),
-  promoteResult: (artifactId: string, input: {
+  promoteResult: async (artifactId: string, input: {
     name: string;
     selectionReason: string;
     note?: string;
@@ -342,7 +732,7 @@ export const api = {
     {
       idempotency_key: crypto.randomUUID(),
       name: input.name,
-      researcher_id: "local",
+      researcher_id: await authenticatedActorKey(),
       selection_reason: input.selectionReason,
       note: input.note || null,
     },

@@ -446,6 +446,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/release-control": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Release Control Status */
+        get: operations["release_control_status_api_v2_release_control_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/release-gates": {
         parameters: {
             query?: never;
@@ -455,6 +472,23 @@ export interface paths {
         };
         /** Release Gates */
         get: operations["release_gates_api_v2_release_gates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Session Context */
+        get: operations["session_context_api_v2_session_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -582,6 +616,261 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/v022/asset-data-exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Asset Data Export */
+        post: operations["create_asset_data_export_api_v2_v022_asset_data_exports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/v022/asset-data-exports/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Asset Data Export */
+        post: operations["preview_asset_data_export_api_v2_v022_asset_data_exports_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/v022/asset-data-exports/{export_job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Asset Data Export Status */
+        get: operations["asset_data_export_status_api_v2_v022_asset_data_exports__export_job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/v022/asset-data-exports/{export_job_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Asset Data Export */
+        post: operations["cancel_asset_data_export_api_v2_v022_asset_data_exports__export_job_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/v022/asset-data-exports/{export_job_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Asset Data Export Download */
+        get: operations["asset_data_export_download_api_v2_v022_asset_data_exports__export_job_id__download_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/v022/experiment-results/{evidence_id}/promote-and-enroll": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Promote And Enroll V022 Product */
+        post: operations["promote_and_enroll_v022_product_api_v2_v022_experiment_results__evidence_id__promote_and_enroll_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/v022/experiments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** V022 Experiment Identities */
+        get: operations["v022_experiment_identities_api_v2_v022_experiments_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/v022/experiments/leaderboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** V022 Experiment Leaderboard */
+        get: operations["v022_experiment_leaderboard_api_v2_v022_experiments_leaderboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/v022/experiments/{evidence_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** V022 Experiment Identity */
+        get: operations["v022_experiment_identity_api_v2_v022_experiments__evidence_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/v022/experiments/{evidence_id}/promote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Promote V022 Product Candidate */
+        post: operations["promote_v022_product_candidate_api_v2_v022_experiments__evidence_id__promote_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/v022/experiments/{evidence_id}/series": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** V022 Experiment Series */
+        get: operations["v022_experiment_series_api_v2_v022_experiments__evidence_id__series_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/v022/product-candidates/{execution_version_id}/enroll": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Enroll V022 Product Candidate */
+        post: operations["enroll_v022_product_candidate_api_v2_v022_product_candidates__execution_version_id__enroll_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/v022/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** V022 Product Identities */
+        get: operations["v022_product_identities_api_v2_v022_products_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/v022/products/{enrollment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** V022 Product Identity */
+        get: operations["v022_product_identity_api_v2_v022_products__enrollment_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/v022/products/{enrollment_id}/lifecycle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change V022 Product Lifecycle */
+        post: operations["change_v022_product_lifecycle_api_v2_v022_products__enrollment_id__lifecycle_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/workspace/compile-preview": {
         parameters: {
             query?: never;
@@ -610,6 +899,330 @@ export interface paths {
         get: operations["workspace_draft_api_v2_workspace_drafts__researcher_id___draft_key__get"];
         /** Save Workspace Draft */
         put: operations["save_workspace_draft_api_v2_workspace_drafts__researcher_id___draft_key__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Graph Draft */
+        post: operations["create_graph_draft_api_v2_workspace_graph_drafts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-drafts/by-key/{draft_key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Graph Draft By Key */
+        get: operations["get_graph_draft_by_key_api_v2_workspace_graph_drafts_by_key__draft_key__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-drafts/{graph_draft_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Graph Draft */
+        get: operations["get_graph_draft_api_v2_workspace_graph_drafts__graph_draft_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-drafts/{graph_draft_id}/change-previews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Graph Draft Change */
+        post: operations["preview_graph_draft_change_api_v2_workspace_graph_drafts__graph_draft_id__change_previews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-drafts/{graph_draft_id}/change-previews/{impact_token}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm Graph Draft Change */
+        post: operations["confirm_graph_draft_change_api_v2_workspace_graph_drafts__graph_draft_id__change_previews__impact_token__confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-drafts/{graph_draft_id}/clones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Clone Graph Draft Revision */
+        post: operations["clone_graph_draft_revision_api_v2_workspace_graph_drafts__graph_draft_id__clones_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-drafts/{graph_draft_id}/compile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Compile Graph Draft */
+        post: operations["compile_graph_draft_api_v2_workspace_graph_drafts__graph_draft_id__compile_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-drafts/{graph_draft_id}/current-compile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Current Graph Draft Compile */
+        get: operations["get_current_graph_draft_compile_api_v2_workspace_graph_drafts__graph_draft_id__current_compile_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-drafts/{graph_draft_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Graph Draft Event */
+        post: operations["apply_graph_draft_event_api_v2_workspace_graph_drafts__graph_draft_id__events_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-drafts/{graph_draft_id}/rebase-previews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Graph Catalog Rebase */
+        post: operations["preview_graph_catalog_rebase_api_v2_workspace_graph_drafts__graph_draft_id__rebase_previews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-drafts/{graph_draft_id}/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reset Graph Draft */
+        post: operations["reset_graph_draft_api_v2_workspace_graph_drafts__graph_draft_id__reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-drafts/{graph_draft_id}/stages/{stage_no}/families": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Graph Draft Stage Families */
+        get: operations["graph_draft_stage_families_api_v2_workspace_graph_drafts__graph_draft_id__stages__stage_no__families_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Graph Workspace Preview */
+        post: operations["graph_workspace_preview_api_v2_workspace_graph_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-suite-launch-batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit Graph Suite Launch Batch */
+        post: operations["submit_graph_suite_launch_batch_api_v2_workspace_graph_suite_launch_batches_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-suite-launch-batches/{suite_launch_batch_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Graph Suite Launch Batch Status */
+        get: operations["graph_suite_launch_batch_status_api_v2_workspace_graph_suite_launch_batches__suite_launch_batch_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-suite-runtime/readiness": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Graph Suite Runtime Readiness */
+        get: operations["graph_suite_runtime_readiness_api_v2_workspace_graph_suite_runtime_readiness_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-suites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Graph Suite List */
+        get: operations["graph_suite_list_api_v2_workspace_graph_suites_get"];
+        put?: never;
+        /** Submit Graph Suite */
+        post: operations["submit_graph_suite_api_v2_workspace_graph_suites_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-suites/{research_suite_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Graph Suite Status */
+        get: operations["graph_suite_status_api_v2_workspace_graph_suites__research_suite_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspace/graph-suites/{research_suite_id}/results": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Graph Suite Results */
+        get: operations["graph_suite_results_api_v2_workspace_graph_suites__research_suite_id__results_get"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -806,6 +1419,17 @@ export interface components {
             target_maturity: string;
             /** Tradability */
             tradability: string;
+            /** V022 Candidate Dataset Key */
+            v022_candidate_dataset_key?: string | null;
+            /** V022 Candidate Dataset Version */
+            v022_candidate_dataset_version?: number | null;
+            /** V022 Candidate Reason Codes */
+            v022_candidate_reason_codes?: string[];
+            /**
+             * V022 Candidate Selectable
+             * @default false
+             */
+            v022_candidate_selectable: boolean;
             /** Venue Mic */
             venue_mic: string | null;
         };
@@ -847,6 +1471,140 @@ export interface components {
             description: string;
             /** Name */
             name: string;
+        };
+        /** AssetDataExportJobResponse */
+        AssetDataExportJobResponse: {
+            /** Byte Size */
+            byte_size: number | null;
+            /** Content Hash */
+            content_hash: string | null;
+            context: components["schemas"]["ApiContext"];
+            /** Download Url */
+            download_url: string | null;
+            /** Error Code */
+            error_code: string | null;
+            /** Error Message */
+            error_message: string | null;
+            /** Estimated Bytes */
+            estimated_bytes: number;
+            /** Expires At */
+            expires_at: string | null;
+            /**
+             * Export Job Id
+             * Format: uuid
+             */
+            export_job_id: string;
+            /** Filename */
+            filename: string | null;
+            /** Local Delivery Path */
+            local_delivery_path: string | null;
+            /** Processed Bytes */
+            processed_bytes: number;
+            /** Processed Rows */
+            processed_rows: number;
+            quality: components["schemas"]["QualitySummary"];
+            /** Request Fingerprint */
+            request_fingerprint: string;
+            /** Stage */
+            stage: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "running" | "completed" | "failed" | "cancelled";
+            /** Status Url */
+            status_url: string;
+            /** Total Rows */
+            total_rows: number;
+            /**
+             * Work Item Id
+             * Format: uuid
+             */
+            work_item_id: string;
+        };
+        /** AssetDataExportPreviewRequest */
+        AssetDataExportPreviewRequest: {
+            /** End Date */
+            end_date?: string | null;
+            /**
+             * Export Format
+             * @default parquet
+             * @enum {string}
+             */
+            export_format: "parquet" | "csv";
+            /** Fields */
+            fields?: string[];
+            /**
+             * Graph Draft Id
+             * Format: uuid
+             */
+            graph_draft_id: string;
+            /** Graph Draft Revision */
+            graph_draft_revision: number;
+            /** Researcher Key */
+            researcher_key: string;
+            /** Start Date */
+            start_date?: string | null;
+        };
+        /** AssetDataExportPreviewResponse */
+        AssetDataExportPreviewResponse: {
+            /** Asset Count */
+            asset_count: number;
+            /**
+             * Asset Registry Release Id
+             * Format: uuid
+             */
+            asset_registry_release_id: string;
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Dataset Gate Assessment Id
+             * Format: uuid
+             */
+            dataset_gate_assessment_id: string;
+            /** Dataset Key */
+            dataset_key: string;
+            /**
+             * Dataset Publication Id
+             * Format: uuid
+             */
+            dataset_publication_id: string;
+            /** Dataset Version Number */
+            dataset_version_number: number;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Estimated Bytes */
+            estimated_bytes: number;
+            /**
+             * Export Format
+             * @enum {string}
+             */
+            export_format: "parquet" | "csv";
+            /** Fields */
+            fields: string[];
+            /**
+             * Graph Draft Id
+             * Format: uuid
+             */
+            graph_draft_id: string;
+            /** Graph Draft Revision */
+            graph_draft_revision: number;
+            /** Price Semantics */
+            price_semantics: string;
+            quality: components["schemas"]["QualitySummary"];
+            /** Request Fingerprint */
+            request_fingerprint: string;
+            /** Row Count */
+            row_count: number;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /** Warning Codes */
+            warning_codes: string[];
         };
         /** AssetDataInputOption */
         AssetDataInputOption: {
@@ -1851,6 +2609,1547 @@ export interface components {
              * Format: uuid
              */
             universe_artifact_id: string;
+        };
+        /** GraphAdmissionCheck */
+        GraphAdmissionCheck: {
+            /** Estimated */
+            estimated: number;
+            /** Limit */
+            limit: number;
+            /** Resource Key */
+            resource_key: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "accepted" | "rejected";
+        };
+        /** GraphAggregationAxisOption */
+        GraphAggregationAxisOption: {
+            /** Description */
+            description: string;
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Selected */
+            selected: boolean;
+            /** Semantics */
+            semantics: {
+                [key: string]: unknown;
+            };
+            /** Version Number */
+            version_number: number;
+        };
+        /** GraphAggregationOption */
+        GraphAggregationOption: {
+            /** Accepted Input Count */
+            accepted_input_count: number;
+            /** Algorithm Identity */
+            algorithm_identity: string;
+            /** Compatibility Policy */
+            compatibility_policy: {
+                [key: string]: unknown;
+            };
+            /** Execution Mode */
+            execution_mode: string;
+            /** Family Key */
+            family_key: string;
+            /** Input Payload Contract Key */
+            input_payload_contract_key: string;
+            /** Input Policy */
+            input_policy: {
+                [key: string]: unknown;
+            };
+            /** Internal Member Count */
+            internal_member_count: number;
+            /** Maximum Inputs */
+            maximum_inputs: number;
+            /** Minimum Inputs */
+            minimum_inputs: number;
+            /** Missing Policy */
+            missing_policy: {
+                [key: string]: unknown;
+            };
+            /** Name */
+            name: string;
+            /** Objective Semantics */
+            objective_semantics: {
+                [key: string]: unknown;
+            };
+            /** Ordering Policy */
+            ordering_policy: string;
+            /** Output Payload Contract Key */
+            output_payload_contract_key: string;
+            /** Output Semantics */
+            output_semantics: {
+                [key: string]: unknown;
+            };
+            /** Parameter Preset Definitions */
+            parameter_preset_definitions: components["schemas"]["GraphAggregationPresetOption"][];
+            /** Parameter Presets */
+            parameter_presets: string[];
+            /** Selected */
+            selected: boolean;
+            /** Selected Parameter Presets */
+            selected_parameter_presets: string[];
+            /** Selected Targets */
+            selected_targets?: string[];
+            /** Selected Training Presets */
+            selected_training_presets?: string[];
+            /** Targets */
+            targets?: components["schemas"]["GraphAggregationAxisOption"][];
+            /** Tie Policy */
+            tie_policy: {
+                [key: string]: unknown;
+            };
+            /** Training Presets */
+            training_presets?: components["schemas"]["GraphAggregationAxisOption"][];
+        };
+        /** GraphAggregationPresetOption */
+        GraphAggregationPresetOption: {
+            /** Description */
+            description: string;
+            /** Name */
+            name: string;
+            /** Preset Key */
+            preset_key: string;
+            /** Reason Codes */
+            reason_codes: string[];
+            /** Selectable */
+            selectable: boolean;
+            /** Selected */
+            selected: boolean;
+            /** Semantics */
+            semantics: {
+                [key: string]: unknown;
+            };
+            /** Version Number */
+            version_number: number;
+        };
+        /** GraphCatalogRebasePreviewRequest */
+        GraphCatalogRebasePreviewRequest: {
+            /** Actor Key */
+            actor_key: string;
+            /** Expected Revision */
+            expected_revision: number;
+        };
+        /** GraphCatalogRelease */
+        GraphCatalogRelease: {
+            /** Catalog Version */
+            catalog_version: string;
+            /** Contract Version */
+            contract_version: string;
+            /** Release Key */
+            release_key: string;
+            /** Source Manifest Hash */
+            source_manifest_hash: string;
+        };
+        /** GraphChangeConfirmRequest */
+        GraphChangeConfirmRequest: {
+            /** Actor Key */
+            actor_key: string;
+            /** Expected Revision */
+            expected_revision: number;
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+        };
+        /** GraphChangePreviewRequest */
+        GraphChangePreviewRequest: {
+            /** Actor Key */
+            actor_key: string;
+            /** Expected Revision */
+            expected_revision: number;
+            /** Feature Key */
+            feature_key: string;
+            /**
+             * Stage No
+             * @enum {integer}
+             */
+            stage_no: 0 | 1 | 2 | 3;
+        };
+        /** GraphChangePreviewResponse */
+        GraphChangePreviewResponse: {
+            /** Base Revision */
+            base_revision: number;
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /**
+             * Graph Draft Id
+             * Format: uuid
+             */
+            graph_draft_id: string;
+            /** Impact */
+            impact: {
+                [key: string]: unknown;
+            };
+            /** Impact Token */
+            impact_token: string;
+            quality: components["schemas"]["QualitySummary"];
+        };
+        /** GraphDefenseAllocationMemberOption */
+        GraphDefenseAllocationMemberOption: {
+            /** Asset Key */
+            asset_key: string;
+            /**
+             * Component Role
+             * @enum {string}
+             */
+            component_role: "defensive_asset" | "reserve";
+            /** Ordinal */
+            ordinal: number;
+            /** Sleeve Weight */
+            sleeve_weight: string;
+        };
+        /** GraphDefenseAllocationPolicyOption */
+        GraphDefenseAllocationPolicyOption: {
+            /** Asset Registry Catalog Version */
+            asset_registry_catalog_version: string;
+            /** Asset Set Key */
+            asset_set_key: string;
+            /** Family Key */
+            family_key: string;
+            /** Formal Eligible */
+            formal_eligible: boolean;
+            /** Formula Identity */
+            formula_identity: string;
+            /** Members */
+            members: components["schemas"]["GraphDefenseAllocationMemberOption"][];
+            /**
+             * Missing Member Policy
+             * @constant
+             */
+            missing_member_policy: "fail";
+            /** Name */
+            name: string;
+            /**
+             * Rebalance Policy
+             * @constant
+             */
+            rebalance_policy: "with_strategy";
+            /** Research Hypothesis */
+            research_hypothesis: string;
+            /**
+             * Research Status
+             * @enum {string}
+             */
+            research_status: "exploratory" | "parity" | "formal";
+            /**
+             * Reserve Fallback Policy
+             * @constant
+             */
+            reserve_fallback_policy: "forbidden";
+            /** Reserve Return Model */
+            reserve_return_model: {
+                [key: string]: unknown;
+            } | null;
+            /** Variant Key */
+            variant_key: string;
+            /** Version Number */
+            version_number: number;
+        };
+        /** GraphDefenseOption */
+        GraphDefenseOption: {
+            allocation_policy?: components["schemas"]["GraphDefenseAllocationPolicyOption"] | null;
+            /** Allocation Policy Document */
+            allocation_policy_document: {
+                [key: string]: unknown;
+            };
+            /** Allocation Semantics */
+            allocation_semantics: {
+                [key: string]: unknown;
+            };
+            /**
+             * Compatible
+             * @default true
+             */
+            compatible: boolean;
+            /**
+             * Composed
+             * @default false
+             */
+            composed: boolean;
+            /** Family Key */
+            family_key: string;
+            /** Input Policy */
+            input_policy: {
+                [key: string]: unknown;
+            };
+            /** Name */
+            name: string;
+            /** Parameters */
+            parameters: {
+                [key: string]: unknown;
+            };
+            /** Reason Codes */
+            reason_codes?: string[];
+            /** Research Hypothesis */
+            research_hypothesis: string;
+            /** Research Status */
+            research_status?: ("exploratory" | "parity" | "formal") | null;
+            /** Selected */
+            selected: boolean;
+            /** Supported Asset Context Keys */
+            supported_asset_context_keys: string[];
+            timing_policy?: components["schemas"]["GraphDefenseTimingPolicyOption"] | null;
+            /** Variant Key */
+            variant_key: string;
+            /** Version Number */
+            version_number?: number | null;
+        };
+        /** GraphDefenseTimingPolicyOption */
+        GraphDefenseTimingPolicyOption: {
+            /** Family Key */
+            family_key: string;
+            /** Formula Identity */
+            formula_identity: string;
+            /** Input Policy */
+            input_policy: {
+                [key: string]: unknown;
+            };
+            /** Name */
+            name: string;
+            /** Research Hypothesis */
+            research_hypothesis: string;
+            /**
+             * Research Status
+             * @enum {string}
+             */
+            research_status: "exploratory" | "parity" | "formal";
+            /** Rule */
+            rule: {
+                [key: string]: unknown;
+            };
+            /** Supported Frequencies */
+            supported_frequencies: ("weekly" | "monthly")[];
+            /** Variant Key */
+            variant_key: string;
+            /** Version Number */
+            version_number: number;
+        };
+        /** GraphDraftCloneRequest */
+        GraphDraftCloneRequest: {
+            /** Draft Key */
+            draft_key: string;
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /** Name */
+            name: string;
+            /** Researcher Key */
+            researcher_key: string;
+            /** Source Revision */
+            source_revision: number;
+        };
+        /** GraphDraftCompileRequest */
+        GraphDraftCompileRequest: {
+            /** Actor Key */
+            actor_key: string;
+            /** Expected Revision */
+            expected_revision: number;
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+        };
+        /** GraphDraftCompileResponse */
+        GraphDraftCompileResponse: {
+            /**
+             * Compile Attempt Id
+             * Format: uuid
+             */
+            compile_attempt_id: string;
+            /** Compiled Execution Data Context Id */
+            compiled_execution_data_context_id?: string | null;
+            /**
+             * Compiled Research Graph Id
+             * Format: uuid
+             */
+            compiled_research_graph_id: string;
+            context: components["schemas"]["ApiContext"];
+            /** Defense Execution Contexts */
+            defense_execution_contexts?: components["schemas"]["GraphDraftDefenseExecutionContext"][];
+            /**
+             * Draft Intent Id
+             * Format: uuid
+             */
+            draft_intent_id: string;
+            /** Execution Data Context Artifact Id */
+            execution_data_context_artifact_id?: string | null;
+            /** Execution Data Context Fingerprint */
+            execution_data_context_fingerprint?: string | null;
+            /** Execution Data Context Reused */
+            execution_data_context_reused?: boolean | null;
+            /**
+             * Graph Artifact Id
+             * Format: uuid
+             */
+            graph_artifact_id: string;
+            /**
+             * Graph Draft Id
+             * Format: uuid
+             */
+            graph_draft_id: string;
+            /** Graph Draft Revision */
+            graph_draft_revision: number;
+            /** Graph Fingerprint */
+            graph_fingerprint: string;
+            quality: components["schemas"]["QualitySummary"];
+            /** Reused */
+            reused: boolean;
+            /** Selection Fingerprint */
+            selection_fingerprint?: string | null;
+        };
+        /** GraphDraftCreateRequest */
+        GraphDraftCreateRequest: {
+            /** Asset Context Key */
+            asset_context_key?: string | null;
+            /** Data Input Keys */
+            data_input_keys?: string[];
+            /** Draft Key */
+            draft_key: string;
+            /**
+             * Frequency
+             * @default weekly
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /** Name */
+            name: string;
+            /** Researcher Key */
+            researcher_key: string;
+        };
+        /** GraphDraftDefenseExecutionContext */
+        GraphDraftDefenseExecutionContext: {
+            /**
+             * Compiled Defense Execution Context Id
+             * Format: uuid
+             */
+            compiled_defense_execution_context_id: string;
+            /**
+             * Compiled Execution Data Context Id
+             * Format: uuid
+             */
+            compiled_execution_data_context_id: string;
+            /**
+             * Defense Execution Context Artifact Id
+             * Format: uuid
+             */
+            defense_execution_context_artifact_id: string;
+            /** Defense Execution Context Fingerprint */
+            defense_execution_context_fingerprint: string;
+            /**
+             * Defense Version Id
+             * Format: uuid
+             */
+            defense_version_id: string;
+            /** Input Count */
+            input_count: number;
+            /** Resolved Input Binding Fingerprint */
+            resolved_input_binding_fingerprint: string;
+            /** Reused */
+            reused: boolean;
+        };
+        /** GraphDraftDerivedViewResponse */
+        GraphDraftDerivedViewResponse: {
+            /** Aggregation Inputs */
+            aggregation_inputs: string[];
+            /** Aggregations */
+            aggregations: components["schemas"]["GraphAggregationOption"][];
+            /** Blockers */
+            blockers: components["schemas"]["GraphWorkspaceBlocker"][];
+            catalog_release: components["schemas"]["GraphCatalogRelease"];
+            /** Defenses */
+            defenses: components["schemas"]["GraphDefenseOption"][];
+            /** Derived State Fingerprint */
+            derived_state_fingerprint: string;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            resources: components["schemas"]["GraphResourceAdmission"];
+            /** Selection Fingerprint */
+            selection_fingerprint: string;
+            /** Stages */
+            stages: components["schemas"]["GraphWorkspaceStage"][];
+            /** Strategies */
+            strategies: components["schemas"]["GraphStrategyOption"][];
+            summary: components["schemas"]["GraphWorkspaceSummary"];
+            /** Warnings */
+            warnings: string[];
+        };
+        /** GraphDraftEventRequest */
+        GraphDraftEventRequest: {
+            /** Actor Key */
+            actor_key: string;
+            /** Event */
+            event: {
+                [key: string]: unknown;
+            };
+            /**
+             * Event Type
+             * @enum {string}
+             */
+            event_type: "select_feature_occurrence" | "deselect_feature_occurrence" | "batch_select_feature_occurrences" | "batch_deselect_feature_occurrences" | "select_all_legal_feature_occurrences" | "clear_stage_feature_occurrences" | "select_aggregation_family" | "deselect_aggregation_family" | "set_aggregation_parameter_presets" | "set_aggregation_targets" | "set_aggregation_training_presets" | "set_strategy_parameter_presets" | "select_all_compatible_strategy_presets" | "clear_strategy_presets" | "select_strategy" | "deselect_strategy" | "select_defense" | "deselect_defense" | "select_all_compatible_defenses" | "clear_defenses" | "set_frequency" | "set_asset_selection";
+            /** Expected Revision */
+            expected_revision: number;
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+        };
+        /** GraphDraftResetRequest */
+        GraphDraftResetRequest: {
+            /** Actor Key */
+            actor_key: string;
+            /** Expected Revision */
+            expected_revision: number;
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+        };
+        /** GraphDraftResetSummaryResponse */
+        GraphDraftResetSummaryResponse: {
+            /** Cancelled Graph Run Count */
+            cancelled_graph_run_count: number;
+            /**
+             * Closed Research Round Id
+             * Format: uuid
+             */
+            closed_research_round_id: string;
+            /**
+             * Opened Research Round Id
+             * Format: uuid
+             */
+            opened_research_round_id: string;
+            /**
+             * Ordinary Experiment Cleanup State
+             * @enum {string}
+             */
+            ordinary_experiment_cleanup_state: "gc_pending" | "gc_complete";
+        };
+        /** GraphDraftSnapshotResponse */
+        GraphDraftSnapshotResponse: {
+            /** Applied */
+            applied?: boolean | null;
+            /** Asset Context */
+            asset_context: {
+                [key: string]: unknown;
+            };
+            /**
+             * Catalog Release Id
+             * Format: uuid
+             */
+            catalog_release_id: string;
+            /** Cloned From Graph Draft Id */
+            cloned_from_graph_draft_id?: string | null;
+            /** Cloned From Revision */
+            cloned_from_revision?: number | null;
+            context: components["schemas"]["ApiContext"];
+            derived_view: components["schemas"]["GraphDraftDerivedViewResponse"];
+            /** Draft Key */
+            draft_key: string;
+            /**
+             * Graph Draft Id
+             * Format: uuid
+             */
+            graph_draft_id: string;
+            /** Intent */
+            intent: {
+                [key: string]: unknown;
+            };
+            /** Name */
+            name: string;
+            quality: components["schemas"]["QualitySummary"];
+            reset_summary?: components["schemas"]["GraphDraftResetSummaryResponse"] | null;
+            /** Resolved Data Binding */
+            resolved_data_binding: {
+                [key: string]: unknown;
+            };
+            /** Revision */
+            revision: number;
+            /** Status */
+            status: string;
+        };
+        /** GraphFeatureFamily */
+        GraphFeatureFamily: {
+            /** Available Count */
+            available_count: number;
+            /** Explicit Count */
+            explicit_count: number;
+            /** Family Key */
+            family_key: string;
+            /** Name */
+            name: string;
+            /** Pinned */
+            pinned: boolean;
+            /** Required Count */
+            required_count: number;
+            /** Variants */
+            variants: components["schemas"]["GraphFeatureOccurrence"][];
+        };
+        /** GraphFeatureOccurrence */
+        GraphFeatureOccurrence: {
+            /** Aggregation Readiness */
+            aggregation_readiness: string;
+            /**
+             * Availability
+             * @enum {string}
+             */
+            availability: "ready" | "requires_ancestors" | "hard_incompatible";
+            /** Direction */
+            direction: string;
+            /** Family Key */
+            family_key: string;
+            /** Feature Key */
+            feature_key: string;
+            /** Formula Identity */
+            formula_identity: string;
+            /** Input Feature Keys */
+            input_feature_keys: string[];
+            /** Is Explicit */
+            is_explicit: boolean;
+            /** Is Present */
+            is_present: boolean;
+            /** Is Required */
+            is_required: boolean;
+            /**
+             * Lock State
+             * @enum {string}
+             */
+            lock_state: "unlocked" | "locked";
+            /** Locked By */
+            locked_by: string[];
+            /** Name */
+            name: string;
+            /**
+             * Origin Stage
+             * @enum {integer}
+             */
+            origin_stage: 0 | 1 | 2 | 3;
+            /** Output Semantics */
+            output_semantics: {
+                [key: string]: unknown;
+            };
+            /** Parameters */
+            parameters: {
+                [key: string]: unknown;
+            };
+            /** Payload Contract Key */
+            payload_contract_key: string;
+            /** Pinned */
+            pinned: boolean;
+            producer: components["schemas"]["GraphFeatureProducer"];
+            /** Reason Codes */
+            reason_codes: string[];
+            /** Required By */
+            required_by: string[];
+            /** Research Hypothesis */
+            research_hypothesis: string;
+            select_effect: components["schemas"]["GraphSelectEffect"];
+            /** Semantic Role */
+            semantic_role: string;
+            /**
+             * Stage No
+             * @enum {integer}
+             */
+            stage_no: 0 | 1 | 2 | 3;
+            /** Unit */
+            unit: string;
+        };
+        /** GraphFeatureProducer */
+        GraphFeatureProducer: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "raw_input" | "node_output" | "layer_projection";
+            /** Node Variant Key */
+            node_variant_key?: string | null;
+            /** Output Port Key */
+            output_port_key?: string | null;
+            /** Source Feature Key */
+            source_feature_key?: string | null;
+            /** Source Stage No */
+            source_stage_no?: number | null;
+        };
+        /** GraphFeatureSelection */
+        GraphFeatureSelection: {
+            /** Feature Key */
+            feature_key: string;
+            /**
+             * Stage No
+             * @enum {integer}
+             */
+            stage_no: 0 | 1 | 2 | 3;
+        };
+        /** GraphResourceAdmission */
+        GraphResourceAdmission: {
+            /** Checks */
+            checks: components["schemas"]["GraphAdmissionCheck"][];
+            estimates: components["schemas"]["GraphResourceEstimate"];
+            /** Policy Id */
+            policy_id: string;
+            /** Reason Codes */
+            reason_codes: string[];
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "accepted" | "rejected";
+        };
+        /** GraphResourceEstimate */
+        GraphResourceEstimate: {
+            /** Aggregation Candidates */
+            aggregation_candidates: number;
+            /** Aggregation Instances */
+            aggregation_instances: number;
+            /** Ancestor Occurrences */
+            ancestor_occurrences: number;
+            /** Backtest Cells */
+            backtest_cells: number;
+            /** Defense Candidates */
+            defense_candidates: number;
+            /** Explicit Stage3 Inputs */
+            explicit_stage3_inputs: number;
+            /** Feature Occurrences */
+            feature_occurrences: number;
+            /** Graph Edges */
+            graph_edges: number;
+            /** Strategy Branches */
+            strategy_branches: number;
+            /** Strategy Candidates */
+            strategy_candidates: number;
+            /** Work Items */
+            work_items: number;
+        };
+        /** GraphSelectEffect */
+        GraphSelectEffect: {
+            /** Ancestor Count */
+            ancestor_count: number;
+            /** Projection Count */
+            projection_count: number;
+        };
+        /** GraphStageFamilyPageResponse */
+        GraphStageFamilyPageResponse: {
+            /** Catalog Families */
+            catalog_families: components["schemas"]["GraphFeatureFamily"][];
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Graph Draft Id
+             * Format: uuid
+             */
+            graph_draft_id: string;
+            /** Next Cursor */
+            next_cursor: string | null;
+            /** Pinned Families */
+            pinned_families: components["schemas"]["GraphFeatureFamily"][];
+            quality: components["schemas"]["QualitySummary"];
+            /** Revision */
+            revision: number;
+            /**
+             * Stage No
+             * @enum {integer}
+             */
+            stage_no: 0 | 1 | 2 | 3;
+            /** Total Catalog Family Count */
+            total_catalog_family_count: number;
+            /** View Token */
+            view_token: string;
+        };
+        /** GraphStrategyOption */
+        GraphStrategyOption: {
+            /** Compatible */
+            compatible: boolean;
+            /** Execution Policy */
+            execution_policy: {
+                [key: string]: unknown;
+            };
+            /** Family Key */
+            family_key: string;
+            /** Input Payload Contract Key */
+            input_payload_contract_key: string;
+            /** Name */
+            name: string;
+            /** Parameter Presets */
+            parameter_presets: components["schemas"]["GraphStrategyParameterPresetOption"][];
+            /** Parameters */
+            parameters: {
+                [key: string]: unknown;
+            };
+            /** Reason Codes */
+            reason_codes: string[];
+            /** Research Hypothesis */
+            research_hypothesis: string;
+            /** Schedule Policy */
+            schedule_policy: {
+                [key: string]: unknown;
+            };
+            /** Selected */
+            selected: boolean;
+            /** Selection Semantics */
+            selection_semantics: {
+                [key: string]: unknown;
+            };
+            /** Supported Frequencies */
+            supported_frequencies: string[];
+            /** Variant Key */
+            variant_key: string;
+        };
+        /** GraphStrategyParameterPresetOption */
+        GraphStrategyParameterPresetOption: {
+            /** Description */
+            description: string;
+            /** Name */
+            name: string;
+            /** Parameters */
+            parameters: {
+                [key: string]: unknown;
+            };
+            /** Preset Key */
+            preset_key: string;
+            /** Reason Codes */
+            reason_codes: string[];
+            /** Selectable */
+            selectable: boolean;
+            /** Selected */
+            selected: boolean;
+            /** Version Number */
+            version_number: number;
+        };
+        /** GraphSuiteElementDiagnostic */
+        GraphSuiteElementDiagnostic: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            diagnostic_document: components["schemas"]["GraphSuiteElementDiagnosticDocument"];
+            /** Diagnostic Fingerprint */
+            diagnostic_fingerprint: string;
+            /**
+             * Result Element Diagnostic Id
+             * Format: uuid
+             */
+            result_element_diagnostic_id: string;
+        };
+        /** GraphSuiteElementDiagnosticDocument */
+        GraphSuiteElementDiagnosticDocument: {
+            /**
+             * Compiled Feature Occurrence Id
+             * Format: uuid
+             */
+            compiled_feature_occurrence_id: string;
+            /**
+             * Coverage End
+             * Format: date
+             */
+            coverage_end: string;
+            /**
+             * Coverage Start
+             * Format: date
+             */
+            coverage_start: string;
+            /** Evaluation Period Count */
+            evaluation_period_count: number;
+            /** Expected Observation Count */
+            expected_observation_count: number;
+            /** Feature Variant Key */
+            feature_variant_key: string;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /**
+             * Manifest Artifact Id
+             * Format: uuid
+             */
+            manifest_artifact_id: string;
+            /** Manifest Hash */
+            manifest_hash: string;
+            /** Metrics */
+            metrics: components["schemas"]["GraphSuiteElementMetric"][];
+            /** Missing Value Count */
+            missing_value_count: number;
+            /** Observed Value Count */
+            observed_value_count: number;
+            /**
+             * Payload Manifest Id
+             * Format: uuid
+             */
+            payload_manifest_id: string;
+            /**
+             * Research Direction
+             * @enum {string}
+             */
+            research_direction: "positive" | "negative" | "unsigned";
+            /** Stage No */
+            stage_no: number;
+            /** Target Key */
+            target_key: string;
+            /**
+             * Target Version Artifact Id
+             * Format: uuid
+             */
+            target_version_artifact_id: string;
+            /**
+             * Target Version Id
+             * Format: uuid
+             */
+            target_version_id: string;
+            /** Valid Ic Count */
+            valid_ic_count: number;
+        };
+        /** GraphSuiteElementMetric */
+        GraphSuiteElementMetric: {
+            /** Metric Key */
+            metric_key: string;
+            /** Reason Code */
+            reason_code: string | null;
+            /** Value */
+            value: string | null;
+        };
+        /** GraphSuiteEvidenceDiagnostic */
+        GraphSuiteEvidenceDiagnostic: {
+            /** Common Evaluation Panel Fingerprint */
+            common_evaluation_panel_fingerprint: string | null;
+            /** Common Evaluation Panel Id */
+            common_evaluation_panel_id: string | null;
+            /** Evidence Class */
+            evidence_class: ("walk_forward_backtest" | "locked_historical_test" | "prospective_oos") | null;
+            /** Evidence Fingerprint */
+            evidence_fingerprint: string | null;
+            /**
+             * Publication Status
+             * @enum {string}
+             */
+            publication_status: "published" | "not_published";
+            /** Result Evidence Artifact Id */
+            result_evidence_artifact_id: string | null;
+            /** Result Evidence Snapshot Id */
+            result_evidence_snapshot_id: string | null;
+        };
+        /** GraphSuiteExecutionDiagnostic */
+        GraphSuiteExecutionDiagnostic: {
+            /** Basis Points Per Side */
+            basis_points_per_side: string | null;
+            /** Benchmark Asset Id */
+            benchmark_asset_id: string | null;
+            /** Benchmark Asset Key */
+            benchmark_asset_key: string | null;
+            /** Cost Policy Key */
+            cost_policy_key: string | null;
+            /** Evaluation Data Context Fingerprint */
+            evaluation_data_context_fingerprint: string | null;
+            /** Evaluation Input Cutoff At */
+            evaluation_input_cutoff_at: string | null;
+            /** Execution Delay Sessions */
+            execution_delay_sessions?: number | null;
+            /** Work Execution Fingerprint */
+            work_execution_fingerprint: string | null;
+        };
+        /** GraphSuiteLaunchBatchChild */
+        GraphSuiteLaunchBatchChild: {
+            /** Compiled Research Graph Id */
+            compiled_research_graph_id: string | null;
+            /** Complete */
+            complete: boolean;
+            /** Failure Code */
+            failure_code?: string | null;
+            /** Failure Summary */
+            failure_summary?: string | null;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /** Graph Draft Id */
+            graph_draft_id: string | null;
+            /** Graph Draft Revision */
+            graph_draft_revision?: number | null;
+            /** Research Suite Id */
+            research_suite_id: string | null;
+            /** Stage */
+            stage?: ("prepare_graph" | "admit_graph" | "submit_suite" | "lock_source" | "complete") | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "planning" | "not_started" | "materializing" | "targeting" | "merging" | "evaluating" | "completed" | "failed" | "cancelled";
+            /** Status Counts */
+            status_counts?: {
+                [key: string]: number;
+            };
+            /** Terminal */
+            terminal: number;
+            /** Total */
+            total: number;
+        };
+        /** GraphSuiteLaunchBatchRequest */
+        GraphSuiteLaunchBatchRequest: {
+            /** Actor Key */
+            actor_key: string;
+            /** Frequencies */
+            frequencies?: ("weekly" | "monthly")[];
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /**
+             * Source Compiled Research Graph Id
+             * Format: uuid
+             */
+            source_compiled_research_graph_id: string;
+            /**
+             * Source Graph Draft Id
+             * Format: uuid
+             */
+            source_graph_draft_id: string;
+            /** Source Graph Draft Revision */
+            source_graph_draft_revision: number;
+            /**
+             * Suite Mode
+             * @default exploratory
+             * @constant
+             */
+            suite_mode: "exploratory";
+        };
+        /** GraphSuiteLaunchBatchResponse */
+        GraphSuiteLaunchBatchResponse: {
+            /** Batch Fingerprint */
+            batch_fingerprint: string;
+            /** Children */
+            children: components["schemas"]["GraphSuiteLaunchBatchChild"][];
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Contract Version
+             * @default v0.22.0
+             * @constant
+             */
+            contract_version: "v0.22.0";
+            /** Failed Frequency */
+            failed_frequency?: ("weekly" | "monthly") | null;
+            /** Failure Code */
+            failure_code?: string | null;
+            /** Failure Summary */
+            failure_summary?: string | null;
+            quality: components["schemas"]["QualitySummary"];
+            /** Reused */
+            reused: boolean;
+            /**
+             * Source Graph Draft Id
+             * Format: uuid
+             */
+            source_graph_draft_id: string;
+            /** Source Graph Draft Revision */
+            source_graph_draft_revision: number;
+            /** Stage */
+            stage?: ("prepare_graph" | "admit_graph" | "submit_suite" | "lock_source" | "complete") | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "planning" | "submitted" | "running" | "completed" | "failed" | "cancelled";
+            /**
+             * Suite Launch Batch Id
+             * Format: uuid
+             */
+            suite_launch_batch_id: string;
+        };
+        /** GraphSuiteListResponse */
+        GraphSuiteListResponse: {
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Contract Version
+             * @default v0.22.0
+             * @constant
+             */
+            contract_version: "v0.22.0";
+            /** Items */
+            items: components["schemas"]["GraphSuiteSummary"][];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            quality: components["schemas"]["QualitySummary"];
+            /** Total Count */
+            total_count: number;
+        };
+        /** GraphSuiteMetricDiagnostic */
+        GraphSuiteMetricDiagnostic: {
+            /**
+             * Metric Group
+             * @enum {string}
+             */
+            metric_group: "absolute" | "relative";
+            /** Metric Key */
+            metric_key: string;
+            /** Observation Count */
+            observation_count: number;
+            /** Reason Code */
+            reason_code: string | null;
+            /** Value */
+            value: string | null;
+            /**
+             * Value Status
+             * @enum {string}
+             */
+            value_status: "defined" | "unavailable";
+        };
+        /** GraphSuiteQualityDiagnostic */
+        GraphSuiteQualityDiagnostic: {
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "accepted" | "data_quality_failed" | "capacity_rejected";
+            /** Path Session Count */
+            path_session_count: number;
+            /** Reason Code */
+            reason_code: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "passed" | "warning" | "failed";
+        };
+        /** GraphSuiteResultDiagnostic */
+        GraphSuiteResultDiagnostic: {
+            /** Elements */
+            elements: components["schemas"]["GraphSuiteElementDiagnostic"][];
+            evidence: components["schemas"]["GraphSuiteEvidenceDiagnostic"];
+            execution: components["schemas"]["GraphSuiteExecutionDiagnostic"];
+            /** Metrics */
+            metrics: components["schemas"]["GraphSuiteMetricDiagnostic"][];
+            quality: components["schemas"]["GraphSuiteQualityDiagnostic"];
+        };
+        /** GraphSuiteResultItem */
+        GraphSuiteResultItem: {
+            /**
+             * Compiled Strategy Branch Id
+             * Format: uuid
+             */
+            compiled_strategy_branch_id: string;
+            /**
+             * Configuration Snapshot Id
+             * Format: uuid
+             */
+            configuration_snapshot_id: string;
+            diagnostic: components["schemas"]["GraphSuiteResultDiagnostic"];
+            /**
+             * Effective End
+             * Format: date
+             */
+            effective_end: string;
+            /**
+             * Effective Start
+             * Format: date
+             */
+            effective_start: string;
+            /** Logical Payload Fingerprint */
+            logical_payload_fingerprint: string;
+            /** Manifest Hash */
+            manifest_hash: string;
+            /** Metric Document */
+            metric_document: {
+                [key: string]: unknown;
+            };
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "accepted" | "data_quality_failed" | "capacity_rejected";
+            /**
+             * Payload Manifest Artifact Id
+             * Format: uuid
+             */
+            payload_manifest_artifact_id: string;
+            /**
+             * Payload Manifest Id
+             * Format: uuid
+             */
+            payload_manifest_id: string;
+            /**
+             * Portfolio Evaluation Data Context Id
+             * Format: uuid
+             */
+            portfolio_evaluation_data_context_id: string;
+            /**
+             * Quality Status
+             * @enum {string}
+             */
+            quality_status: "passed" | "warning" | "failed";
+            /**
+             * Research Cell Id
+             * Format: uuid
+             */
+            research_cell_id: string;
+            /**
+             * Research Suite Branch Id
+             * Format: uuid
+             */
+            research_suite_branch_id: string;
+            /**
+             * Result Artifact Id
+             * Format: uuid
+             */
+            result_artifact_id: string;
+            /** Result Document */
+            result_document: {
+                [key: string]: unknown;
+            };
+            /** Result Fingerprint */
+            result_fingerprint: string;
+        };
+        /** GraphSuiteResultsResponse */
+        GraphSuiteResultsResponse: {
+            /**
+             * Compiled Research Graph Id
+             * Format: uuid
+             */
+            compiled_research_graph_id: string;
+            /** Complete */
+            complete: boolean;
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Contract Version
+             * @default v0.22.0
+             * @constant
+             */
+            contract_version: "v0.22.0";
+            /** Expected Result Count */
+            expected_result_count: number;
+            quality: components["schemas"]["QualitySummary"];
+            /**
+             * Research Suite Id
+             * Format: uuid
+             */
+            research_suite_id: string;
+            /** Result Count */
+            result_count: number;
+            /** Results */
+            results: components["schemas"]["GraphSuiteResultItem"][];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "materializing" | "targeting" | "merging" | "evaluating" | "completed" | "failed" | "cancelled";
+        };
+        /** GraphSuiteRuntimeReadinessResponse */
+        GraphSuiteRuntimeReadinessResponse: {
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Contract Version
+             * @default v0.22.0
+             * @constant
+             */
+            contract_version: "v0.22.0";
+            /** Error Summary */
+            error_summary?: string | null;
+            /** Heartbeat At */
+            heartbeat_at: string | null;
+            /** Max Age Seconds */
+            max_age_seconds: number;
+            /** Process Id */
+            process_id: number | null;
+            quality: components["schemas"]["QualitySummary"];
+            /** Ready */
+            ready: boolean;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "ready" | "working" | "stopped" | "stale" | "unavailable" | "error";
+            /** Worker Key */
+            worker_key: string | null;
+        };
+        /** GraphSuiteStatusResponse */
+        GraphSuiteStatusResponse: {
+            /**
+             * Compiled Research Graph Id
+             * Format: uuid
+             */
+            compiled_research_graph_id: string;
+            /** Complete */
+            complete: boolean;
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Contract Version
+             * @default v0.22.0
+             * @constant
+             */
+            contract_version: "v0.22.0";
+            quality: components["schemas"]["QualitySummary"];
+            /**
+             * Research Suite Id
+             * Format: uuid
+             */
+            research_suite_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "not_started" | "materializing" | "targeting" | "merging" | "evaluating" | "completed" | "failed" | "cancelled";
+            /** Status Counts */
+            status_counts: {
+                [key: string]: number;
+            };
+            /**
+             * Suite Mode
+             * @default exploratory
+             * @constant
+             */
+            suite_mode: "exploratory";
+            /** Terminal */
+            terminal: number;
+            /** Total */
+            total: number;
+        };
+        /**
+         * GraphSuiteSubmitRequest
+         * @description Submit one immutable v0.22 Compiled Graph; never reinterpret a Draft.
+         */
+        GraphSuiteSubmitRequest: {
+            /** Actor Key */
+            actor_key: string;
+            /**
+             * Compiled Research Graph Id
+             * Format: uuid
+             */
+            compiled_research_graph_id: string;
+            /**
+             * Graph Draft Id
+             * Format: uuid
+             */
+            graph_draft_id: string;
+            /** Graph Draft Revision */
+            graph_draft_revision: number;
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /**
+             * Suite Mode
+             * @default exploratory
+             * @constant
+             */
+            suite_mode: "exploratory";
+        };
+        /** GraphSuiteSubmitResponse */
+        GraphSuiteSubmitResponse: {
+            /** Backtest Cell Count */
+            backtest_cell_count: number;
+            /**
+             * Compiled Research Graph Id
+             * Format: uuid
+             */
+            compiled_research_graph_id: string;
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Contract Version
+             * @default v0.22.0
+             * @constant
+             */
+            contract_version: "v0.22.0";
+            /** Graph Fingerprint */
+            graph_fingerprint: string;
+            quality: components["schemas"]["QualitySummary"];
+            /**
+             * Research Suite Id
+             * Format: uuid
+             */
+            research_suite_id: string;
+            /** Reused */
+            reused: boolean;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "not_started" | "materializing" | "targeting" | "merging" | "evaluating" | "completed" | "failed" | "cancelled";
+            /** Strategy Branch Count */
+            strategy_branch_count: number;
+            /**
+             * Suite Artifact Id
+             * Format: uuid
+             */
+            suite_artifact_id: string;
+            /** Suite Fingerprint */
+            suite_fingerprint: string;
+            /**
+             * Suite Mode
+             * @default exploratory
+             * @constant
+             */
+            suite_mode: "exploratory";
+        };
+        /** GraphSuiteSummary */
+        GraphSuiteSummary: {
+            /** Backtest Cell Count */
+            backtest_cell_count: number;
+            /**
+             * Compiled Research Graph Id
+             * Format: uuid
+             */
+            compiled_research_graph_id: string;
+            /** Complete */
+            complete: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Graph Fingerprint */
+            graph_fingerprint: string;
+            /**
+             * Research Suite Id
+             * Format: uuid
+             */
+            research_suite_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "not_started" | "materializing" | "targeting" | "merging" | "evaluating" | "completed" | "failed" | "cancelled";
+            /** Status Counts */
+            status_counts: {
+                [key: string]: number;
+            };
+            /** Strategy Branch Count */
+            strategy_branch_count: number;
+            /** Suite Fingerprint */
+            suite_fingerprint: string;
+            /**
+             * Suite Mode
+             * @default exploratory
+             * @constant
+             */
+            suite_mode: "exploratory";
+            /** Terminal */
+            terminal: number;
+            /** Total */
+            total: number;
+        };
+        /** GraphWorkspaceBlocker */
+        GraphWorkspaceBlocker: {
+            /** Feature Keys */
+            feature_keys?: string[];
+            /** Layer */
+            layer: string;
+            /** Object Key */
+            object_key: string;
+            /** Reason Codes */
+            reason_codes: string[];
+        };
+        /** GraphWorkspacePreviewRequest */
+        GraphWorkspacePreviewRequest: {
+            /** Aggregation Family Keys */
+            aggregation_family_keys?: string[];
+            /** Aggregation Parameter Preset Keys */
+            aggregation_parameter_preset_keys?: {
+                [key: string]: string[];
+            };
+            /** Defense Keys */
+            defense_keys?: string[];
+            /** Explicit Features */
+            explicit_features?: components["schemas"]["GraphFeatureSelection"][];
+            /**
+             * Frequency
+             * @default weekly
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /** Strategy Keys */
+            strategy_keys?: string[];
+            /** Strategy Parameter Preset Keys */
+            strategy_parameter_preset_keys?: {
+                [key: string]: string[];
+            };
+        };
+        /** GraphWorkspacePreviewResponse */
+        GraphWorkspacePreviewResponse: {
+            /** Aggregation Inputs */
+            aggregation_inputs: string[];
+            /** Aggregations */
+            aggregations: components["schemas"]["GraphAggregationOption"][];
+            /** Blockers */
+            blockers: components["schemas"]["GraphWorkspaceBlocker"][];
+            catalog_release: components["schemas"]["GraphCatalogRelease"];
+            context: components["schemas"]["ApiContext"];
+            /** Defenses */
+            defenses: components["schemas"]["GraphDefenseOption"][];
+            /** Derived State Fingerprint */
+            derived_state_fingerprint: string;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            quality: components["schemas"]["QualitySummary"];
+            resources: components["schemas"]["GraphResourceAdmission"];
+            /** Selection Fingerprint */
+            selection_fingerprint: string;
+            /** Stages */
+            stages: components["schemas"]["GraphWorkspaceStage"][];
+            /** Strategies */
+            strategies: components["schemas"]["GraphStrategyOption"][];
+            summary: components["schemas"]["GraphWorkspaceSummary"];
+            /** Warnings */
+            warnings: string[];
+        };
+        /** GraphWorkspaceStage */
+        GraphWorkspaceStage: {
+            /** Explicit Count */
+            explicit_count: number;
+            /** Families */
+            families: components["schemas"]["GraphFeatureFamily"][];
+            /** Required Count */
+            required_count: number;
+            /**
+             * Stage No
+             * @enum {integer}
+             */
+            stage_no: 0 | 1 | 2 | 3;
+        };
+        /** GraphWorkspaceSummary */
+        GraphWorkspaceSummary: {
+            /** Aggregation Instance Count */
+            aggregation_instance_count: number;
+            /** Backtest Cell Count */
+            backtest_cell_count: number;
+            /** Explicit Count */
+            explicit_count: number;
+            /** Required Count */
+            required_count: number;
+            /** Stage3 Input Count */
+            stage3_input_count: number;
+            /** Strategy Branch Count */
+            strategy_branch_count: number;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -2892,6 +5191,17 @@ export interface components {
             /** Reason Codes */
             reason_codes: string[];
         };
+        /** SessionContextResponse */
+        SessionContextResponse: {
+            /** Actor Key */
+            actor_key: string;
+            /** Authentication Source */
+            authentication_source: string;
+            context: components["schemas"]["ApiContext"];
+            quality: components["schemas"]["QualitySummary"];
+            /** Roles */
+            roles: ("researcher" | "operator")[];
+        };
         /** SignalDiagnosticIssueItem */
         SignalDiagnosticIssueItem: {
             /** Details */
@@ -3440,6 +5750,970 @@ export interface components {
             trend_filter: string;
             /** Variant Key */
             variant_key: string;
+        };
+        /** V022DecisionSessionInput */
+        V022DecisionSessionInput: {
+            /**
+             * Decision Cutoff At
+             * Format: date-time
+             */
+            decision_cutoff_at: string;
+            /**
+             * Session Date
+             * Format: date
+             */
+            session_date: string;
+        };
+        /** V022ExperimentComparisonContext */
+        V022ExperimentComparisonContext: {
+            /**
+             * Benchmark Key
+             * @constant
+             */
+            benchmark_key: "spy";
+            /** Cohort Key */
+            cohort_key: string;
+            /** Cost Bps Per Side */
+            cost_bps_per_side: string;
+            /** Evaluation Cohort Fingerprint */
+            evaluation_cohort_fingerprint: string;
+            /**
+             * Evaluation Cohort Version Id
+             * Format: uuid
+             */
+            evaluation_cohort_version_id: string;
+            /**
+             * Evaluation End
+             * Format: date
+             */
+            evaluation_end: string;
+            /**
+             * Evaluation Start
+             * Format: date
+             */
+            evaluation_start: string;
+            /** Execution Delay Sessions */
+            execution_delay_sessions: number;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /** Price Semantics */
+            price_semantics: string;
+            /**
+             * Warmup Start
+             * Format: date
+             */
+            warmup_start: string;
+        };
+        /** V022ExperimentIdentityCatalogResponse */
+        V022ExperimentIdentityCatalogResponse: {
+            context: components["schemas"]["ApiContext"];
+            /** Items */
+            items: components["schemas"]["V022ExperimentIdentityItem"][];
+            quality: components["schemas"]["QualitySummary"];
+        };
+        /** V022ExperimentIdentityDetailResponse */
+        V022ExperimentIdentityDetailResponse: {
+            comparison_context: components["schemas"]["V022ExperimentComparisonContext"] | null;
+            /** Comparisons */
+            comparisons: {
+                [key: string]: unknown;
+            }[];
+            /** Configuration */
+            configuration: {
+                [key: string]: unknown;
+            };
+            /** Configuration Fingerprint */
+            configuration_fingerprint: string;
+            /**
+             * Configuration Snapshot Id
+             * Format: uuid
+             */
+            configuration_snapshot_id: string;
+            context: components["schemas"]["ApiContext"];
+            /** Core Metrics */
+            core_metrics: {
+                [key: string]: string | null;
+            };
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Display */
+            display: {
+                [key: string]: unknown;
+            };
+            /**
+             * Effective End
+             * Format: date
+             */
+            effective_end: string;
+            /**
+             * Effective Start
+             * Format: date
+             */
+            effective_start: string;
+            /** Evidence */
+            evidence: {
+                [key: string]: unknown;
+            };
+            /**
+             * Evidence Artifact Id
+             * Format: uuid
+             */
+            evidence_artifact_id: string;
+            /** Evidence Class */
+            evidence_class: string;
+            /** Evidence Quality */
+            evidence_quality: {
+                [key: string]: unknown;
+            };
+            /** Matched Baselines */
+            matched_baselines: {
+                [key: string]: unknown;
+            }[];
+            /** Metrics */
+            metrics: {
+                [key: string]: unknown;
+            };
+            /** Outcome */
+            outcome: string;
+            /** Product */
+            product: {
+                [key: string]: unknown;
+            };
+            quality: components["schemas"]["QualitySummary"];
+            /** Quality Status */
+            quality_status: string;
+            /**
+             * Result Artifact Id
+             * Format: uuid
+             */
+            result_artifact_id: string;
+            /**
+             * Result Evidence Snapshot Id
+             * Format: uuid
+             */
+            result_evidence_snapshot_id: string;
+        };
+        /** V022ExperimentIdentityItem */
+        V022ExperimentIdentityItem: {
+            /** Configuration */
+            configuration: {
+                [key: string]: unknown;
+            };
+            /** Configuration Fingerprint */
+            configuration_fingerprint: string;
+            /**
+             * Configuration Snapshot Id
+             * Format: uuid
+             */
+            configuration_snapshot_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Display */
+            display: {
+                [key: string]: unknown;
+            };
+            /**
+             * Evidence Artifact Id
+             * Format: uuid
+             */
+            evidence_artifact_id: string;
+            /** Evidence Class */
+            evidence_class: string;
+            /**
+             * Result Artifact Id
+             * Format: uuid
+             */
+            result_artifact_id: string;
+            /**
+             * Result Evidence Snapshot Id
+             * Format: uuid
+             */
+            result_evidence_snapshot_id: string;
+        };
+        /** V022ExperimentLeaderboardResponse */
+        V022ExperimentLeaderboardResponse: {
+            /** Available Frequencies */
+            available_frequencies: ("weekly" | "monthly")[];
+            comparison_context: components["schemas"]["V022LeaderboardContext"];
+            context: components["schemas"]["ApiContext"];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            quality: components["schemas"]["QualitySummary"];
+            /** Rows */
+            rows: components["schemas"]["V022LeaderboardRow"][];
+            /**
+             * Sort
+             * @enum {string}
+             */
+            sort: "sharpe_ratio" | "cagr" | "cagr_spread" | "maximum_drawdown";
+            /** Total */
+            total: number;
+        };
+        /** V022ExperimentSeriesPoint */
+        V022ExperimentSeriesPoint: {
+            /** Benchmark Nav */
+            benchmark_nav: string;
+            /** Drawdown */
+            drawdown: string;
+            /** Excess Nav */
+            excess_nav: string;
+            /**
+             * Session Date
+             * Format: date
+             */
+            session_date: string;
+            /** Strategy Nav */
+            strategy_nav: string;
+        };
+        /** V022ExperimentSeriesResponse */
+        V022ExperimentSeriesResponse: {
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Effective End
+             * Format: date
+             */
+            effective_end: string;
+            /**
+             * Effective Start
+             * Format: date
+             */
+            effective_start: string;
+            /** Points */
+            points: components["schemas"]["V022ExperimentSeriesPoint"][];
+            quality: components["schemas"]["QualitySummary"];
+            /**
+             * Result Evidence Snapshot Id
+             * Format: uuid
+             */
+            result_evidence_snapshot_id: string;
+            /** Returned Points */
+            returned_points: number;
+            /** Total Points */
+            total_points: number;
+        };
+        /** V022LeaderboardContext */
+        V022LeaderboardContext: {
+            /**
+             * Benchmark Key
+             * @constant
+             */
+            benchmark_key: "spy";
+            /** Cohort Key */
+            cohort_key: string;
+            /** Cost Bps Per Side */
+            cost_bps_per_side: string;
+            /** Evaluation Cohort Fingerprint */
+            evaluation_cohort_fingerprint: string;
+            /**
+             * Evaluation Cohort Version Id
+             * Format: uuid
+             */
+            evaluation_cohort_version_id: string;
+            /**
+             * Evaluation End
+             * Format: date
+             */
+            evaluation_end: string;
+            /**
+             * Evaluation Start
+             * Format: date
+             */
+            evaluation_start: string;
+            /** Execution Delay Sessions */
+            execution_delay_sessions: number;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /** Member Count */
+            member_count: number;
+            /** Price Semantics */
+            price_semantics: string;
+            /**
+             * Ranking Cohort Artifact Id
+             * Format: uuid
+             */
+            ranking_cohort_artifact_id: string;
+            /**
+             * Ranking Cohort Release Id
+             * Format: uuid
+             */
+            ranking_cohort_release_id: string;
+            /** Ranking Version Number */
+            ranking_version_number: number;
+            /**
+             * Warmup Start
+             * Format: date
+             */
+            warmup_start: string;
+        };
+        /** V022LeaderboardRow */
+        V022LeaderboardRow: {
+            /** Benchmark Cagr */
+            benchmark_cagr: string;
+            /** Cagr */
+            cagr: string;
+            /** Cagr Spread */
+            cagr_spread: string;
+            /** Configuration */
+            configuration: {
+                [key: string]: unknown;
+            };
+            /** Configuration Fingerprint */
+            configuration_fingerprint: string;
+            /**
+             * Configuration Snapshot Id
+             * Format: uuid
+             */
+            configuration_snapshot_id: string;
+            /** Display */
+            display: {
+                [key: string]: unknown;
+            };
+            /** Execution Version Id */
+            execution_version_id: string | null;
+            /** Maximum Drawdown */
+            maximum_drawdown: string;
+            /** Product Candidate */
+            product_candidate: boolean;
+            /** Product Definition Id */
+            product_definition_id: string | null;
+            /** Product Enrollment Id */
+            product_enrollment_id: string | null;
+            /** Rank */
+            rank: number;
+            /**
+             * Result Artifact Id
+             * Format: uuid
+             */
+            result_artifact_id: string;
+            /**
+             * Result Evidence Snapshot Id
+             * Format: uuid
+             */
+            result_evidence_snapshot_id: string;
+            /** Sharpe Ratio */
+            sharpe_ratio: string;
+        };
+        /** V022ProductCandidateRequest */
+        V022ProductCandidateRequest: {
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /** Name */
+            name: string;
+            /** Product Key */
+            product_key: string;
+            /** Researcher Id */
+            researcher_id: string;
+            /**
+             * Version Number
+             * @default 1
+             */
+            version_number: number;
+        };
+        /** V022ProductCandidateResponse */
+        V022ProductCandidateResponse: {
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Execution Version Artifact Id
+             * Format: uuid
+             */
+            execution_version_artifact_id: string;
+            /**
+             * Execution Version Id
+             * Format: uuid
+             */
+            execution_version_id: string;
+            /**
+             * Lifecycle
+             * @constant
+             */
+            lifecycle: "candidate";
+            /**
+             * Monitoring Policy Version Artifact Id
+             * Format: uuid
+             */
+            monitoring_policy_version_artifact_id: string;
+            /**
+             * Monitoring Policy Version Id
+             * Format: uuid
+             */
+            monitoring_policy_version_id: string;
+            /**
+             * Product Definition Artifact Id
+             * Format: uuid
+             */
+            product_definition_artifact_id: string;
+            /**
+             * Product Definition Id
+             * Format: uuid
+             */
+            product_definition_id: string;
+            /**
+             * Qualification Version Artifact Id
+             * Format: uuid
+             */
+            qualification_version_artifact_id: string;
+            /**
+             * Qualification Version Id
+             * Format: uuid
+             */
+            qualification_version_id: string;
+            quality: components["schemas"]["QualitySummary"];
+            /**
+             * Result Evidence Snapshot Id
+             * Format: uuid
+             */
+            result_evidence_snapshot_id: string;
+            /** Reused */
+            reused: boolean;
+            /** Version Number */
+            version_number: number;
+        };
+        /** V022ProductEnrollmentRequest */
+        V022ProductEnrollmentRequest: {
+            /**
+             * Activation Effective At
+             * Format: date-time
+             */
+            activation_effective_at: string;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /**
+             * Monitoring Policy Version Id
+             * Format: uuid
+             */
+            monitoring_policy_version_id: string;
+            /**
+             * Oos Anchor Cutoff At
+             * Format: date-time
+             */
+            oos_anchor_cutoff_at: string;
+            /**
+             * Qualification Version Id
+             * Format: uuid
+             */
+            qualification_version_id: string;
+            /** Researcher Id */
+            researcher_id: string;
+            /** Schedule Key */
+            schedule_key: string;
+            /**
+             * Schedule Version Number
+             * @default 1
+             */
+            schedule_version_number: number;
+            /** Sessions */
+            sessions: components["schemas"]["V022DecisionSessionInput"][];
+        };
+        /** V022ProductEnrollmentResponse */
+        V022ProductEnrollmentResponse: {
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Decision Schedule Artifact Id
+             * Format: uuid
+             */
+            decision_schedule_artifact_id: string;
+            /**
+             * Decision Schedule Version Id
+             * Format: uuid
+             */
+            decision_schedule_version_id: string;
+            /**
+             * Enrollment Artifact Id
+             * Format: uuid
+             */
+            enrollment_artifact_id: string;
+            /**
+             * First Eligible Decision Session Id
+             * Format: uuid
+             */
+            first_eligible_decision_session_id: string;
+            /**
+             * Lifecycle
+             * @constant
+             */
+            lifecycle: "active";
+            /**
+             * Product Enrollment Id
+             * Format: uuid
+             */
+            product_enrollment_id: string;
+            quality: components["schemas"]["QualitySummary"];
+            /** Reused */
+            reused: boolean;
+        };
+        /** V022ProductIdentityCatalogResponse */
+        V022ProductIdentityCatalogResponse: {
+            context: components["schemas"]["ApiContext"];
+            /** Items */
+            items: components["schemas"]["V022ProductIdentityItem"][];
+            quality: components["schemas"]["QualitySummary"];
+        };
+        /** V022ProductIdentityDetailResponse */
+        V022ProductIdentityDetailResponse: {
+            /**
+             * Activation Effective At
+             * Format: date-time
+             */
+            activation_effective_at: string;
+            /** Active Ensemble State */
+            active_ensemble_state?: {
+                [key: string]: unknown;
+            } | null;
+            /** Completed Decision Count */
+            completed_decision_count: number;
+            /** Configuration */
+            configuration: {
+                [key: string]: unknown;
+            };
+            /** Configuration Fingerprint */
+            configuration_fingerprint: string;
+            /**
+             * Configuration Snapshot Id
+             * Format: uuid
+             */
+            configuration_snapshot_id: string;
+            context: components["schemas"]["ApiContext"];
+            /** Data Disclosure */
+            data_disclosure: {
+                [key: string]: unknown;
+            };
+            /** Decision Count */
+            decision_count: number;
+            /**
+             * Decision Pipeline State
+             * @enum {string}
+             */
+            decision_pipeline_state: "inactive" | "scheduled" | "waiting_for_input" | "input_prepared" | "runtime_published" | "schedule_complete";
+            /** Decisions */
+            decisions: {
+                [key: string]: unknown;
+            }[];
+            /** Display */
+            display: {
+                [key: string]: unknown;
+            };
+            /**
+             * Enrollment Artifact Id
+             * Format: uuid
+             */
+            enrollment_artifact_id: string;
+            /** Execution Fingerprint */
+            execution_fingerprint: string;
+            /** Execution Version Number */
+            execution_version_number: number;
+            /**
+             * First Eligible Decision Session
+             * Format: date
+             */
+            first_eligible_decision_session: string;
+            /**
+             * First Eligible Decision Session Id
+             * Format: uuid
+             */
+            first_eligible_decision_session_id: string;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /** Health */
+            health: string;
+            /** Latest Decision */
+            latest_decision: {
+                [key: string]: unknown;
+            } | null;
+            /** Latest Decision Session */
+            latest_decision_session: string | null;
+            /** Latest Decision Status */
+            latest_decision_status: ("completed" | "missing") | null;
+            /** Lifecycle */
+            lifecycle: string;
+            /** Lifecycle Events */
+            lifecycle_events: {
+                [key: string]: unknown;
+            }[];
+            /** Missing Decision Count */
+            missing_decision_count: number;
+            /** Monitoring Policy */
+            monitoring_policy: {
+                [key: string]: unknown;
+            };
+            /** Monitoring Snapshots */
+            monitoring_snapshots: {
+                [key: string]: unknown;
+            }[];
+            /** Name */
+            name: string;
+            /** Next Pending Decision Cutoff At */
+            next_pending_decision_cutoff_at: string | null;
+            /** Next Pending Decision Session */
+            next_pending_decision_session: string | null;
+            /** Next Product Input Available At */
+            next_product_input_available_at: string | null;
+            /** Next Product Input Snapshot Id */
+            next_product_input_snapshot_id: string | null;
+            /** Next Product Runtime Execution Id */
+            next_product_runtime_execution_id: string | null;
+            /**
+             * Oos Anchor Cutoff At
+             * Format: date-time
+             */
+            oos_anchor_cutoff_at: string;
+            /** Product Data Disclosure Fingerprint */
+            product_data_disclosure_fingerprint: string | null;
+            /** Product Data Disclosure Id */
+            product_data_disclosure_id: string | null;
+            /** Product Eligibility */
+            product_eligibility: ("eligible" | "eligible_with_warnings") | null;
+            /**
+             * Product Enrollment Id
+             * Format: uuid
+             */
+            product_enrollment_id: string;
+            /** Product Key */
+            product_key: string;
+            /** Qualification */
+            qualification: {
+                [key: string]: unknown;
+            };
+            quality: components["schemas"]["QualitySummary"];
+            /**
+             * Source Result Evidence Snapshot Id
+             * Format: uuid
+             */
+            source_result_evidence_snapshot_id: string;
+            /** Warning Codes */
+            warning_codes: string[];
+        };
+        /** V022ProductIdentityItem */
+        V022ProductIdentityItem: {
+            /**
+             * Activation Effective At
+             * Format: date-time
+             */
+            activation_effective_at: string;
+            /** Completed Decision Count */
+            completed_decision_count: number;
+            /** Configuration */
+            configuration: {
+                [key: string]: unknown;
+            };
+            /** Configuration Fingerprint */
+            configuration_fingerprint: string;
+            /**
+             * Configuration Snapshot Id
+             * Format: uuid
+             */
+            configuration_snapshot_id: string;
+            /** Decision Count */
+            decision_count: number;
+            /**
+             * Decision Pipeline State
+             * @enum {string}
+             */
+            decision_pipeline_state: "inactive" | "scheduled" | "waiting_for_input" | "input_prepared" | "runtime_published" | "schedule_complete";
+            /** Display */
+            display: {
+                [key: string]: unknown;
+            };
+            /**
+             * Enrollment Artifact Id
+             * Format: uuid
+             */
+            enrollment_artifact_id: string;
+            /** Execution Fingerprint */
+            execution_fingerprint: string;
+            /** Execution Version Number */
+            execution_version_number: number;
+            /**
+             * First Eligible Decision Session
+             * Format: date
+             */
+            first_eligible_decision_session: string;
+            /**
+             * First Eligible Decision Session Id
+             * Format: uuid
+             */
+            first_eligible_decision_session_id: string;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "weekly" | "monthly";
+            /** Health */
+            health: string;
+            /** Latest Decision Session */
+            latest_decision_session: string | null;
+            /** Latest Decision Status */
+            latest_decision_status: ("completed" | "missing") | null;
+            /** Lifecycle */
+            lifecycle: string;
+            /** Missing Decision Count */
+            missing_decision_count: number;
+            /** Name */
+            name: string;
+            /** Next Pending Decision Cutoff At */
+            next_pending_decision_cutoff_at: string | null;
+            /** Next Pending Decision Session */
+            next_pending_decision_session: string | null;
+            /** Next Product Input Available At */
+            next_product_input_available_at: string | null;
+            /** Next Product Input Snapshot Id */
+            next_product_input_snapshot_id: string | null;
+            /** Next Product Runtime Execution Id */
+            next_product_runtime_execution_id: string | null;
+            /**
+             * Oos Anchor Cutoff At
+             * Format: date-time
+             */
+            oos_anchor_cutoff_at: string;
+            /** Product Data Disclosure Fingerprint */
+            product_data_disclosure_fingerprint: string | null;
+            /** Product Data Disclosure Id */
+            product_data_disclosure_id: string | null;
+            /** Product Eligibility */
+            product_eligibility: ("eligible" | "eligible_with_warnings") | null;
+            /**
+             * Product Enrollment Id
+             * Format: uuid
+             */
+            product_enrollment_id: string;
+            /** Product Key */
+            product_key: string;
+            /**
+             * Source Result Evidence Snapshot Id
+             * Format: uuid
+             */
+            source_result_evidence_snapshot_id: string;
+            /** Warning Codes */
+            warning_codes: string[];
+        };
+        /** V022ProductLifecycleRequest */
+        V022ProductLifecycleRequest: {
+            /**
+             * Effective At
+             * Format: date-time
+             */
+            effective_at: string;
+            /** Expected Sequence */
+            expected_sequence: number;
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /** Reason */
+            reason: string;
+            /** Reason Code */
+            reason_code: string;
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Researcher Id */
+            researcher_id: string;
+            /**
+             * Target
+             * @enum {string}
+             */
+            target: "active" | "suspended" | "retired" | "invalidated";
+        };
+        /** V022ProductLifecycleResponse */
+        V022ProductLifecycleResponse: {
+            /**
+             * Artifact Id
+             * Format: uuid
+             */
+            artifact_id: string;
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Enrollment Lifecycle Event Id
+             * Format: uuid
+             */
+            enrollment_lifecycle_event_id: string;
+            /** Event Fingerprint */
+            event_fingerprint: string;
+            /** From Lifecycle */
+            from_lifecycle: string;
+            /**
+             * Product Enrollment Id
+             * Format: uuid
+             */
+            product_enrollment_id: string;
+            quality: components["schemas"]["QualitySummary"];
+            /** Reused */
+            reused: boolean;
+            /** Sequence Number */
+            sequence_number: number;
+            /** To Lifecycle */
+            to_lifecycle: string;
+        };
+        /** V022ProductPromotionResponse */
+        V022ProductPromotionResponse: {
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Decision Schedule Artifact Id
+             * Format: uuid
+             */
+            decision_schedule_artifact_id: string;
+            /**
+             * Decision Schedule Version Id
+             * Format: uuid
+             */
+            decision_schedule_version_id: string;
+            /**
+             * Enrollment Artifact Id
+             * Format: uuid
+             */
+            enrollment_artifact_id: string;
+            /**
+             * Execution Version Artifact Id
+             * Format: uuid
+             */
+            execution_version_artifact_id: string;
+            /**
+             * Execution Version Id
+             * Format: uuid
+             */
+            execution_version_id: string;
+            /**
+             * First Eligible Decision Session Id
+             * Format: uuid
+             */
+            first_eligible_decision_session_id: string;
+            /**
+             * Lifecycle
+             * @constant
+             */
+            lifecycle: "active";
+            /**
+             * Monitoring Policy Version Artifact Id
+             * Format: uuid
+             */
+            monitoring_policy_version_artifact_id: string;
+            /**
+             * Monitoring Policy Version Id
+             * Format: uuid
+             */
+            monitoring_policy_version_id: string;
+            /**
+             * Product Data Disclosure Artifact Id
+             * Format: uuid
+             */
+            product_data_disclosure_artifact_id: string;
+            /** Product Data Disclosure Fingerprint */
+            product_data_disclosure_fingerprint: string;
+            /**
+             * Product Data Disclosure Id
+             * Format: uuid
+             */
+            product_data_disclosure_id: string;
+            /**
+             * Product Definition Artifact Id
+             * Format: uuid
+             */
+            product_definition_artifact_id: string;
+            /**
+             * Product Definition Id
+             * Format: uuid
+             */
+            product_definition_id: string;
+            /**
+             * Product Eligibility
+             * @enum {string}
+             */
+            product_eligibility: "eligible" | "eligible_with_warnings";
+            /**
+             * Product Enrollment Id
+             * Format: uuid
+             */
+            product_enrollment_id: string;
+            /** Product Ensemble State Artifact Id */
+            product_ensemble_state_artifact_id?: string | null;
+            /** Product Ensemble State Fingerprint */
+            product_ensemble_state_fingerprint?: string | null;
+            /** Product Ensemble State Id */
+            product_ensemble_state_id?: string | null;
+            /**
+             * Qualification Version Artifact Id
+             * Format: uuid
+             */
+            qualification_version_artifact_id: string;
+            /**
+             * Qualification Version Id
+             * Format: uuid
+             */
+            qualification_version_id: string;
+            quality: components["schemas"]["QualitySummary"];
+            /**
+             * Result Evidence Snapshot Id
+             * Format: uuid
+             */
+            result_evidence_snapshot_id: string;
+            /** Reused */
+            reused: boolean;
+            /** Version Number */
+            version_number: number;
+            /** Warning Codes */
+            warning_codes: string[];
+        };
+        /** V022ReleaseControlResponse */
+        V022ReleaseControlResponse: {
+            context: components["schemas"]["ApiContext"];
+            /**
+             * Default Contract
+             * @enum {string}
+             */
+            default_contract: "v0.21" | "v0.22";
+            /** Maintenance Read Only */
+            maintenance_read_only: boolean;
+            quality: components["schemas"]["QualitySummary"];
+            /** Shadow Runtime Allowed */
+            shadow_runtime_allowed: boolean;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "hidden" | "shadow" | "explicit_eligible" | "default" | "maintenance_read_only";
+            /** Transition Artifact Id */
+            transition_artifact_id: string | null;
+            /** Transition Sequence */
+            transition_sequence: number;
+            /** V021 Research Creation Allowed */
+            v021_research_creation_allowed: boolean;
+            /** V022 Explicit Creation Allowed */
+            v022_explicit_creation_allowed: boolean;
         };
         /** ValidationError */
         ValidationError: {
@@ -4863,6 +8137,26 @@ export interface operations {
             };
         };
     };
+    release_control_status_api_v2_release_control_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["V022ReleaseControlResponse"];
+                };
+            };
+        };
+    };
     release_gates_api_v2_release_gates_get: {
         parameters: {
             query?: never;
@@ -4879,6 +8173,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReleaseGateResponse"];
+                };
+            };
+        };
+    };
+    session_context_api_v2_session_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionContextResponse"];
                 };
             };
         };
@@ -5125,6 +8439,473 @@ export interface operations {
             };
         };
     };
+    create_asset_data_export_api_v2_v022_asset_data_exports_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssetDataExportPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetDataExportJobResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_asset_data_export_api_v2_v022_asset_data_exports_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssetDataExportPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetDataExportPreviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    asset_data_export_status_api_v2_v022_asset_data_exports__export_job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                export_job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetDataExportJobResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_asset_data_export_api_v2_v022_asset_data_exports__export_job_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                export_job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetDataExportJobResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    asset_data_export_download_api_v2_v022_asset_data_exports__export_job_id__download_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                export_job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    promote_and_enroll_v022_product_api_v2_v022_experiment_results__evidence_id__promote_and_enroll_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                evidence_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["V022ProductCandidateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["V022ProductPromotionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    v022_experiment_identities_api_v2_v022_experiments_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["V022ExperimentIdentityCatalogResponse"];
+                };
+            };
+        };
+    };
+    v022_experiment_leaderboard_api_v2_v022_experiments_leaderboard_get: {
+        parameters: {
+            query?: {
+                frequency?: "weekly" | "monthly";
+                ranking_cohort_release_id?: string | null;
+                sort?: "sharpe_ratio" | "cagr" | "cagr_spread" | "maximum_drawdown";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["V022ExperimentLeaderboardResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    v022_experiment_identity_api_v2_v022_experiments__evidence_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                evidence_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["V022ExperimentIdentityDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    promote_v022_product_candidate_api_v2_v022_experiments__evidence_id__promote_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                evidence_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["V022ProductCandidateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["V022ProductCandidateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    v022_experiment_series_api_v2_v022_experiments__evidence_id__series_get: {
+        parameters: {
+            query?: {
+                max_points?: number;
+            };
+            header?: never;
+            path: {
+                evidence_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["V022ExperimentSeriesResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enroll_v022_product_candidate_api_v2_v022_product_candidates__execution_version_id__enroll_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["V022ProductEnrollmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["V022ProductEnrollmentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    v022_product_identities_api_v2_v022_products_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["V022ProductIdentityCatalogResponse"];
+                };
+            };
+        };
+    };
+    v022_product_identity_api_v2_v022_products__enrollment_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enrollment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["V022ProductIdentityDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_v022_product_lifecycle_api_v2_v022_products__enrollment_id__lifecycle_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enrollment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["V022ProductLifecycleRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["V022ProductLifecycleResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     workspace_compile_preview_api_v2_workspace_compile_preview_post: {
         parameters: {
             query?: never;
@@ -5213,6 +8994,660 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WorkspaceDraftResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_graph_draft_api_v2_workspace_graph_drafts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GraphDraftCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphDraftSnapshotResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_graph_draft_by_key_api_v2_workspace_graph_drafts_by_key__draft_key__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphDraftSnapshotResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_graph_draft_api_v2_workspace_graph_drafts__graph_draft_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                graph_draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphDraftSnapshotResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_graph_draft_change_api_v2_workspace_graph_drafts__graph_draft_id__change_previews_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                graph_draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GraphChangePreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphChangePreviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_graph_draft_change_api_v2_workspace_graph_drafts__graph_draft_id__change_previews__impact_token__confirm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                graph_draft_id: string;
+                impact_token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GraphChangeConfirmRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphDraftSnapshotResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clone_graph_draft_revision_api_v2_workspace_graph_drafts__graph_draft_id__clones_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                graph_draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GraphDraftCloneRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphDraftSnapshotResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    compile_graph_draft_api_v2_workspace_graph_drafts__graph_draft_id__compile_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                graph_draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GraphDraftCompileRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphDraftCompileResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_current_graph_draft_compile_api_v2_workspace_graph_drafts__graph_draft_id__current_compile_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                graph_draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphDraftCompileResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apply_graph_draft_event_api_v2_workspace_graph_drafts__graph_draft_id__events_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                graph_draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GraphDraftEventRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphDraftSnapshotResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_graph_catalog_rebase_api_v2_workspace_graph_drafts__graph_draft_id__rebase_previews_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                graph_draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GraphCatalogRebasePreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphChangePreviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_graph_draft_api_v2_workspace_graph_drafts__graph_draft_id__reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                graph_draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GraphDraftResetRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphDraftSnapshotResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    graph_draft_stage_families_api_v2_workspace_graph_drafts__graph_draft_id__stages__stage_no__families_get: {
+        parameters: {
+            query?: {
+                search?: string;
+                selection_filter?: "all" | "selected" | "locked";
+                availability_filter?: "all" | "ready" | "requires_ancestors" | "hard_incompatible";
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                graph_draft_id: string;
+                stage_no: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphStageFamilyPageResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    graph_workspace_preview_api_v2_workspace_graph_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GraphWorkspacePreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphWorkspacePreviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_graph_suite_launch_batch_api_v2_workspace_graph_suite_launch_batches_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GraphSuiteLaunchBatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphSuiteLaunchBatchResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    graph_suite_launch_batch_status_api_v2_workspace_graph_suite_launch_batches__suite_launch_batch_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                suite_launch_batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphSuiteLaunchBatchResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    graph_suite_runtime_readiness_api_v2_workspace_graph_suite_runtime_readiness_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphSuiteRuntimeReadinessResponse"];
+                };
+            };
+        };
+    };
+    graph_suite_list_api_v2_workspace_graph_suites_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphSuiteListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_graph_suite_api_v2_workspace_graph_suites_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GraphSuiteSubmitRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphSuiteSubmitResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    graph_suite_status_api_v2_workspace_graph_suites__research_suite_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                research_suite_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphSuiteStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    graph_suite_results_api_v2_workspace_graph_suites__research_suite_id__results_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                research_suite_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphSuiteResultsResponse"];
                 };
             };
             /** @description Validation Error */

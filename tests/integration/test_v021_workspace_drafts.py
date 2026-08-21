@@ -6,11 +6,13 @@ import uuid
 import pytest
 from fastapi.testclient import TestClient
 
+from style_rotation.api.actor_context import TrustedLocalActorContext
 from style_rotation.api.app import create_app
 from style_rotation.api.commands import ApplicationCommandService
 from style_rotation.api.query import ArtifactQueryService
 from style_rotation.persistence.database import reset_database
 from style_rotation.persistence.session import create_postgres_engine
+from style_rotation.v022.mutation_admission import MutationAdmissionService
 
 pytestmark = pytest.mark.integration
 DATABASE_URL = os.getenv("STYLE_ROTATION_TEST_DATABASE_URL")
@@ -22,7 +24,14 @@ def test_workspace_draft_is_persistent_and_revision_guarded() -> None:
     reset_database(DATABASE_URL, "style_rotation_test", "test")
     engine = create_postgres_engine(DATABASE_URL)
     client = TestClient(
-        create_app(ArtifactQueryService(engine), commands=ApplicationCommandService(engine))
+        create_app(
+            ArtifactQueryService(engine),
+            commands=ApplicationCommandService(engine),
+            mutation_admission=MutationAdmissionService(engine),
+            actor_context=TrustedLocalActorContext(
+                actor_key="local", operator_enabled=True
+            ),
+        )
     )
     selection = {
         "frequency": "weekly",
@@ -42,6 +51,21 @@ def test_workspace_draft_is_persistent_and_revision_guarded() -> None:
         "expected_revision": None,
         "selection": selection,
     }
+    spoofed = client.put(
+        "/api/v2/workspace/drafts/another-user/spoofed",
+        json={
+            **create_request,
+            "researcher_id": "another-user",
+            "draft_key": "spoofed",
+            "idempotency_key": str(uuid.uuid4()),
+        },
+    )
+    assert spoofed.status_code == 403
+    assert spoofed.json()["code"] == "actor_claim_mismatch"
+    with engine.connect() as connection:
+        assert connection.exec_driver_sql(
+            "SELECT count(*) FROM workspace.research_draft"
+        ).scalar_one() == 0
     created = client.put("/api/v2/workspace/drafts/local/default", json=create_request)
     assert created.status_code == 200
     assert created.json()["revision"] == 1

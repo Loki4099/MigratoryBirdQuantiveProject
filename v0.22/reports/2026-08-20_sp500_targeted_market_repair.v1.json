@@ -1,0 +1,12 @@
+{
+  "contract_version": "v0.22.targeted_yahoo_market_repair.v1",
+  "status": "closed_without_publication",
+  "primary_dataset_publication_id": "22753730-d9cd-539d-bb04-b9ce72da6e93",
+  "created_by": "local-data-governance",
+  "entries": [],
+  "outcome": {
+    "published_resolution_count": 0,
+    "reason": "Every isolated current-symbol candidate returned the same zero-volume observation from a fresh Yahoo request; the all-or-nothing publisher rejected each batch before its first database write.",
+    "next_action": "Preserve the attempted-review record and use explicit full-range exclusion unless a separately reviewed positive-volume source is added later."
+  }
+}

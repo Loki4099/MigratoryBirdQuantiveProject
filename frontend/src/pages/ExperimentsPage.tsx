@@ -3,10 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router-dom";
 
-import { api } from "../api/client";
+import { api, ApiClientError } from "../api/client";
 import { EmptyState, ErrorState, LoadingState, QualityBadge } from "../components/QueryState";
 import { DecisionExplorer } from "../components/DecisionExplorer";
 import { ResearchKey, researchLabel } from "../components/ResearchText";
+import { V022IdentityPanel } from "../components/V022IdentityPanel";
 
 const ratio = (value: number | null | undefined) => value == null ? "—" :
   new Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 2 }).format(value);
@@ -23,16 +24,35 @@ const metricValue = (metric: { metric_key: string; value: number | null; value_s
   metric.value_status !== "defined" ? metric.reason_code :
     percentageMetrics.has(metric.metric_key) ? ratio(metric.value) : decimal(metric.value);
 
-type SuiteStatus = Awaited<ReturnType<typeof api.workspaceSuiteStatus>>;
+type GraphSuiteResults = Awaited<ReturnType<typeof api.graphSuiteResults>>;
+type GraphSuiteResult = GraphSuiteResults["results"][number];
+type GraphSuiteRuntimeReadiness = Awaited<ReturnType<typeof api.graphSuiteRuntimeReadiness>>;
+type GraphSuiteLaunchBatch = Awaited<ReturnType<typeof api.graphSuiteLaunchBatchStatus>>;
 
-function SuiteProgress({ suite, chinese }: { suite: SuiteStatus; chinese: boolean }) {
+interface SuiteProgressData {
+  status?: string;
+  status_counts: Record<string, number>;
+  total: number;
+  terminal: number;
+  complete: boolean;
+}
+
+function SuiteProgress({ suite, chinese }: { suite: SuiteProgressData; chinese: boolean }) {
+  if (suite.status === "not_started") {
+    return <div className="experiment-not-started" role="status">
+      <strong>{chinese ? "实验已提交，正在等待运行计划" : "Experiment submitted; waiting for its runtime plan"}</strong>
+      <p>{chinese ? "持久运行服务会继续创建计划和工作项；关闭浏览器不会中断处理，本页面会自动刷新。" : "The durable runtime will create the plan and work items. Closing the browser does not interrupt processing, and this page refreshes automatically."}</p>
+    </div>;
+  }
   const completed = suite.status_counts.completed ?? suite.status_counts.accepted ?? 0;
   const failed = suite.status_counts.failed ?? 0;
   const cancelled = suite.status_counts.cancelled ?? 0;
   const running = suite.status_counts.running ?? 0;
   const queued = suite.status_counts.queued ?? 0;
   const percent = suite.total > 0 ? Math.min(100, suite.terminal / suite.total * 100) : 0;
-  const title = suite.complete
+  const title = suite.status === "materializing"
+    ? (chinese ? "正在准备加工结果" : "Materializing processing outputs")
+    : suite.complete
     ? failed > 0
       ? (chinese ? "实验运行失败" : "Experiment failed")
       : (chinese ? "实验计算已完成" : "Experiment complete")
@@ -57,7 +77,463 @@ function SuiteProgress({ suite, chinese }: { suite: SuiteStatus; chinese: boolea
   </>;
 }
 
+function SuiteRuntimeStatus({
+  readiness,
+  loading,
+  queryError,
+  chinese,
+}: {
+  readiness: GraphSuiteRuntimeReadiness | null;
+  loading: boolean;
+  queryError: string | null;
+  chinese: boolean;
+}) {
+  if (loading && !readiness) {
+    return <div className="graph-message" role="status">
+      <strong>{chinese ? "正在检查回测运行服务" : "Checking the backtest runtime"}</strong>
+    </div>;
+  }
+  if (queryError) {
+    return <div className="graph-message error" role="alert">
+      <strong>{chinese ? "无法确认回测运行服务状态" : "Unable to confirm the backtest runtime status"}</strong>
+      <span>{queryError}</span>
+    </div>;
+  }
+  if (!readiness) return null;
+
+  const heartbeat = readiness.heartbeat_at
+    ? new Intl.DateTimeFormat(chinese ? "zh-CN" : "en", {
+      dateStyle: "medium",
+      timeStyle: "medium",
+    }).format(new Date(readiness.heartbeat_at))
+    : null;
+  const title = readiness.state === "working"
+    ? (chinese ? "运行服务正在处理实验" : "The runtime is processing the experiment")
+    : readiness.state === "ready"
+      ? (chinese ? "运行服务在线，正在等待工作" : "The runtime is online and awaiting work")
+      : readiness.state === "error"
+        ? (chinese ? "回测运行服务异常，实验暂时无法继续" : "The backtest runtime failed; the experiment cannot continue")
+        : readiness.state === "stale"
+          ? (chinese ? "运行服务心跳已过期，无法确认实验是否仍在处理" : "The runtime heartbeat is stale; processing cannot be confirmed")
+          : readiness.state === "stopped"
+            ? (chinese ? "回测运行服务已停止" : "The backtest runtime has stopped")
+            : (chinese ? "未检测到回测运行服务" : "No backtest runtime was detected");
+  const detail = readiness.error_summary
+    ?? (readiness.state === "stale" && heartbeat
+      ? `${chinese ? "最后心跳" : "Last heartbeat"}: ${heartbeat}`
+      : `${chinese ? "当前状态" : "Current state"}: suite_worker.${readiness.state}`);
+
+  return <div
+    className={`graph-message ${readiness.ready ? "success" : "error"}`}
+    role={readiness.ready ? "status" : "alert"}
+  >
+    <strong>{title}</strong>
+    <span>{detail}</span>
+  </div>;
+}
+
 export function ExperimentsPage() {
+  const [searchParams] = useSearchParams();
+  const launchBatchId = searchParams.get("launch_batch") ?? "";
+  const graphSuiteId = searchParams.get("graph_suite") ?? "";
+  if (launchBatchId) return <V022LaunchBatchExperiment batchId={launchBatchId} />;
+  if (graphSuiteId) return <V022GraphSuiteExperiment suiteId={graphSuiteId} />;
+  return <V022ExperimentIndex />;
+}
+
+function V022LaunchBatchExperiment({ batchId }: { batchId: string }) {
+  const { i18n } = useTranslation();
+  const chinese = i18n.resolvedLanguage === "zh-CN";
+  const batch = useQuery({
+    queryKey: ["v022", "graph-suite-launch-batch", batchId],
+    queryFn: () => api.graphSuiteLaunchBatchStatus(batchId),
+    refetchInterval: (query) => query.state.data?.status === "completed"
+      || query.state.data?.status === "failed"
+      || query.state.data?.status === "cancelled"
+      ? false
+      : 2_000,
+  });
+  const runtimeReadiness = useQuery({
+    queryKey: ["v022", "graph-suite-runtime", "readiness"],
+    queryFn: api.graphSuiteRuntimeReadiness,
+    enabled: batch.data?.status !== "completed",
+    refetchInterval: batch.data?.status !== "completed" ? 2_000 : false,
+    retry: false,
+  });
+  return <div className="page experiment-page">
+    <header className="page-heading"><div>
+      <p className="eyebrow">V0.22 CONTROLLED LAUNCH BATCH / FREQUENCY-SPECIFIC SUITES</p>
+      <h1>{chinese ? "周频与月频实验批次" : "Weekly and monthly experiment batch"}</h1>
+      <p>{chinese
+        ? "两个频率使用同一源修订，分别编译为独立研究图、Suite 和排行榜成员。高内存任务由运行服务串行处理。"
+        : "Both frequencies share one source revision but compile into independent graphs, Suites, and leaderboard members. The runtime processes memory-intensive work serially."}</p>
+    </div><Link className="arrow-link" to="/experiments">{chinese ? "打开实验首页" : "Open experiment home"} →</Link></header>
+    {batch.isLoading && <LoadingState />}
+    {batch.error && <ErrorState error={batch.error} retry={() => void batch.refetch()} />}
+    {batch.data && <>
+      <section className="catalog-section launch-batch-summary">
+        <div className="section-heading"><div><p className="eyebrow">BATCH / {batch.data.status}</p><h2>{chinese ? "双频运行进度" : "Frequency-specific progress"}</h2></div><QualityBadge state={batch.data.quality.state} /></div>
+        <div className="launch-batch-children">
+          {batch.data.children.map((child) => <LaunchBatchChildCard
+            key={child.frequency}
+            child={child}
+            chinese={chinese}
+          />)}
+        </div>
+      </section>
+      {batch.data.status !== "completed" && <SuiteRuntimeStatus
+        readiness={runtimeReadiness.data ?? null}
+        loading={runtimeReadiness.isLoading}
+        queryError={runtimeReadiness.error instanceof Error
+          ? runtimeReadiness.error.message
+          : null}
+        chinese={chinese}
+      />}
+      {batch.data.status === "completed" && <V022Leaderboard chinese={chinese} />}
+    </>}
+  </div>;
+}
+
+function LaunchBatchChildCard({ child, chinese }: {
+  child: GraphSuiteLaunchBatch["children"][number];
+  chinese: boolean;
+}) {
+  return <article className="launch-batch-child">
+    <header><div><p className="eyebrow">{child.frequency}</p><h3>{child.frequency === "weekly"
+      ? (chinese ? "周频实验" : "Weekly experiment")
+      : (chinese ? "月频实验" : "Monthly experiment")}</h3></div>
+      {child.research_suite_id && <Link className="arrow-link" to={`/experiments?graph_suite=${encodeURIComponent(child.research_suite_id)}&contract=v0.22`}>{chinese ? "查看独立运行" : "Open Suite"} →</Link>}
+    </header>
+    <SuiteProgress suite={{
+      status: child.status,
+      status_counts: child.status_counts ?? {},
+      total: child.total,
+      terminal: child.terminal,
+      complete: child.complete,
+    }} chinese={chinese} />
+  </article>;
+}
+
+function V022ExperimentIndex() {
+  const { i18n } = useTranslation();
+  const chinese = i18n.resolvedLanguage === "zh-CN";
+  const [view, setView] = useState<"leaderboard" | "history">("leaderboard");
+  const suites = useQuery({
+    queryKey: ["v022", "graph-suites"],
+    queryFn: () => api.graphSuites(),
+    refetchInterval: (query) => query.state.data?.items.some((item) => !item.complete)
+      ? 3_000
+      : false,
+  });
+  const currentDraft = useQuery({
+    queryKey: ["v022", "current-graph-draft"],
+    queryFn: async () => {
+      try {
+        return await api.graphDraftByKey("browser_default_v1");
+      } catch (caught) {
+        if (caught instanceof ApiClientError && caught.status === 404) return null;
+        throw caught;
+      }
+    },
+    retry: false,
+  });
+  const currentCompile = useQuery({
+    queryKey: [
+      "v022",
+      "current-graph-draft",
+      currentDraft.data?.graph_draft_id,
+      currentDraft.data?.revision,
+      "compile",
+    ],
+    queryFn: async () => {
+      const draft = currentDraft.data;
+      if (!draft) return null;
+      try {
+        return await api.currentGraphDraftCompile(draft.graph_draft_id);
+      } catch (caught) {
+        if (caught instanceof ApiClientError && caught.status === 404) return null;
+        throw caught;
+      }
+    },
+    enabled: Boolean(currentDraft.data),
+    retry: false,
+  });
+  return <div className="page experiment-page">
+    <header className="page-heading"><div><p className="eyebrow">V0.22 RANKING COHORT / PORTFOLIO CELLS</p><h1>{chinese ? "实验排行榜与运行历史" : "Experiment leaderboard and run history"}</h1><p>{chinese ? "同一频率、同一冻结环境中的每个具体实验配置单独排名；运行队列与历史记录保留在独立页签。" : "Each exact configuration ranks independently within one frozen frequency-specific environment. Runtime history remains in a separate tab."}</p></div></header>
+    <nav className="product-tabs" aria-label={chinese ? "实验页面" : "Experiment views"}>
+      <button type="button" className={view === "leaderboard" ? "active" : ""} onClick={() => setView("leaderboard")}>{chinese ? "排行榜" : "Leaderboard"}</button>
+      <button type="button" className={view === "history" ? "active" : ""} onClick={() => setView("history")}>{chinese ? "运行与历史" : "Runs & history"}</button>
+    </nav>
+    {view === "leaderboard" ? <V022Leaderboard chinese={chinese} /> : <>
+    <section className="catalog-section current-research-launch">
+      <div className="section-heading"><div>
+        <p className="eyebrow">CURRENT RESEARCH / COMPILE / START</p>
+        <h2>{chinese ? "启动当前研究" : "Start the current research"}</h2>
+        <p>{chinese
+          ? "编译只冻结配置，不会自动运行回测。确认当前编译身份后，再明确启动一次实验。"
+          : "Compilation freezes the configuration but does not run a backtest. Review the current compile, then explicitly start one experiment."}</p>
+      </div></div>
+      {(currentDraft.isLoading || currentCompile.isLoading) && <LoadingState />}
+      {(currentDraft.error || currentCompile.error) && <ErrorState
+        error={currentDraft.error ?? currentCompile.error!}
+        retry={() => {
+          void currentDraft.refetch();
+          void currentCompile.refetch();
+        }}
+      />}
+      {!currentDraft.isLoading && !currentDraft.error && !currentDraft.data && <div className="factor-empty-note">
+        <p>{chinese ? "还没有当前研究，请先选择资产和因子。" : "There is no current research yet. Select assets and factors first."}</p>
+        <Link className="arrow-link" to="/research-context">{chinese ? "开始研究" : "Start research"} →</Link>
+      </div>}
+      {currentDraft.data && !currentCompile.isLoading && !currentCompile.error && !currentCompile.data && <div className="factor-empty-note">
+        <p>{chinese ? "当前研究尚未编译。请在策略页顶部完成配置检查与编译。" : "The current research has not been compiled. Review and compile it at the top of the Strategy page."}</p>
+        <Link className="arrow-link" to="/strategy-configuration">{chinese ? "前往配置检查" : "Open configuration review"} →</Link>
+      </div>}
+      {currentDraft.data && currentCompile.data && <div className="graph-ready">
+        <strong>{chinese ? "当前修订已经编译，可以进入实验确认" : "The current revision is compiled and ready for experiment confirmation"}</strong>
+        <code>{currentCompile.data.graph_fingerprint}</code>
+        <Link className="arrow-link" to="/experiment-launch">{chinese ? "确认并启动实验" : "Review and start experiment"} →</Link>
+      </div>}
+    </section>
+    {suites.isLoading && <LoadingState />}
+    {suites.error && <ErrorState error={suites.error} retry={() => void suites.refetch()} />}
+    {suites.data && <section className="catalog-section">
+      <div className="section-heading"><div><p className="eyebrow">PERSISTED / NEWEST FIRST</p><h2>{chinese ? "v0.22 实验历史" : "v0.22 experiment history"}</h2><p>{chinese ? `共 ${suites.data.total_count} 个实验；列表来自后端持久身份，不依赖当前浏览器。` : `${suites.data.total_count} experiments from persisted backend identities, independent of this browser.`}</p></div><QualityBadge state={suites.data.quality.state} /></div>
+      {suites.data.items.length ? <div className="v022-suite-history">{suites.data.items.map((suite) => <article className="v022-suite-history-card" key={suite.research_suite_id}>
+        <div className="section-heading"><div><p className="eyebrow">{researchLabel(suite.status, i18n.resolvedLanguage)} · {suite.suite_mode}</p><h3>{new Intl.DateTimeFormat(chinese ? "zh-CN" : "en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(suite.created_at))}</h3></div><Link className="arrow-link" to={`/experiments?graph_suite=${suite.research_suite_id}`}>{suite.complete ? (chinese ? "查看结果" : "Open results") : (chinese ? "查看进度" : "Open progress")} →</Link></div>
+        <SuiteProgress suite={suite} chinese={chinese} />
+        <div className="experiment-detail-strip">
+          <div><span>{chinese ? "策略分支" : "Branches"}</span><strong>{suite.strategy_branch_count}</strong></div>
+          <div><span>Portfolio Cells</span><strong>{suite.backtest_cell_count}</strong></div>
+          <div><span>Graph</span><strong>{suite.graph_fingerprint.slice(0, 12)}…</strong></div>
+          <div><span>Suite</span><strong>{suite.suite_fingerprint.slice(0, 12)}…</strong></div>
+        </div>
+      </article>)}</div> : <div className="factor-empty-note"><p>{chinese ? "还没有 v0.22 实验。请先在策略页完成配置检查、编译并创建实验。" : "No v0.22 experiments yet. Review and compile a graph on the Strategy page, then create an experiment."}</p><Link className="arrow-link" to="/workspace-v022/strategy">{chinese ? "前往策略与编译" : "Open strategy and compile"} →</Link></div>}
+    </section>}
+    </>}
+  </div>;
+}
+
+function V022Leaderboard({ chinese }: { chinese: boolean }) {
+  const [frequency, setFrequency] = useState<"weekly" | "monthly">("weekly");
+  const [sort, setSort] = useState<"sharpe_ratio" | "cagr" | "cagr_spread" | "maximum_drawdown">("sharpe_ratio");
+  const leaderboard = useQuery({
+    queryKey: ["v022", "experiment-leaderboard", frequency, sort],
+    queryFn: () => api.v022ExperimentLeaderboard({ frequency, sort }),
+    retry: false,
+  });
+  const promotion = useMutation({
+    mutationFn: async (row: NonNullable<typeof leaderboard.data>["rows"][number]) => {
+      const display = row.display as { aggregation?: { name?: string }; strategy?: { name?: string } };
+      return api.promoteAndEnrollV022Product(row.result_evidence_snapshot_id, {
+        idempotencyKey: crypto.randomUUID(),
+        productKey: `result_${row.result_evidence_snapshot_id.replaceAll("-", "").slice(0, 24)}`,
+        name: [display.aggregation?.name, display.strategy?.name].filter(Boolean).join(" · ") || `v0.22 ${row.result_evidence_snapshot_id.slice(0, 8)}`,
+        description: "Promoted from one exact frozen v0.22 leaderboard row.",
+      });
+    },
+    onSuccess: () => void leaderboard.refetch(),
+  });
+
+  return <section className="catalog-section v022-leaderboard">
+    <div className="section-heading"><div><p className="eyebrow">STRICT COMPARISON / ONE CELL PER ROW</p><h2>{chinese ? "统一实验环境排行榜" : "Frozen-environment leaderboard"}</h2><p>{chinese ? "周频与月频永不混排；年化超额严格等于策略 CAGR 减 SPY CAGR。" : "Weekly and monthly results never mix. Annualized excess is strategy CAGR minus SPY CAGR."}</p></div><div className="experiment-filters"><label className="experiment-filter">{chinese ? "排序" : "Sort"}<select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)}><option value="sharpe_ratio">Sharpe</option><option value="cagr">CAGR</option><option value="cagr_spread">{chinese ? "年化超额" : "Annualized excess"}</option><option value="maximum_drawdown">{chinese ? "最大回撤" : "Maximum drawdown"}</option></select></label></div></div>
+    <nav className="frequency-tabs" aria-label={chinese ? "实验频率" : "Experiment frequency"}>{(["weekly", "monthly"] as const).map((item) => <button type="button" key={item} className={frequency === item ? "active" : ""} onClick={() => setFrequency(item)}>{item === "weekly" ? (chinese ? "周频" : "Weekly") : (chinese ? "月频" : "Monthly")}</button>)}</nav>
+    {leaderboard.isLoading && <LoadingState />}
+    {leaderboard.error && <div className="factor-empty-note"><strong>{chinese ? "该频率尚未发布统一排行榜" : "No strict leaderboard has been published for this frequency"}</strong><p>{leaderboard.error instanceof Error ? leaderboard.error.message : String(leaderboard.error)}</p></div>}
+    {leaderboard.data && <>
+      {leaderboard.data.comparison_context && <div className="scope-strip experiment-scope-strip"><div><span>{chinese ? "评价区间" : "Evaluation"}</span><strong>{leaderboard.data.comparison_context.evaluation_start} → {leaderboard.data.comparison_context.evaluation_end}</strong></div><div><span>{chinese ? "暖机起点" : "Warm-up start"}</span><strong>{leaderboard.data.comparison_context.warmup_start}</strong></div><div><span>{chinese ? "基准" : "Benchmark"}</span><strong>SPY</strong></div><div><span>{chinese ? "成本" : "Cost"}</span><strong>{leaderboard.data.comparison_context.cost_bps_per_side} bps/side</strong></div></div>}
+      <div className="experiment-table v022-ranking-table">
+        <div className="experiment-table-head"><span># / {chinese ? "配置" : "Configuration"}</span><span>{chinese ? "输入摘要" : "Inputs"}</span><span>CAGR</span><span>{chinese ? "年化超额" : "Excess CAGR"}</span><span>Sharpe</span><span>{chinese ? "最大回撤" : "Max drawdown"}</span><span>{chinese ? "操作" : "Actions"}</span></div>
+        {(leaderboard.data.rows ?? []).map((row) => {
+          const display = row.display as { direct_inputs?: Array<{ name?: string }>; aggregation?: { name?: string }; strategy?: { name?: string }; defense?: { name?: string; none?: boolean } };
+          const resultPath = `/experiments/results/${row.result_evidence_snapshot_id}`;
+          return <div className="v022-ranking-row" key={row.result_evidence_snapshot_id}>
+            <Link className="ranking-result-link" to={resultPath} aria-label={chinese ? `查看第 ${row.rank} 名实验的详细回测` : `Open detailed backtest for rank ${row.rank}`}>
+              <strong><b>{row.rank}</b> · {display.aggregation?.name ?? "—"}<small>{display.strategy?.name ?? "—"} · {display.defense?.none ? (chinese ? "无防御" : "No defense") : display.defense?.name ?? "—"}</small></strong>
+              <span>{chinese ? "查看指标与回撤图表" : "Open metrics and drawdown charts"} →</span>
+            </Link>
+            <span>{(display.direct_inputs ?? []).map((item) => item.name).filter(Boolean).join(" · ") || "—"}</span>
+            <code>{ratio(Number(row.cagr))}</code><code>{ratio(Number(row.cagr_spread))}</code><code>{decimal(Number(row.sharpe_ratio))}</code><code>{ratio(Number(row.maximum_drawdown))}</code>
+            <span className="ranking-actions"><Link className="secondary-button" to={resultPath}>{chinese ? "查看详细回测" : "Full backtest"}</Link>{row.product_candidate && row.execution_version_id ? <Link to={row.product_enrollment_id ? `/products/${row.product_enrollment_id}` : "/products"}>Product</Link> : <button type="button" disabled={promotion.isPending} onClick={() => { if (window.confirm(chinese ? "确认只升级这一条实验配置并开始样本外观察？" : "Promote only this result and start OOS observation?")) promotion.mutate(row); }}>{chinese ? "升级 Product" : "Promote"}</button>}</span>
+          </div>;
+        })}
+      </div>
+      {promotion.error && <ErrorState error={promotion.error} retry={() => undefined} />}
+    </>}
+  </section>;
+}
+
+function V022GraphSuiteExperiment({ suiteId }: { suiteId: string }) {
+  const { i18n } = useTranslation();
+  const chinese = i18n.resolvedLanguage === "zh-CN";
+  const [completedView, setCompletedView] = useState<"leaderboard" | "run">("leaderboard");
+  const suite = useQuery({
+    queryKey: ["v022", "graph-suite", suiteId],
+    queryFn: () => api.graphSuiteStatus(suiteId),
+    refetchInterval: (query) => query.state.data?.complete ? false : 2_000,
+  });
+  const results = useQuery({
+    queryKey: ["v022", "graph-suite", suiteId, "results"],
+    queryFn: () => api.graphSuiteResults(suiteId),
+    enabled: suite.data?.complete === true,
+  });
+  const runtimeReadiness = useQuery({
+    queryKey: ["v022", "graph-suite-runtime", "readiness"],
+    queryFn: api.graphSuiteRuntimeReadiness,
+    enabled: suite.data?.complete === false,
+    refetchInterval: suite.data?.complete === false ? 2_000 : false,
+    retry: false,
+  });
+  const waitingRuntimeBlocked = suite.data?.status === "not_started"
+    && (Boolean(runtimeReadiness.error) || runtimeReadiness.data?.ready === false);
+
+  return <div className="page experiment-page">
+    <header className="page-heading"><div><p className="eyebrow">V0.22 GRAPH SUITE / TYPED PORTFOLIO RESULT</p><h1>{chinese ? "v0.22 策略实验" : "v0.22 strategy experiment"}</h1><p>{chinese ? "运行中查看真实进度；完成后进入统一排行榜，本次 Suite 详情保留为审计入口。" : "Track live progress while running. Completed results enter the frozen leaderboard, while this Suite remains available for audit."}</p></div><Link className="arrow-link" to="/experiments">{chinese ? "打开实验首页" : "Open experiment home"} →</Link></header>
+    {suite.data?.complete && <nav className="product-tabs" aria-label={chinese ? "完成实验视图" : "Completed experiment views"}>
+      <button type="button" className={completedView === "leaderboard" ? "active" : ""} onClick={() => setCompletedView("leaderboard")}>{chinese ? "统一排行榜" : "Leaderboard"}</button>
+      <button type="button" className={completedView === "run" ? "active" : ""} onClick={() => setCompletedView("run")}>{chinese ? "本次运行详情" : "This run"}</button>
+    </nav>}
+    {suite.data?.complete && completedView === "leaderboard" ? <V022Leaderboard chinese={chinese} /> : <>
+    <section className="workspace-release-gate experiment-progress" role="status">
+      {suite.isLoading && <><strong>{chinese ? "正在读取实验队列" : "Loading experiment queue"}</strong><span>{suiteId}</span></>}
+      {suite.error && <ErrorState error={suite.error} retry={() => void suite.refetch()} />}
+      {suite.data && !waitingRuntimeBlocked && <SuiteProgress suite={suite.data} chinese={chinese} />}
+      {suite.data && !suite.data.complete && <SuiteRuntimeStatus
+        readiness={runtimeReadiness.data ?? null}
+        loading={runtimeReadiness.isLoading}
+        queryError={runtimeReadiness.error instanceof Error
+          ? runtimeReadiness.error.message
+          : null}
+        chinese={chinese}
+      />}
+    </section>
+    {suite.data?.complete && results.isLoading && <LoadingState />}
+    {results.error && <ErrorState error={results.error} retry={() => void results.refetch()} />}
+    {results.data && <V022TypedResults data={results.data} chinese={chinese} />}
+    </>}
+  </div>;
+}
+
+function V022TypedResults({ data, chinese }: { data: GraphSuiteResults; chinese: boolean }) {
+  return <section className="catalog-section">
+    <div className="section-heading"><div><p className="eyebrow">PUBLISHED / IMMUTABLE / SUITE-SCOPED</p><h2>{chinese ? "Portfolio Cell 结果" : "Portfolio Cell results"}</h2></div><QualityBadge state={data.quality.state} /></div>
+    <div className="scope-strip experiment-scope-strip">
+      <div><span>{chinese ? "预期结果" : "Expected"}</span><strong>{data.expected_result_count}</strong></div>
+      <div><span>{chinese ? "已发布" : "Published"}</span><strong>{data.result_count}</strong></div>
+      <div><span>{chinese ? "状态" : "Status"}</span><strong>{data.status}</strong></div>
+      <div><span>{chinese ? "完整" : "Complete"}</span><strong>{data.complete ? (chinese ? "是" : "yes") : (chinese ? "否" : "no")}</strong></div>
+    </div>
+    {data.results.map((result) => <V022ResultCard key={result.result_artifact_id} result={result} chinese={chinese} />)}
+  </section>;
+}
+
+function V022ResultCard({ result, chinese }: { result: GraphSuiteResult; chinese: boolean }) {
+  const [view, setView] = useState<"overview" | "elements" | "quality" | "lineage">("overview");
+  const diagnostic = result.diagnostic;
+  const diagnosticStages = ([1, 2, 3] as const).map((stageNo) => ({
+    stageNo,
+    elements: diagnostic.elements.filter(
+      (element) => element.diagnostic_document.stage_no === stageNo,
+    ),
+  })).filter((stage) => stage.elements.length > 0);
+  const evidenceId = diagnostic.evidence.result_evidence_snapshot_id;
+  return <article className="catalog-card v022-result-card">
+      <div className="section-heading"><div><p className="eyebrow">{result.outcome} / {result.quality_status}</p><h3>{result.effective_start} → {result.effective_end}</h3></div><div className="experiment-detail-actions">{evidenceId && <Link className="arrow-link" to={`/experiments/results/${evidenceId}`}>{chinese ? "查看完整回测" : "Open full backtest"} →</Link>}<Link className="arrow-link" to={`/artifacts/${result.result_artifact_id}`}>{chinese ? "查看血缘" : "Open lineage"} →</Link></div></div>
+      <div className="experiment-detail-strip">
+        <div><span>Research Cell</span><strong>{result.research_cell_id}</strong></div>
+        <div><span>{chinese ? "配置快照" : "Configuration"}</span><strong>{result.configuration_snapshot_id}</strong></div>
+        <div><span>Result fingerprint</span><strong>{result.result_fingerprint.slice(0, 16)}…</strong></div>
+        <div><span>Manifest</span><strong>{result.payload_manifest_id}</strong></div>
+      </div>
+      <div className="v022-result-tabs" role="tablist" aria-label={chinese ? "结果视图" : "Result views"}>
+        {(["overview", "elements", "quality", "lineage"] as const).map((item) => <button
+          aria-selected={view === item}
+          className={view === item ? "active" : ""}
+          key={item}
+          onClick={() => setView(item)}
+          role="tab"
+          type="button"
+        >{{ overview: chinese ? "收益概览" : "Performance", elements: chinese ? "元素诊断" : "Element diagnostics", quality: chinese ? "数据质量" : "Data quality", lineage: chinese ? "证据与血缘" : "Evidence & lineage" }[item]}</button>)}
+      </div>
+      {view === "overview" && <div className="experiment-metrics v022-diagnostic-metrics">
+        {diagnostic.metrics.map((metric) => <div key={`${metric.metric_group}:${metric.metric_key}`}>
+          <span><ResearchKey value={metric.metric_key} /> · {metric.metric_group === "absolute" ? (chinese ? "组合" : "portfolio") : (chinese ? "相对基准" : "relative")}</span>
+          <strong>{formatDiagnosticMetric(metric)}</strong>
+          <small>{chinese ? `${metric.observation_count} 个观测` : `${metric.observation_count} observations`}</small>
+        </div>)}
+        {!diagnostic.metrics.length && <p className="factor-empty-note">{chinese ? "该终态结果没有可发布的收益指标。" : "This terminal result has no publishable performance metrics."}</p>}
+      </div>}
+      {view === "elements" && <div className="v022-element-diagnostics">
+        <p className="v022-diagnostic-note">{chinese
+          ? "以下指标覆盖实际执行血缘中的加工层 1–3，并使用同一冻结样本与评价目标。它们只用于辅助研究，不表示因果归因；无预测方向的中间量只计算覆盖率与分布指标。"
+          : "Diagnostics cover processing stages 1–3 on the exact executed lineage and the same frozen sample and target. They are non-causal; unsigned intermediates only receive coverage and distribution metrics."}</p>
+        {diagnosticStages.map(({ stageNo, elements }) => <section className="v022-diagnostic-stage" key={stageNo}>
+          <div className="section-heading"><div>
+            <p className="eyebrow">PROCESSING STAGE {stageNo}</p>
+            <h3>{chinese ? `加工层 ${stageNo} 诊断` : `Processing stage ${stageNo} diagnostics`}</h3>
+            <p>{chinese
+              ? `本层共 ${elements.length} 个已执行元素；指标使用同一冻结样本和评价目标，仅用于辅助研究。`
+              : `${elements.length} executed elements on the same frozen sample and target; diagnostic only.`}</p>
+          </div></div>
+          {elements.map((element) => {
+          const document = element.diagnostic_document;
+          return <article className="v022-element-diagnostic-card" key={element.result_element_diagnostic_id}>
+            <header><div><p className="eyebrow">STAGE {document.stage_no} / {document.research_direction}</p><h4><ResearchKey value={document.feature_variant_key} /></h4></div><Link className="arrow-link" to={`/artifacts/${element.artifact_id}`}>{chinese ? "诊断血缘" : "Diagnostic lineage"} →</Link></header>
+            <div className="v022-element-context">
+              <div><span>{chinese ? "评价目标" : "Evaluation target"}</span><strong><ResearchKey value={document.target_key} /></strong></div>
+              <div><span>{chinese ? "覆盖区间" : "Coverage"}</span><strong>{document.coverage_start} → {document.coverage_end}</strong></div>
+              <div><span>{chinese ? "有效 IC 期数" : "Valid IC periods"}</span><strong>{document.valid_ic_count} / {document.evaluation_period_count}</strong></div>
+              <div><span>{chinese ? "观测覆盖" : "Observed coverage"}</span><strong>{document.observed_value_count} / {document.expected_observation_count}</strong></div>
+            </div>
+            <div className="experiment-metrics v022-element-metrics">{document.metrics.map((metric) => <div key={metric.metric_key}>
+              <span><ResearchKey value={metric.metric_key} /></span>
+              <strong>{formatElementMetric(metric)}</strong>
+              {metric.reason_code && <small>{metric.reason_code}</small>}
+            </div>)}</div>
+          </article>;
+        })}</section>)}
+        {!diagnostic.elements.length && <p className="factor-empty-note">{chinese
+          ? "该结果的逐元素诊断尚未发布。"
+          : "Direct-element diagnostics have not been published for this result yet."}</p>}
+      </div>}
+      {view === "quality" && <div className="v022-diagnostic-grid">
+        <div><span>{chinese ? "质量结论" : "Quality status"}</span><strong>{diagnostic.quality.status}</strong></div>
+        <div><span>{chinese ? "有效会话" : "Path sessions"}</span><strong>{diagnostic.quality.path_session_count}</strong></div>
+        <div><span>{chinese ? "基准" : "Benchmark"}</span><strong>{diagnostic.execution.benchmark_asset_key ?? "—"}</strong></div>
+        <div><span>{chinese ? "单边成本" : "Cost per side"}</span><strong>{diagnostic.execution.basis_points_per_side == null ? "—" : `${diagnostic.execution.basis_points_per_side} bps`}</strong></div>
+        <div><span>{chinese ? "执行延迟" : "Execution delay"}</span><strong>{diagnostic.execution.execution_delay_sessions == null ? "—" : `${diagnostic.execution.execution_delay_sessions} session`}</strong></div>
+        <div><span>{chinese ? "输入截止" : "Input cutoff"}</span><strong>{diagnostic.execution.evaluation_input_cutoff_at ?? "—"}</strong></div>
+        {diagnostic.quality.reason_code && <div className="wide"><span>{chinese ? "原因" : "Reason"}</span><strong>{diagnostic.quality.reason_code}</strong></div>}
+      </div>}
+      {view === "lineage" && <div className="v022-diagnostic-grid">
+        <div><span>Result Artifact</span><Link to={`/artifacts/${result.result_artifact_id}`}>{result.result_artifact_id}</Link></div>
+        <div><span>Manifest Artifact</span><Link to={`/artifacts/${result.payload_manifest_artifact_id}`}>{result.payload_manifest_artifact_id}</Link></div>
+        <div><span>{chinese ? "结果证据" : "Result evidence"}</span><strong>{diagnostic.evidence.publication_status}</strong></div>
+        <div><span>{chinese ? "证据类别" : "Evidence class"}</span><strong>{diagnostic.evidence.evidence_class ?? "—"}</strong></div>
+        {diagnostic.evidence.result_evidence_artifact_id && <div><span>Evidence Artifact</span><Link to={`/artifacts/${diagnostic.evidence.result_evidence_artifact_id}`}>{diagnostic.evidence.result_evidence_artifact_id}</Link></div>}
+        <div><span>Common Panel</span><strong>{diagnostic.evidence.common_evaluation_panel_id ?? "—"}</strong></div>
+        <div className="wide"><span>Evaluation Context</span><strong>{diagnostic.execution.evaluation_data_context_fingerprint ?? "—"}</strong></div>
+      </div>}
+    </article>;
+}
+
+const formatDiagnosticMetric = (metric: GraphSuiteResult["diagnostic"]["metrics"][number]) => {
+  if (metric.value_status !== "defined" || metric.value == null) return metric.reason_code ?? "—";
+  const value = Number(metric.value);
+  if (!Number.isFinite(value)) return metric.value;
+  return percentageMetrics.has(metric.metric_key) ? ratio(value) : decimal(value);
+};
+
+const elementPercentageMetrics = new Set(["coverage_ratio", "positive_ic_ratio"]);
+
+const formatElementMetric = (metric: GraphSuiteResult["diagnostic"]["elements"][number]["diagnostic_document"]["metrics"][number]) => {
+  if (metric.value == null) return metric.reason_code ?? "—";
+  const value = Number(metric.value);
+  if (!Number.isFinite(value)) return metric.value;
+  return elementPercentageMetrics.has(metric.metric_key) ? ratio(value) : decimal(value);
+};
+
+export function LegacyExperimentsPage() {
   const { t, i18n } = useTranslation();
   const chinese = i18n.resolvedLanguage === "zh-CN";
   const [searchParams, setSearchParams] = useSearchParams();
@@ -75,6 +551,7 @@ export function ExperimentsPage() {
   const detailDialogRef = useRef<HTMLElement>(null);
   const promotionDialogRef = useRef<HTMLElement>(null);
   const submittedSuiteId = searchParams.get("suite") ?? "";
+  const graphSuiteId = searchParams.get("graph_suite") ?? "";
   const pageSize = 50;
   const overview = useQuery({
     queryKey: ["experiments", "overview", submittedSuiteId, status, interval, frequency, cost, rankingMetric, page],
@@ -105,6 +582,12 @@ export function ExperimentsPage() {
     queryKey: ["workspace", "suite", submittedSuiteId],
     queryFn: () => api.workspaceSuiteStatus(submittedSuiteId),
     enabled: Boolean(submittedSuiteId),
+    refetchInterval: (query) => query.state.data?.complete ? false : 2_000,
+  });
+  const graphSuite = useQuery({
+    queryKey: ["v022", "graph-suite", graphSuiteId],
+    queryFn: () => api.graphSuiteStatus(graphSuiteId),
+    enabled: Boolean(graphSuiteId),
     refetchInterval: (query) => query.state.data?.complete ? false : 2_000,
   });
   useEffect(() => {
@@ -189,6 +672,12 @@ export function ExperimentsPage() {
       <div><span>{t("experiment.accepted")}</span><strong>{accepted}</strong></div>
       <div><span>{t("experiment.failed")}</span><strong>{failed}</strong></div>
     </section>
+    <V022IdentityPanel kind="experiment" />
+    {graphSuiteId && <section className="workspace-release-gate experiment-progress" role="status">
+      {graphSuite.isLoading && <><strong>{chinese ? "v0.22 实验已提交，正在读取队列状态" : "v0.22 experiment submitted; loading queue status"}</strong><span>{graphSuiteId}</span></>}
+      {graphSuite.error && <><strong>{chinese ? "暂时无法读取 v0.22 实验进度" : "The v0.22 experiment status is temporarily unavailable"}</strong><span>{graphSuiteId}</span></>}
+      {graphSuite.data && <SuiteProgress suite={graphSuite.data} chinese={chinese} />}
+    </section>}
     {submittedSuiteId && <section className="workspace-release-gate experiment-progress" role="status">
       {submittedSuite.isLoading && <><strong>{chinese ? "实验已提交，正在读取队列状态" : "Experiment submitted; loading queue status"}</strong><span>{submittedSuiteId}</span></>}
       {submittedSuite.error && <><strong>{chinese ? "实验已提交，但暂时无法读取进度" : "Experiment submitted, but progress is temporarily unavailable"}</strong><span>{submittedSuiteId}</span></>}
